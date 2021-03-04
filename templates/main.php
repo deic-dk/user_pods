@@ -12,18 +12,16 @@
     </div>
       </div>
   </div>
-  <select id="podinput" name="yaml" data-placeholder="YAML file">
-	<option value="0">
-		test					
-	</option>
-	<option value="1">
-		test2
-	</option>
-  </select>
   <div id="newpod" class="apanel">
-     <span class="spanpanel" >
-	  <input class="editpod" id="newpod" type="text" placeholder="New pod name..."> 
-	  
+     <span class="spanpanel" > Select a YAML file:
+	<select id="podinput" name="yaml" data-placeholder="YAML file">
+        	<?php
+                	$images = OC_Kubernetes_Util::getImages();
+                	foreach ($images as $image) {
+                        	echo "<option value=\"$image\">$image</option>";
+                	}
+        	?>
+  	</select>	  
 	    <span class="newpod-span">	
 		  <div id="ok" class="btn-pod" original-title="">
 		    <a class="btn btn-default btn-flat" href="#">Add</a>
@@ -133,4 +131,4 @@
 </table>
 </div>
 </div>
-
+<div id='dialogalert' title='Delete Confirmation' style='display:none;' ><p>Are you sure you want to delete this container?</p></div>
