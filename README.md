@@ -1,2 +1,2 @@
 # user_pods
-This is an application at ScienceData for creating and managing Kubernetes pods
+An application at ScienceData for creating and managing Kubernetes pods.
