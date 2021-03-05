@@ -35,8 +35,18 @@ $(document).ready(function() {
 	$("#podstable td #delete-pod").live('click', function() {
 		var status = $(this).closest('tr').attr('id') ;
                 var containerSelected = $(this).closest('tr').attr('class') ;
+		var podSelected = $(this).closest('tr').attr('class');
                 $( '#dialogalert' ).dialog({ buttons: [ { id:'test','data-test':'data test', text: 'Delete', click: function() {
 			// TODO add logic
+			$.post(OC.filePath('kubernetes_app', 'ajax', 'actions.php') ,{ pod_name : podSelected } ,  function (jsondata){ 
+
+                            if(jsondata.status == 'success'){ 
+                             	location.reload();
+
+			    } 
+			    
+
+		      });
 
                 $(this).dialog( 'close' ); } },
                 { id:'test2','data-test':'data test', text: 'Cancel', click: function() {

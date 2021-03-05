@@ -104,4 +104,11 @@ class OC_Kubernetes_Util {
 	// TODO Add exceptions and handling
 	return $response;
   } 
+
+  public static function deletePod($pod_name, $uid) 
+  {
+	  $complete_uri = OC_Kubernetes_Util::$URI."delete_pod.php?user_id=".$uid."&pod=".$pod_name;
+	  $response = file_get_contents($complete_uri);
+	  return $response;
+  }
 }
