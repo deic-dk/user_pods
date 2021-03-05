@@ -26,29 +26,54 @@ li
 	width:100%;
 	border:solid 1px #e4e4e4;
 	margin-bottom:20px;
-	height:55px; 
+	height:156px; 
 	display:none
+}
+
+#ssh {
+	padding-left: 1.5%;
+    	padding-top: 3%;
 }
 
 .newpod-span {
 	float: right;
 	margin-right: 10px;
-	line-height: 50px;
+	margin-top: -35px;
 }
 
+.sshpod {
+	width: 60% !important;
+	line-height: 50px;
+}
 #podinput {
 	line-height: 1.5;
 	padding: 2px 0px 4px 5px;
 	margin-top:10px;
 	margin-left:15px;
 	position: relative;
-	width: 400px;
+	width: 255px;
 }
 
 .newpodform {
 	margin-left:20px; 
 	margin-bottom:20px; 
 	position:absolute
+}
+
+.loader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #056a92; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  margin: auto;
+  margin-top: 6%;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .btn-pod, .btn-pod-vertical {

@@ -8,18 +8,28 @@ $(document).ready(function() {
 	});
 
 	$('#newpod #ok').on('click', function() {
-
 		var yaml_file = $('#podinput').val();
-		alert(yaml_file);
-		$.post(OC.filePath('kubernetes_app', 'ajax', 'actions.php'), { pod_image : yaml_file } , function ( jsondata ){
-				if(jsondata.status == 'success' ) {
+		var ssh_key = $('.sshpod').val();
+		if( ssh_key != "") {
+			$.ajax({url: OC.filePath('kubernetes_app', 'ajax', 'actions.php'),
+				data: {pod_image: yaml_file, ssh: ssh_key}, 
+				method: 'post',
+				beforeSend: function() {
+					$('#podstable').css("visibility", "hidden");
+					$('#pod-create').css("visibility", "hidden");
 					$('#newpod').slideToggle();
 					$('#newpod').val("");
+					$('#loading').css("display", "block");
+    				},
+    				complete: function() {
+        				// Hide loading
+    				},
+    				success: function(data) {
 					location.reload();
-				}else{
-					OC.dialogs.alert( jsondata.data.message , jsondata.data.title ) ;
-				}
-		});
+
+  				}				
+			});
+		}
 	});
 
 	$("#podstable td #delete-pod").live('click', function() {

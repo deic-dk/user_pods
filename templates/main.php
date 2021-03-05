@@ -22,6 +22,7 @@
                 	}
         	?>
   	</select>	  
+	<div id="ssh"><input class="sshpod" id="sshpod" type="text" placeholder="Paste your public SSH key here..."></div>
 	    <span class="newpod-span">	
 		  <div id="ok" class="btn-pod" original-title="">
 		    <a class="btn btn-default btn-flat" href="#">Add</a>
@@ -33,6 +34,12 @@
       </span>
   </div>
  </div> 
+</div>
+<div id="loading" style="display: none;">
+	<div style="font-size:large; text-align:center;">
+		Creating your pod... Please wait
+	</div>
+	<div class="loader"></div>
 </div>
 <table id="podstable" class="panel">
 <thead class="panel-heading" >
@@ -132,3 +139,4 @@
 </div>
 </div>
 <div id='dialogalert' title='Delete Confirmation' style='display:none;' ><p>Are you sure you want to delete this container?</p></div>
+
