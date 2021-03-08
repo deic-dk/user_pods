@@ -33,9 +33,7 @@ $(document).ready(function() {
 	});
 
 	$("#podstable td #delete-pod").live('click', function() {
-		var status = $(this).closest('tr').attr('id') ;
-                var containerSelected = $(this).closest('tr').attr('class') ;
-		var podSelected = $(this).closest('tr').attr('class');
+		var podSelected = $(this).closest('tr').attr('id');
                 $( '#dialogalert' ).dialog({ buttons: [ { id:'test','data-test':'data test', text: 'Delete', click: function() {
 			// TODO add logic
 			$.post(OC.filePath('kubernetes_app', 'ajax', 'actions.php') ,{ pod_name : podSelected } ,  function (jsondata){ 
@@ -53,5 +51,14 @@ $(document).ready(function() {
                 $(this).dialog( 'close' ); } } ] });
 
         });
-
+	
+	$("#podstable > tbody > tr").each(function() {
+  		var value = $(this).find("td span#status").text();
+		if (~value.indexOf("Running")) {
+			var date = value.substr(value.indexOf(':')+1);
+			var time = new Date(date).toString().slice(0,25);
+			var finalDate = "Running: ".concat(time);
+			$(this).find("td span#status").text(finalDate);
+		}
+	});
 });
