@@ -1,6 +1,5 @@
 <?php
 
-
 OCP\JSON::checkLoggedIn();
 OCP\JSON::checkAppEnabled('kubernetes_app');
 OCP\JSON::callCheck();
