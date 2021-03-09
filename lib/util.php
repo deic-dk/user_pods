@@ -96,10 +96,10 @@ class OC_Kubernetes_Util {
   }
 
 
-  public static function createPod($yaml_file, $ssh_key, $uid)
+  public static function createPod($yaml_file, $ssh_key, $storage_path, $uid)
   {
 	$encoded_key = rawurlencode ($ssh_key);
-	$complete_uri = OC_Kubernetes_Util::$URI."run_pod.php?user_id=".$uid."&storage_path=www&public_key=".$encoded_key."&yaml_uri=/files/pod_manifests/".$yaml_file;
+	$complete_uri = OC_Kubernetes_Util::$URI."run_pod.php?user_id=".$uid."&storage_path=".$storage_path."&public_key=".$encoded_key."&yaml_uri=/files/pod_manifests/".$yaml_file;
 	$response = file_get_contents($complete_uri);
 	// TODO Add exceptions and handling
 	return $response;

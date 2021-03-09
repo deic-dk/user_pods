@@ -26,13 +26,13 @@ li
 	width:100%;
 	border:solid 1px #e4e4e4;
 	margin-bottom:20px;
-	height:156px; 
+	height:13em; 
 	display:none
 }
 
 #ssh {
 	padding-left: 1.5%;
-    	padding-top: 3%;
+	padding-top: 1%;
 }
 
 .newpod-span {
@@ -44,6 +44,14 @@ li
 .sshpod {
 	width: 60% !important;
 	line-height: 50px;
+}
+
+.storagepath {
+	width: 30% !important;
+}
+
+#storage {
+	padding-left: 1.5%;
 }
 #podinput {
 	line-height: 1.5;

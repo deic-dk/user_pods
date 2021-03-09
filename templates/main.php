@@ -23,6 +23,7 @@
         	?>
   	</select>	  
 	<div id="ssh"><input class="sshpod" id="sshpod" type="text" placeholder="Paste your public SSH key here..."></div>
+	<div id="storage"><input class="storagepath" id="storagepath" type="text" placeholder="Name of local folder to mount..."></div>
 	    <span class="newpod-span">	
 		  <div id="ok" class="btn-pod" original-title="">
 		    <a class="btn btn-default btn-flat" href="#">Add</a>
