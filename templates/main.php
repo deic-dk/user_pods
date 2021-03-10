@@ -129,7 +129,9 @@
 			
 		       <span class="info">
 				<?php 
-				echo count($containers)." Containers"; ?> 			</span>
+					$all_cont = count($containers);
+                			echo $all_cont." Container".($all_cont>1?"s":"");
+				 ?> 			</span>
 		</td>
 	</tr>
     
