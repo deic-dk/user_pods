@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+   <info>
+	<id>kubernetes</id>
+	<name>User Kubernetes </name>
+	<description>Enable users to create and manage their pods</description>
+	<version>0.1</version>
+	<licence>AGPL </licence>
+	<author>Marina </author>
+	<require>6.0.3</require>
+  </info>

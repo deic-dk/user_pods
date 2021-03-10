@@ -1,0 +1,55 @@
+table th .columntitle {
+		display: inline-block !important;
+}
+
+li
+{
+  list-style-type: none;
+}
+
+.normaltext {
+	font-size:80%
+} 
+
+
+.podname {
+	font-weight:bold;
+}
+
+#pod-create {
+	z-index: 1;
+}
+
+.apanel {
+	width:100%;
+	border:solid 1px #e4e4e4;
+	margin-bottom:20px;
+	height:55px; 
+	display:none
+}
+
+.newpod-span {
+	float: right;
+	margin-right: 10px;
+	line-height: 50px;
+}
+
+input.editpod {
+	line-height: 1.5;
+	padding: 2px 0px 4px 5px;
+	margin-top:10px;
+	position: relative;
+	width: 400px;
+}
+
+.newpodform {
+	margin-left:20px; 
+	margin-bottom:20px; 
+	position:absolute
+}
+
+.btn-pod, .btn-pod-vertical {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+}
