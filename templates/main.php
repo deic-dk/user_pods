@@ -37,7 +37,7 @@
  </div> 
 </div>
 <div id="loading" style="display: none;">
-	<div style="font-size:large; text-align:center;">
+	<div id="loading-text" style="font-size:large; text-align:center;">
 		Creating your pod... Please wait
 	</div>
 	<div class="loader"></div>

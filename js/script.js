@@ -36,7 +36,6 @@ $(document).ready(function() {
 	$("#podstable td #delete-pod").live('click', function() {
 		var podSelected = $(this).closest('tr').attr('id');
                 $( '#dialogalert' ).dialog({ buttons: [ { id:'test','data-test':'data test', text: 'Delete', click: function() {
-			// TODO add logic
 			$.post(OC.filePath('kubernetes_app', 'ajax', 'actions.php') ,{ pod_name : podSelected } ,  function (jsondata){ 
 
                             if(jsondata.status == 'success'){ 
@@ -46,6 +45,23 @@ $(document).ready(function() {
 			    
 
 		      });
+			
+			$.ajax({url: OC.filePath('kubernetes_app', 'ajax', 'actions.php'),
+				data: {pod_name: podSelected},
+				method: 'post',
+				beforeSend: function() {
+					$('#podstable').css("visibility", "hidden");
+					$('#pod-create').css("visibility", "hidden");
+					$("#loading-text").text("Deleting your pod... Please wait");
+					$('#loading').css("display", "block");
+				},
+				complete: function() {
+					
+				},
+				success: function(data) {
+					location.reload();
+				}
+			});
 
                 $(this).dialog( 'close' ); } },
                 { id:'test2','data-test':'data test', text: 'Cancel', click: function() {
