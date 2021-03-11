@@ -78,4 +78,14 @@ $(document).ready(function() {
 			$(this).find("td span#status").text(finalDate);
 		}
 	});
+
+	$('#test').on('click', function () {
+		var file = $(this).text();
+		OC.redirect( OC.linkTo('kubernetes_app', 'ajax/getLogs.php') + '?file=' + file);
+	});
+
+	$("#podstable .name").live('click', function() {
+		var pod = $(this).closest('td').attr('id') ;
+		OC.redirect(OC.linkTo('kubernetes_app', 'ajax/getLogs.php') + '?file=' + pod);
+	});
 });

@@ -105,7 +105,9 @@
 				<td id=\"$podname[1]\" class=\"$podname[0]\" name=\"$podname[1]\" data-group=\"$podname[1]\" style='height:34px' >
 				<div class='row'>
 					<div class='col-xs-1 text-right '></div>
+					<a class='name'>
 		       			<span class='nametext'>$podname[1]</span>
+					</a>
 				</div>
 				</td>";
 			OC_Kubernetes_Util::addRow($containername[0], $containername[1]);

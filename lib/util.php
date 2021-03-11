@@ -111,4 +111,21 @@ class OC_Kubernetes_Util {
 	  $response = file_get_contents($complete_uri);
 	  return $response;
   }
+
+  public static function getLogs($pod_name, $uid)
+  {
+	  $file_path = "/tmp/";
+	  $complete_uri = OC_Kubernetes_Util::$URI."get_pod_logs.php?user_id=".$uid."&pod=".$pod_name;
+	  $response = file_get_contents($complete_uri);
+
+	  $file = $file_path.$pod_name."log";
+	  $logfile = fopen($file, "w") or die("Unable to open file!");
+	  fwrite($logfile, $response);
+	  fclose($logfile);
+
+	  $type = filetype($file);
+	  header("Content-type: $type");
+  	  header("Content-Disposition: attachment;filename=$pod_name.log");
+       	  readfile($file);
+  }
 }
