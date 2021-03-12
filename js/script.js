@@ -79,13 +79,50 @@ $(document).ready(function() {
 		}
 	});
 
-	$('#test').on('click', function () {
-		var file = $(this).text();
-		OC.redirect( OC.linkTo('kubernetes_app', 'ajax/getLogs.php') + '?file=' + file);
-	});
 
 	$("#podstable .name").live('click', function() {
 		var pod = $(this).closest('td').attr('id') ;
-		OC.redirect(OC.linkTo('kubernetes_app', 'ajax/getLogs.php') + '?file=' + pod);
+		var https_port = $(this).closest('tr').find("span#https_port").html();
+		var uri = $(this).closest('tr').find('span#uri').html();
+		var complete_uri = 'https://kube.sciencedata.dk:' + https_port + '/' + uri;
+
+		var html = '<div><span><h3 class="oc-dialog-title" style="padding-left:25px;"><span>'+ pod+'</span></h3></span><a class="oc-dialog-close close svg"></a>\
+			<div id="meta_data_container" class=\''+ pod +'\'>\
+			<div style="position:absolute; left:40px; top:100px;">\
+			<div id="uri">Access web service:</div><p></p>\
+			<div><a href=\''+complete_uri+'\'target="_blank">'+ complete_uri +'</a></div></div>\
+          		<div style="position:absolute; bottom:100px; left:40px;" >\
+			<div>Download the logs of your container:</div><p></p>\
+			<button id="download-logs" class="download btn btn-primary btn-flat">Download</button>&nbsp\
+			</div>\
+                        </div>';
+
+		$(html).dialog({
+			  dialogClass: "oc-dialog",
+			  resizeable: false,
+			  draggable: false,
+			  height: 400,
+			  width: 400
+			});
+
+		$('body').append('<div class="modalOverlay">');
+
+		$('.oc-dialog-close').live('click', function() {
+			$(".oc-dialog").hide();
+			$('.modalOverlay').remove();
+        	});
+
+		$('.ui-helper-clearfix').css("display", "none");
+
+		$("#download-logs").live('click', function() {
+			OC.redirect(OC.linkTo('kubernetes_app', 'ajax/getLogs.php') + '?file=' + pod);
+		});
 	});
+
+	$(document).click(function(e){
+          if (!$(e.target).parents().filter('.oc-dialog').length && !$(e.target).parents().filter('.name').length ) {
+                $(".oc-dialog").hide();
+		$('.modalOverlay').remove();
+           }
+        });
 });

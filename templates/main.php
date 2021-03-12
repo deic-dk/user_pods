@@ -75,11 +75,6 @@
       <span>Status</span>
     </div>
   </th>
-  <th id="headerDisplay" class="column-display" style="padding-right:3%; width:1%">
-    <div class="size sort columntitle" data-sort="size">
-      <span>Link</span>
-    </div>
-  </th>
 </tr>
 </thead>
 <tbody id='fileList'>
@@ -114,7 +109,7 @@
 			OC_Kubernetes_Util::addRow($httpsport[0], $httpsport[1]);
 			OC_Kubernetes_Util::addRow($sshport[0], $sshport[1]);
 			OC_Kubernetes_Util::addRow($status[0], $status[1]);
-			echo  "<td id='uri'  class=\"$uri\">
+			echo  "<td id='uri' class=\"$uri\" style='display:none;'>
 				<div class='uri'><a class='uri' href=$uri target='_blank'>
 				<span id='uri'>".$uri_text."</span></a>
 				</div>
