@@ -105,6 +105,17 @@ class OC_Kubernetes_Util {
 	return $response;
   } 
 
+  private static function getAppDir($user){
+	\OC_User::setUserId($user);
+	\OC_Util::setupFS($user);
+	$fs = \OCP\Files::getStorage('kubernetes_app');
+	if(!$fs){
+		\OC_Log::write('kubernetes_app', "ERROR, could not access files of user ".$user, \OC_Log::ERROR);
+		return null;
+	}
+	return $fs->getLocalFile('/');
+  }
+
   public static function deletePod($pod_name, $uid) 
   {
 	  $complete_uri = OC_Kubernetes_Util::$URI."delete_pod.php?user_id=".$uid."&pod=".$pod_name;
@@ -114,11 +125,17 @@ class OC_Kubernetes_Util {
 
   public static function getLogs($pod_name, $uid)
   {
-	  $file_path = "/tmp/";
+	  $file_path = self::getAppDir($uid)."/pod_logs/";
+
+	  if (!is_dir($file_path))
+	  {
+    		mkdir($file_path, 0750, true);
+	  }	
+	  
 	  $complete_uri = OC_Kubernetes_Util::$URI."get_pod_logs.php?user_id=".$uid."&pod=".$pod_name;
 	  $response = file_get_contents($complete_uri);
 
-	  $file = $file_path.$pod_name."log";
+	  $file = $file_path.$pod_name.".log";
 	  $logfile = fopen($file, "w") or die("Unable to open file!");
 	  fwrite($logfile, $response);
 	  fclose($logfile);
