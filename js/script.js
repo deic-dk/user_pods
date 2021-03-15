@@ -7,6 +7,29 @@ $(document).ready(function() {
 		$('#newpod').slideToggle();
 	});
 
+	$("#podinput").prop("selectedIndex", -1);
+
+	$("#podinput").change(function () {
+        	var selectValue = $(this).val()
+		$.post(OC.filePath('kubernetes_app', 'ajax', 'actions.php') ,{ yaml_file : selectValue } ,  function (jsondata){
+                            if(jsondata.status == 'success'){
+				if (jsondata.data.included[0]==true) {
+					$('div#ssh').css('visibility', 'visible');
+				}
+				else {
+					$('div#ssh').css('visibility', 'hidden');
+				}
+				if (jsondata.data.included[1]==true) {
+					$('div#storage').css('visibility', 'visible');
+				}
+				else {
+					$('div#storage').css('visibility', 'hidden');
+				}
+			    }
+
+		});
+    	});
+
 	$('#newpod #ok').on('click', function() {
 		var yaml_file = $('#podinput').val();
 		var ssh_key = $('.sshpod').val();

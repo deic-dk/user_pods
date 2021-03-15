@@ -95,6 +95,22 @@ class OC_Kubernetes_Util {
 
   }
 
+  public static function checkImage($yaml_file)
+  {     
+	$test = '/tank/data/owncloud/kerverous/files/pod_manifests/'.$yaml_file;
+
+	$has_ssh = false;
+	$has_mount = false;
+
+	if( strpos(file_get_contents($test),"SSH_PUBLIC_KEY") !== false) {
+		$has_ssh = true;	
+	}
+
+	if( strpos(file_get_contents($test), "mountPath") != false) {
+		$has_mount = true;
+	}
+	return array($has_ssh, $has_mount);
+  }
 
   public static function createPod($yaml_file, $ssh_key, $storage_path, $uid)
   {
