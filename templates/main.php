@@ -93,12 +93,13 @@
                          
 
 
-			echo "<tr class=\"$podname\">
-				<td id=\"$podname\" class='podname' name=\"$podname\" data-group=\"$podname\" style='height:34px' >
+			echo "<tr id=\"$podname\" class='container-row'>
+				<td id=\"$podname\" class=\"$podname\" name=\"$podname\" data-group=\"$podname\" style='height:34px' >
 				<div class='row'>
 					<div class='col-xs-1 text-right '></div>
-		       			<span class='nametext'>$podname</span>
-				</div>
+					<a class='name'>
+                                        <span class='nametext'>$podname</span></a>
+                                </div>
 				</td>
 			     <td id='container-name' class=\"$containername\">
 				<div class='container'>

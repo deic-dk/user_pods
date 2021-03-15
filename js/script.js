@@ -29,7 +29,56 @@ $(document).ready(function() {
 	       ] });
 	});
 
+        
+       // $(document).click(function(e){
+         //  if (!$(e.target).parents().filter('.oc-dialog').length && !$(e.target).parents().filter('.name').length ) {
+           //     $(".oc-dialog").hide();
+	//	$('.modalOverlay').remove();
+   
+//	});
 
 
+	$("#podstable .nametext").live('click', function(){
+              var pod = $(this).closest('tr').attr('id');
+	      var html = '<div><span><h3 class="oc-dialog-title" style="padding-left:25px;">Logs of <span>'+ pod+'</span></h3></span><a class="oc-dialog-close close svg"></a>\
+			  <div id="meta_data_container" class=\'' + pod +'\'>\
+		          <div style="position:absolute; bottom:30px; left:40px;">\
+                          <div><p>Download the logs of the container</p></div>\
+		          <div style="position:absolute; bottom:50px; left:60px;">\
+			  <button id="download_logs" class="download btn btn-primary btn-flat">Download</button>&nbsp\
+                          </div>\
+			</div>';
 
+		$(html).dialog({
+                              dialogClass: "oc-dialog",
+			      resizeable: false,
+			      draggable: false,
+			      height: 600,
+			      width: 720
+		});
+		
+	      
+
+	        
+
+		$('body').append('<div class="modalOverlay">');
+                
+
+	        $('.oc-dialog-close').live('click', function(){
+                      $(".oc-dialog").hide();
+		      $('.modalOverlay').remove();
+		});
+                
+		$('.ui-helper-clearfix').css("display", "none");
+
+	
+	});
+
+	$(document).click(function(e){
+          if (!$(e.target).parents().filter('.oc-dialog').length && !$(e.target).parents().filter('.name').length){
+               $(".oc-dialog").hide();
+	       $('.modalOverlay').remove();
+	  }
+	});
+        
 });
