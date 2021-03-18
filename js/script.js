@@ -34,26 +34,24 @@ $(document).ready(function() {
 		var yaml_file = $('#podinput').val();
 		var ssh_key = $('.sshpod').val();
 		var storage = $('.storagepath').val();
-		if( ssh_key != "" && storage != "") {
-			$.ajax({url: OC.filePath('kubernetes_app', 'ajax', 'actions.php'),
-				data: {pod_image: yaml_file, ssh: ssh_key, storage: storage}, 
-				method: 'post',
-				beforeSend: function() {
-					$('#podstable').css("visibility", "hidden");
-					$('#pod-create').css("visibility", "hidden");
-					$('#newpod').slideToggle();
-					$('#newpod').val("");
-					$('#loading').css("display", "block");
-    				},
-    				complete: function() {
-        				// Hide loading
-    				},
-    				success: function(data) {
-					location.reload();
+		$.ajax({url: OC.filePath('kubernetes_app', 'ajax', 'actions.php'),
+			data: {pod_image: yaml_file, ssh: ssh_key, storage: storage}, 
+			method: 'post',
+			beforeSend: function() {
+				$('#podstable').css("visibility", "hidden");
+				$('#pod-create').css("visibility", "hidden");
+				$('#newpod').slideToggle();
+				$('#newpod').val("");
+				$('#loading').css("display", "block");
+    			},
+    			complete: function() {
+        			// Hide loading
+    			},
+    			success: function(data) {
+				location.reload();
 
-  				}				
-			});
-		}
+			}				
+		});
 	});
 
 	$("#podstable td #delete-pod").live('click', function() {
