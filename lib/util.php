@@ -38,53 +38,37 @@ class OC_Kubernetes_Util {
               </td>";
     }
 
+    private static function getGithubContent($uri) 
+    {
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_URL, $uri);
+	curl_setopt($ch,CURLOPT_USERAGENT,'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	$data = curl_exec($ch);
+	curl_close($ch);
+	return $data;
+    }
 
     public static function getImages()
     {
-	$dir =  'pod_manifests';
-	$dir = \OC\Files\Filesystem::normalizePath($dir);
-
+	$default_pods_uri =  'https://api.github.com/repos/deic-dk/pod_manifests/contents?ref=main';
 	try {
-		$dirInfo = \OC\Files\Filesystem::getFileInfo($dir);
-		if (!$dirInfo || !$dirInfo->getType() === 'dir') {
-			header("HTTP/1.0 404 Not Found");
-			exit();
-		}	
-
-		$permissions = $dirInfo->getPermissions();
-
-		$sortAttribute = isset($_GET['sort']) ? $_GET['sort'] : 'name';
-		$sortDirection = isset($_GET['sortdirection']) ? ($_GET['sortdirection'] === 'desc') : false;
-
-		// make filelist
-
-		$files = \OCA\Files\Helper::getFiles($dir, $sortAttribute, $sortDirection);
-		$data = \OCA\Files\Helper::formatFileInfos($files);
+		$git_contents = json_decode(self::getGithubContent($default_pods_uri), true);
+		$type = '.yaml';
 
 		$filenames = array();
-		foreach ($data as $file) {
-			array_push($filenames, $file['name']);
+		foreach ($git_contents as $file) {
+			$len = strlen($type);
+    			$is_yaml = (substr($file['name'], -$len) === $type);
+			if ($is_yaml == true) {
+				array_push($filenames, $file['name']);
+			}
 		}
 		return $filenames;
 
-	} catch (\OCP\Files\StorageNotAvailableException $e) {
-		\OCP\Util::logException('files', $e);
-		OCP\JSON::error(array(
-			'data' => array(
-			'exception' => '\OCP\Files\StorageNotAvailableException',
-			'message' => $l->t('Storage not available')
-			)
-		));
-	} catch (\OCP\Files\StorageInvalidException $e) {
-		\OCP\Util::logException('files', $e);
-		OCP\JSON::error(array(
-			'data' => array(
-			'exception' => '\OCP\Files\StorageInvalidException',
-			'message' => $l->t('Storage invalid')
-			)
-		));
 	} catch (\Exception $e) {
-		\OCP\Util::logException('files', $e);
+		\OCP\Util::logException('Pods', $e);
 		OCP\JSON::error(array(
 			'data' => array(
 			'exception' => '\Exception',
@@ -97,16 +81,18 @@ class OC_Kubernetes_Util {
 
   public static function checkImage($yaml_file)
   {     
-	$test = '/tank/data/owncloud/kerverous/files/pod_manifests/'.$yaml_file;
+	$github_uri = 'https://raw.githubusercontent.com/deic-dk/pod_manifests/main/'.$yaml_file;
+
+	$yaml_content = self::getGithubContent($github_uri);
 
 	$has_ssh = false;
 	$has_mount = false;
 
-	if( strpos(file_get_contents($test),"SSH_PUBLIC_KEY") !== false) {
+	if( strpos($yaml_content, "SSH_PUBLIC_KEY") !== false) {
 		$has_ssh = true;	
 	}
 
-	if( strpos(file_get_contents($test), "mountPath") != false) {
+	if( strpos($yaml_content, "mountPath") != false) {
 		$has_mount = true;
 	}
 	return array($has_ssh, $has_mount);

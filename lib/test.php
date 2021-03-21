@@ -2,18 +2,30 @@
 
 //echo rawurlencode('ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC+UTjmuw2Ds5/2oLCynEigyQZ3E5ExzO8f0Btg5NWJiiGPSWcR5sJrUOOpMevm+X7c1hY+CaAiH2Cx/Ept1n/e+YVQcR6aRcqwYGX1BtLUu/RwIGo0F8JOSjzMTYAeqJKimu0wI0NM8kXVQPZAcsNGvZTrep/iSlgZR3ivS6ySJ2Y3G2frtRmzXRjHrVghTlkSvY6Euqd3kclfXEuY//bW0P2XWTiAmcT0PjhGGYLbYwfFY7w/7TT7tVX7Q5WNyo7XRiH6nYSw2k9WM2WruI8bgeREJ9IFLVKCoj7p6w3oYNZ4v7gMPZCpCIT5cl4fLt9CvrTfKjVlzimKeqVgqkqEWS/jpF1oheAcTbPP5lLqPryq+4UHtPlOzyZY52YQtftCocl+mvAJ6k9nLW2S6pXYPDkGAiJsJki4QJ8O8PUzLNsc9gb+3tN58wXzAbQbcXOuDMbwEiKqRwEj1BEyTZ09x2Df0Knp2LHlB89mmBwoXfTlVIgTo46+gp2RcRkGe9M= ioannapsylla@dhcp-10-201-255-86.clients.net.dtu.dk')
 
-$test = '/tank/data/owncloud/kerverous/files/pod_manifests/jupyter_sciencedata.yaml';
+function getGithubContent($uri)
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $uri);
+        curl_setopt($ch,CURLOPT_USERAGENT,'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $data = curl_exec($ch);
+        curl_close($ch);
+        return $data;
+    }
 
-	$has_ssh = false;
-	$has_mount = false;
-
-	if( strpos(file_get_contents($test),"SSH_PUBLIC_KEY") !== false) {
-		$has_ssh = true;	
-	}
-	
-	if( strpos(file_get_contents($test), "mountPath") != false) {
-		$has_mount = true;
-	}
-	print_r($has_mount);
+$default_pods_uri =  'https://raw.githubusercontent.com/deic-dk/pod_manifests/main/jupyter_sciencedata.yaml';
+                $git_contents = getGithubContent($default_pods_uri);
+                $type = '.yaml';
+print($git_contents);
+                $filenames = array();
+                foreach ($git_contents as $file) {
+                        $len = strlen($type);
+                        $is_yaml = (substr($file['name'], -$len) === $type);
+                        if ($is_yaml == true) {
+                                array_push($filenames, $file['name']);
+                        }
+                }
+print_r($filenames);
 ?>
 
