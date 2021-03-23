@@ -29,6 +29,11 @@
   </div>
  </div> 
 </div>
+<div class="myHead">
+  <h3 style="
+      padding-bottom: 32px;"
+>Your running pods:</h3>
+</div>
 <table id="podstable" class="panel">
 <thead class="panel-heading" >
 <tr>
@@ -72,7 +77,7 @@
 </thead>
 <tbody id='fileList'>
 	<?php
-                
+
                 $containers = OC_Kubernetes::getUserPods(OC_User::getUser ()) ;	
 		foreach ($containers as $container) {
 			$podname = $container["pod_name"];
@@ -84,7 +89,7 @@
 			$Jupy = $container["Uri_Jupy"];
 			$Uri_Jupy = 'https://kube.sciencedata.dk:'. $httpsport . '/' . $Jupy;
 			 if (strpos($Jupy, 'token') == true){
-				 $Uri_Jupy = 'https://kube.sciencedata.dk:' . $httpsport . '/' . $Jupy;
+				 $Uri_Jupy = 'https://kube.sciencedata.dk:' . $httpsport . '/'.$Jupy;
 				 $word = "Jupyter Notebook";
 			 } else {
 				 $Uri_Jupy = 'https://kube.sciencedata.dk:' . $httpsport;
