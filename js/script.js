@@ -39,16 +39,17 @@ $(document).ready(function() {
 
 
 	$("#podstable .nametext").live('click', function(){
-              var pod = $(this).closest('tr').attr('id');
-	      var https_port =$("td[class='"+https_port+"']").find("span#https_port").html();
-	      var uri =  
-	      var jupi = 'https://kube.sciencedata.dk' + https_port;
-	      var html = '<div><span><h3 class="oc-dialog-title" style="padding-left:25px;">Logs of <span>'+ pod+'</span></h3></span><a class="oc-dialog-close close svg"></a>\
+              var pod = $(this).closest('td').attr('id');
+	      var httpsport = $("td[class='"+httpsport+"']").find("span#httpsport").html();
+	      var Uri_Jupy = $(this).closest('tr').find('span#Uri_Jupy').html(); 
+	      var Uri_Jupy_all = 'https://kube.sciencedata.dk:' + httpsport + '/' + Uri_Jupy;
+	      var html = '<div><span><h3 class="oc-dialog-title" style="padding-left:25px;">More info for <span>'+ pod+'</span></h3></span><a class="oc-dialog-close close svg"></a>\
 			  <div id="meta_data_container" class=\'' + pod +'\'>\
-		          <div style="position:absolute; bottom:30px; left:40px;">\
-		          <div id="uri">Direct Link:<
-                          <div><p>Download the logs of the container</p></div>\
-		          <div style="position:absolute; bottom:50px; left:60px;">\
+		          <div style="position:absolute; top:80px; left:40px;">\
+		          <div id="Uri_Jupy">Direct Link:</div><p></p>\
+		          <div><a href=\''+Uri_Jupy_all+'\'target="_blank">'+ Uri_Jupy_all +'</a></div></div>\
+                          <div style="position:absolute; bottom:100px; left:60px;">\
+			  <div>Download the logs of the container:</div><p></p>\
 			  <button id="download_logs" class="download btn btn-primary btn-flat">Download</button>&nbsp\
                           </div>\
 			</div>';
