@@ -42,6 +42,7 @@
 	</div>
 	<div class="loader"></div>
 </div>
+<h2 style="padding-left:1%">Running pods</h2>
 <table id="podstable" class="panel">
 <thead class="panel-heading" >
 <tr>
@@ -87,6 +88,8 @@
 			$sshport = array("ssh_port", $container["ssh_port"]);
 			$httpsport = array("https_port", $container["https_port"]);	
 			$token = $container["uri"];
+			$image = $container["image"];
+
 			if (strpos($token, 'token') == true) {
 				$uri = 'https://kube.sciencedata.dk:'.$httpsport[1].'/'.$token;
 				$uri_text = 'Jupyter Notebook';
@@ -113,6 +116,10 @@
 				<div class='uri'><a class='uri' href=$uri target='_blank'>
 				<span id='uri'>".$uri_text."</span></a>
 				</div>
+			      </td>
+			      <td id='image' class=\"$image\" style='display:none;'>
+				<div class='image'><a class='image' href=$image target='_blank'>
+				<span id='image'>".$image."</span></a>
 			      </td>
 			      <td><a href='#' original-title='Delete pod' id='delete-pod' class='action icon icon-trash-empty' style='text-decoration:none;color:#c5c5c5;font-size:16px;background-image:none'></a>
 				</td>

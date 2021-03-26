@@ -15,11 +15,12 @@ class OC_Kubernetes_Util {
 	$rows = explode("\n", $response);
 	array_pop($rows);
 	foreach ($rows as $row) {
-		$container = array("pod_name"=>"","container_name"=>"","status"=>"", "ssh_port"=>"", "https_port"=> "", "uri"=>"");
+		$container = array("pod_name"=>"","container_name"=>"", "image"=>"", "status"=>"", "ssh_port"=>"", "https_port"=> "", "uri"=>"");
 		$cells = explode("|", $row);
 
 		$container["pod_name"] = $cells[0] ?? "";
 		$container["container_name"] = $cells[1] ?? "";
+		$container["image"] = $cells[2] ?? "";
 		$container["status"] = $cells[7] ?? "";
 		$container["ssh_port"] = $cells[8] ?? "";
 		$container["https_port"] = $cells[9] ?? "";
