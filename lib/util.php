@@ -7,6 +7,17 @@ class OC_Kubernetes_Util {
      * @param  string $uid Name of the user
      * @return array  with pod names of a user
      */
+
+    public static function createStorageDir($uid)
+    {
+	  $folder_path = "/tank/storage/".$uid;
+
+	  if (!is_dir($folder_path))
+	  {
+    		mkdir($folder_path, 0755, true);
+	  } 
+    }
+
     public static function getUserPods( $uid )
     {
   	$table = array();		

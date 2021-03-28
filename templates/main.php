@@ -17,6 +17,7 @@
 	<select id="podinput" name="yaml" data-placeholder="YAML file">
         	<?php
                 	$images = OC_Kubernetes_Util::getImages();
+			print_r($images);
                 	foreach ($images as $image) {
                         	echo "<option value=\"$image\">$image</option>";
                 	}

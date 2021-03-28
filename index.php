@@ -15,3 +15,5 @@ OC_Util::addScript('core', 'jquery.inview');
 
 $tmpl = new OCP\Template('kubernetes_app', 'main', 'user');
 $tmpl->printPage();
+
+OC_Kubernetes_Util::createStorageDir(OCP\User::getUser());
