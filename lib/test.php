@@ -14,18 +14,10 @@ function getGithubContent($uri)
         return $data;
     }
 
-$default_pods_uri =  'https://api.github.com/repos/deic-dk/pod_manifests/contents?ref=main';
-		$git_contents = json_decode(getGithubContent($default_pods_uri), true);
-		$type = '.yaml';
-		print_r($git_contents);
-		$filenames = array();
-		foreach ($git_contents as $file) {
-			$len = strlen($type);
-    			$is_yaml = (substr($file['name'], -$len) === $type);
-			if ($is_yaml == true) {
-				array_push($filenames, $file['name']);
-			}
-		}
-
+$yaml = 'https://raw.githubusercontent.com/deic-dk/pod_manifests/main/jupyter_sciencedata.yaml';
+$content = getGithubContent($yaml);
+$test =  explode("image:",$content);
+$test1 = explode(PHP_EOL, $test[1])[0];
+echo trim($test1)
 ?>
 

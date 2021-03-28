@@ -1,4 +1,5 @@
 $(document).ready(function() {
+	var docker_hub = 'https://hub.docker.com/r/';
 	$('a#pod-create').click(function() {
 		$('#newpod').slideToggle();
 	});
@@ -10,9 +11,15 @@ $(document).ready(function() {
 	$("#podinput").prop("selectedIndex", -1);
 
 	$("#podinput").change(function () {
-        	var selectValue = $(this).val()
-		$.post(OC.filePath('kubernetes_app', 'ajax', 'actions.php') ,{ yaml_file : selectValue } ,  function (jsondata){
+        	var select_value = $(this).val()
+		$.post(OC.filePath('kubernetes_app', 'ajax', 'actions.php') ,{ yaml_file : select_value } ,  function (jsondata){
                             if(jsondata.status == 'success'){
+				var github_uri = 'https://raw.githubusercontent.com/deic-dk/pod_manifests/main/' + select_value;
+				var dockerhub_uri = docker_hub + jsondata.data.included[2];
+				var image_info = '<span style="padding-left:1%"><a href=\''+github_uri+'\'target="_blank">GitHub page</a></span>\
+				    			<span style="padding-left:1%"><a href=\''+dockerhub_uri+'\'target="_blank">DockerHub page</a></span>';
+				$('#links').empty();
+				$('#links').append(image_info);
 				if (jsondata.data.included[0]==true) {
 					$('div#ssh').css('visibility', 'visible');
 				}
@@ -108,7 +115,7 @@ $(document).ready(function() {
 		var complete_uri = 'https://kube.sciencedata.dk:' + https_port + '/' + uri;
 
 		var image = $(this).closest('tr').find('span#image').html();
-		var image_uri = 'https://hub.docker.com/r/' + image;
+		var image_uri = docker_hub + image;
 		var html = '<div><span><h3 class="oc-dialog-title" style="padding-left:25px;"><span>'+ pod+'</span></h3></span><a class="oc-dialog-close close svg"></a>\
 			<div id="meta_data_container" class=\''+ pod +'\'>\
 			<div style="position:absolute; left:40px; top:80px;">Original image on Docker Hub:\

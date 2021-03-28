@@ -1,7 +1,8 @@
 <?php
 
 class OC_Kubernetes_Util {
-    private static $URI = 'http://10.0.0.12/';
+    private static $CADDY_URI = 'http://10.0.0.12/';
+    private static $GITHUB_URI = 'https://raw.githubusercontent.com/deic-dk/pod_manifests/main/';
      /**
      * @brief Get all user's pods
      * @param  string $uid Name of the user
@@ -21,7 +22,7 @@ class OC_Kubernetes_Util {
     public static function getUserPods( $uid )
     {
   	$table = array();		
-	$complete_uri = OC_Kubernetes_Util::$URI."get_containers.php?user_id=".$uid;
+	$complete_uri = OC_Kubernetes_Util::$CADDY_URI."get_containers.php?user_id=".$uid;
 	$response = file_get_contents($complete_uri);
 	$rows = explode("\n", $response);
 	array_pop($rows);
@@ -93,13 +94,15 @@ class OC_Kubernetes_Util {
 
   public static function checkImage($yaml_file)
   {     
-	$github_uri = 'https://raw.githubusercontent.com/deic-dk/pod_manifests/main/'.$yaml_file;
+	$github_uri = self::$GITHUB_URI.$yaml_file;
 
 	$yaml_content = self::getGithubContent($github_uri);
 
 	$has_ssh = false;
 	$has_mount = false;
 
+	$temp = explode("image:",$yaml_content);
+	$image_name = trim(explode(PHP_EOL, $temp[1])[0]);
 	if( strpos($yaml_content, "SSH_PUBLIC_KEY") !== false) {
 		$has_ssh = true;	
 	}
@@ -107,12 +110,12 @@ class OC_Kubernetes_Util {
 	if( strpos($yaml_content, "mountPath") != false) {
 		$has_mount = true;
 	}
-	return array($has_ssh, $has_mount);
+	return array($has_ssh, $has_mount, $image_name);
   }
 
   public static function createPod($yaml_file, $ssh_key, $storage_path, $uid)
   {
-	$complete_uri = self::$URI."run_pod.php?user_id=".$uid."&yaml_uri=/files/pod_manifests/".$yaml_file;
+	$complete_uri = self::$CADDY_URI."run_pod.php?user_id=".$uid."&yaml_uri=/files/pod_manifests/".$yaml_file;
 	if (is_null($ssh_key) != false) {
 		$encoded_key = rawurlencode($ssh_key);
 		if (is_null($storage_path) != false) {
@@ -144,7 +147,7 @@ class OC_Kubernetes_Util {
 
   public static function deletePod($pod_name, $uid) 
   {
-	  $complete_uri = OC_Kubernetes_Util::$URI."delete_pod.php?user_id=".$uid."&pod=".$pod_name;
+	  $complete_uri = OC_Kubernetes_Util::$CADDY_URI."delete_pod.php?user_id=".$uid."&pod=".$pod_name;
 	  $response = file_get_contents($complete_uri);
 	  return $response;
   }
@@ -158,7 +161,7 @@ class OC_Kubernetes_Util {
     		mkdir($file_path, 0750, true);
 	  }	
 	  
-	  $complete_uri = OC_Kubernetes_Util::$URI."get_pod_logs.php?user_id=".$uid."&pod=".$pod_name;
+	  $complete_uri = OC_Kubernetes_Util::$CADDY_URI."get_pod_logs.php?user_id=".$uid."&pod=".$pod_name;
 	  $response = file_get_contents($complete_uri);
 
 	  $file = $file_path.$pod_name.".log";

@@ -17,12 +17,13 @@
 	<select id="podinput" name="yaml" data-placeholder="YAML file">
         	<?php
                 	$images = OC_Kubernetes_Util::getImages();
-			print_r($images);
                 	foreach ($images as $image) {
                         	echo "<option value=\"$image\">$image</option>";
                 	}
         	?>
   	</select>	  
+	</span>
+	<span id="links"></span>
 	<div id="ssh" style="visibility:hidden;"><input class="sshpod" id="sshpod" type="text" placeholder="Paste your public SSH key here..."></div>
 	<div id="storage" style="visibility:hidden;"><input class="storagepath" id="storagepath" type="text" placeholder="Folder under /storage to mount in the pod/container..."></div>
 	    <span class="newpod-span">	
@@ -33,7 +34,7 @@
 		    <a class="btn btn-default btn-flat" href="#">Cancel</a>
           	  </div>
 	    </span>
-      </span>
+      
   </div>
  </div> 
 </div>
