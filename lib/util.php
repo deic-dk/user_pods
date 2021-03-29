@@ -3,6 +3,7 @@
 class OC_Kubernetes_Util {
     private static $CADDY_URI = 'http://10.0.0.12/';
     private static $GITHUB_URI = 'https://raw.githubusercontent.com/deic-dk/pod_manifests/main/';
+    private static $DOCKERHUB_URI = 'https://hub.docker.com/v2/repositories/';
      /**
      * @brief Get all user's pods
      * @param  string $uid Name of the user
@@ -51,7 +52,7 @@ class OC_Kubernetes_Util {
               </td>";
     }
 
-    private static function getGithubContent($uri) 
+    private static function getContent($uri) 
     {
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_URL, $uri);
@@ -67,7 +68,7 @@ class OC_Kubernetes_Util {
     {
 	$default_pods_uri =  'https://api.github.com/repos/deic-dk/pod_manifests/contents?ref=main';
 	try {
-		$git_contents = json_decode(self::getGithubContent($default_pods_uri), true);
+		$git_contents = json_decode(self::getContent($default_pods_uri), true);
 		$type = '.yaml';
 
 		$filenames = array();
@@ -92,17 +93,29 @@ class OC_Kubernetes_Util {
 
   }
 
+  public static function getDockerhubDescription($image_name)
+  {
+	  $dockerhub_uri = self::$DOCKERHUB_URI.$image_name.'/';
+	  $dict = json_decode(self::getContent($dockerhub_uri));
+
+	  $description = $dict->{'full_description'};
+	  return $description;
+  }
+
   public static function checkImage($yaml_file)
   {     
 	$github_uri = self::$GITHUB_URI.$yaml_file;
 
-	$yaml_content = self::getGithubContent($github_uri);
+	$yaml_content = self::getContent($github_uri);
 
 	$has_ssh = false;
 	$has_mount = false;
 
 	$temp = explode("image:",$yaml_content);
 	$image_name = trim(explode(PHP_EOL, $temp[1])[0]);
+
+	$image_description = self::getDockerhubDescription($image_name);
+
 	if( strpos($yaml_content, "SSH_PUBLIC_KEY") !== false) {
 		$has_ssh = true;	
 	}
@@ -110,7 +123,7 @@ class OC_Kubernetes_Util {
 	if( strpos($yaml_content, "mountPath") != false) {
 		$has_mount = true;
 	}
-	return array($has_ssh, $has_mount, $image_name);
+	return array($has_ssh, $has_mount, $image_name, $image_description);
   }
 
   public static function createPod($yaml_file, $ssh_key, $storage_path, $uid)

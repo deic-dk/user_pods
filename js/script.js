@@ -16,10 +16,15 @@ $(document).ready(function() {
                             if(jsondata.status == 'success'){
 				var github_uri = 'https://raw.githubusercontent.com/deic-dk/pod_manifests/main/' + select_value;
 				var dockerhub_uri = docker_hub + jsondata.data.included[2];
+				var dockerhub_description = jsondata.data.included[3];
 				var image_info = '<span style="padding-left:1%"><a href=\''+github_uri+'\'target="_blank">GitHub page</a></span>\
 				    			<span style="padding-left:1%"><a href=\''+dockerhub_uri+'\'target="_blank">DockerHub page</a></span>';
 				$('#links').empty();
 				$('#links').append(image_info);
+
+				$('#description').empty();
+				$('#description').append(dockerhub_description);
+
 				if (jsondata.data.included[0]==true) {
 					$('div#ssh').css('visibility', 'visible');
 				}

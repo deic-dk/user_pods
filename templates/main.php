@@ -24,6 +24,7 @@
   	</select>	  
 	</span>
 	<span id="links"></span>
+	<div id="description"></div>
 	<div id="ssh" style="visibility:hidden;"><input class="sshpod" id="sshpod" type="text" placeholder="Paste your public SSH key here..."></div>
 	<div id="storage" style="visibility:hidden;"><input class="storagepath" id="storagepath" type="text" placeholder="Folder under /storage to mount in the pod/container..."></div>
 	    <span class="newpod-span">	

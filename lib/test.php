@@ -14,10 +14,25 @@ function getGithubContent($uri)
         return $data;
     }
 
-$yaml = 'https://raw.githubusercontent.com/deic-dk/pod_manifests/main/jupyter_sciencedata.yaml';
-$content = getGithubContent($yaml);
-$test =  explode("image:",$content);
-$test1 = explode(PHP_EOL, $test[1])[0];
-echo trim($test1)
+header('Content-Type:application/json');
+$url = "https://hub.docker.com/v2/repositories/sciencedata/jupyter_sciencedata/";
+
+
+$res = json_decode(getGithubContent($url));
+print_r($res->{'full_description'});
+$dom = new DomDocument();
+$dom->loadHTML($res);
+$finder = new DomXPath($dom);
+$classname="dMarkdown";
+$nodes = $finder->query("//*[contains(@class, '$classname')]");
+//$child_elements = $table->getElementsByTagName('tr'); //DOMNodeList
+//$row_count = $child_elements->length - 1;
+foreach( $nodes as $elem ) {
+	print_r($elem);
+    $test = $elem->textContent;
+    echo $test;
+}
+
+
 ?>
 
