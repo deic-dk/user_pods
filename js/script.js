@@ -1,5 +1,9 @@
 $(document).ready(function() {
-	var docker_hub = 'https://hub.docker.com/r/';
+	var hostname = $(location).attr('host');;
+
+	var dockerhub_uri = 'https://hub.docker.com/r/';
+	var github_uri = 'https://github.com/deic-dk/pod_manifests/blob/main/';
+
 	$('a#pod-create').click(function() {
 		$('#newpod').slideToggle();
 	});
@@ -14,11 +18,14 @@ $(document).ready(function() {
         	var select_value = $(this).val()
 		$.post(OC.filePath('kubernetes_app', 'ajax', 'actions.php') ,{ yaml_file : select_value } ,  function (jsondata){
                             if(jsondata.status == 'success'){
-				var github_uri = 'https://raw.githubusercontent.com/deic-dk/pod_manifests/main/' + select_value;
-				var dockerhub_uri = docker_hub + jsondata.data.included[2];
+				var image_github_uri = github_uri + select_value;
+				var image_dockerhub_uri = dockerhub_uri + jsondata.data.included[2];
 				var dockerhub_description = jsondata.data.included[3];
-				var image_info = '<span style="padding-left:1%"><a href=\''+github_uri+'\'target="_blank">GitHub page</a></span>\
-				    			<span style="padding-left:1%"><a href=\''+dockerhub_uri+'\'target="_blank">DockerHub page</a></span>';
+
+				var webdav_link = 'https://' + hostname + '/storage/' + OC.currentUser;
+				var webdav_link_ref  = '<a href=\''+webdav_link+'\'target="_blank">'+webdav_link+'</a>';
+				var image_info = '<span style="padding-left:1%"><a href=\''+image_github_uri+'\'target="_blank">GitHub page</a></span>\
+				    			<span style="padding-left:1%"><a href=\''+image_dockerhub_uri+'\'target="_blank">DockerHub page</a></span>';
 				$('#links').empty();
 				$('#links').append(image_info);
 
@@ -33,6 +40,9 @@ $(document).ready(function() {
 				}
 				if (jsondata.data.included[1]==true) {
 					$('div#storage').css('visibility', 'visible');
+					$('#webdav').empty();
+					$('#webdav').append(webdav_link_ref);
+
 				}
 				else {
 					$('div#storage').css('visibility', 'hidden');
@@ -120,7 +130,7 @@ $(document).ready(function() {
 		var complete_uri = 'https://kube.sciencedata.dk:' + https_port + '/' + uri;
 
 		var image = $(this).closest('tr').find('span#image').html();
-		var image_uri = docker_hub + image;
+		var image_uri = dockerhub_uri + image;
 		var html = '<div><span><h3 class="oc-dialog-title" style="padding-left:25px;"><span>'+ pod+'</span></h3></span><a class="oc-dialog-close close svg"></a>\
 			<div id="meta_data_container" class=\''+ pod +'\'>\
 			<div style="position:absolute; left:40px; top:80px;">Original image on Docker Hub:\

@@ -26,7 +26,7 @@ li
 	width:100%;
 	border:solid 1px #e4e4e4;
 	margin-bottom:20px;
-	height:13em; 
+/*	height:15em; */
 	display:none
 }
 
@@ -52,6 +52,12 @@ li
 
 #storage {
 	padding-left: 1.5%;
+}
+
+#description {
+	padding-left: 1.5%;
+	padding-right: 30%;
+	padding-top: 1%;
 }
 #podinput {
 	line-height: 1.5;

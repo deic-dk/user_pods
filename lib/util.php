@@ -66,19 +66,29 @@ class OC_Kubernetes_Util {
 
     public static function getImages()
     {
-	$default_pods_uri =  'https://api.github.com/repos/deic-dk/pod_manifests/contents?ref=main';
+	$default_pods_uri =  'https://github.com/deic-dk/pod_manifests';
 	try {
-		$git_contents = json_decode(self::getContent($default_pods_uri), true);
+		$res = self::getContent($default_pods_uri);
 		$type = '.yaml';
-
 		$filenames = array();
-		foreach ($git_contents as $file) {
+
+		$dom = new DomDocument();
+		$dom->loadHTML($res, LIBXML_NOERROR);
+
+		$finder = new DomXPath($dom);
+		$classname="js-navigation-open Link--primary";
+		$nodes = $finder->query("//*[contains(@class, '$classname')]");
+
+		foreach( $nodes as $elem ) {
+    			$filename = $elem->textContent;
 			$len = strlen($type);
-    			$is_yaml = (substr($file['name'], -$len) === $type);
+
+			$is_yaml = (substr($filename, -$len) === $type);
 			if ($is_yaml == true) {
-				array_push($filenames, $file['name']);
+				array_push($filenames, $filename);
 			}
 		}
+
 		return $filenames;
 
 	} catch (\Exception $e) {

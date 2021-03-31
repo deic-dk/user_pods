@@ -15,24 +15,25 @@ function getGithubContent($uri)
     }
 
 header('Content-Type:application/json');
-$url = "https://hub.docker.com/v2/repositories/sciencedata/jupyter_sciencedata/";
+$url = "https://github.com/deic-dk/pod_manifests";
 
 
-$res = json_decode(getGithubContent($url));
-print_r($res->{'full_description'});
+$res = getGithubContent($url);
+//print_r($res->{'full_description'});
 $dom = new DomDocument();
-$dom->loadHTML($res);
+$dom->loadHTML($res, LIBXML_NOERROR);
+
 $finder = new DomXPath($dom);
-$classname="dMarkdown";
+$classname="js-navigation-open Link--primary";
 $nodes = $finder->query("//*[contains(@class, '$classname')]");
 //$child_elements = $table->getElementsByTagName('tr'); //DOMNodeList
 //$row_count = $child_elements->length - 1;
 foreach( $nodes as $elem ) {
-	print_r($elem);
     $test = $elem->textContent;
-    echo $test;
+//    echo $test;
 }
 
+echo gethostname();
 
 ?>
 
