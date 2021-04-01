@@ -13,7 +13,7 @@
       </div>
   </div>
   <div id="newpod" class="apanel">
-     <span class="spanpanel" > Select a YAML file:
+     <span class="spanpanel" > Choose service to run:
 	<select id="podinput" name="yaml" data-placeholder="YAML file">
         	<?php
                 	$images = OC_Kubernetes_Util::getImages();
@@ -22,8 +22,13 @@
                 	}
         	?>
   	</select>	  
-	<div id="ssh"><input class="sshpod" id="sshpod" type="text" placeholder="Paste your public SSH key here..."></div>
-	<div id="storage"><input class="storagepath" id="storagepath" type="text" placeholder="Name of local folder to mount..."></div>
+	</span>
+	<span id="links"></span>
+	<div id="description"></div>
+	<div id="ssh" style="visibility:hidden;"><input class="sshpod" id="sshpod" type="text" placeholder="Paste your public SSH key here..."></div>
+	<div id="storage" style="visibility:hidden;"><input class="storagepath" id="storagepath" type="text" placeholder="Folder under /storage to mount in the pod/container...">
+	<span id="webdav"></span>
+	</div>
 	    <span class="newpod-span">	
 		  <div id="ok" class="btn-pod" original-title="">
 		    <a class="btn btn-default btn-flat" href="#">Add</a>
@@ -32,7 +37,7 @@
 		    <a class="btn btn-default btn-flat" href="#">Cancel</a>
           	  </div>
 	    </span>
-      </span>
+      
   </div>
  </div> 
 </div>
@@ -42,6 +47,7 @@
 	</div>
 	<div class="loader"></div>
 </div>
+<h2 style="padding-left:1%">Running pods</h2>
 <table id="podstable" class="panel">
 <thead class="panel-heading" >
 <tr>
@@ -87,6 +93,8 @@
 			$sshport = array("ssh_port", $container["ssh_port"]);
 			$httpsport = array("https_port", $container["https_port"]);	
 			$token = $container["uri"];
+			$image = $container["image"];
+
 			if (strpos($token, 'token') == true) {
 				$uri = 'https://kube.sciencedata.dk:'.$httpsport[1].'/'.$token;
 				$uri_text = 'Jupyter Notebook';
@@ -113,6 +121,10 @@
 				<div class='uri'><a class='uri' href=$uri target='_blank'>
 				<span id='uri'>".$uri_text."</span></a>
 				</div>
+			      </td>
+			      <td id='image' class=\"$image\" style='display:none;'>
+				<div class='image'><a class='image' href=$image target='_blank'>
+				<span id='image'>".$image."</span></a>
 			      </td>
 			      <td><a href='#' original-title='Delete pod' id='delete-pod' class='action icon icon-trash-empty' style='text-decoration:none;color:#c5c5c5;font-size:16px;background-image:none'></a>
 				</td>

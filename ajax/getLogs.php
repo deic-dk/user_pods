@@ -1,7 +1,7 @@
 <?php
 
 OCP\User::checkLoggedIn();
-OCP\App::checkAppEnabled('kubernetes_app');
+OCP\App::checkAppEnabled('user_pods');
 
 $user = OC_User::getUser();
 $file = isset($_GET['file']) ? $_GET['file'] : null;

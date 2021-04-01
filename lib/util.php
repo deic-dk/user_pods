@@ -1,47 +1,45 @@
 <?php
 
 class OC_Kubernetes_Util {
-    private static $URI = 'http://10.0.0.12/';
-     /**
-     * @brief Get all user's pods
-     * @param  string $uid Name of the user
-     * @return array  with pod names of a user
-     */
-    public static function getUserPods( $uid )
-    {
-  	$table = array();		
-	$complete_uri = OC_Kubernetes_Util::$URI."get_containers.php?user_id=".$uid;
-	$response = file_get_contents($complete_uri);
-	$rows = explode("\n", $response);
-	array_pop($rows);
+	private static $KUBE_URL = 'http://10.0.0.12/';
+
+	public static function getUserPods($uid){
+	$table = array();
+	// First get fields
+	// pod_name|container_name|image_name|pod_ip|node_ip|owner|age(s)|status|ssh_port|https_port|uri
+	$url = OC_Kubernetes_Util::$KUBE_URL."get_containers.php?fields=true&user_id=".$uid;
+	$response = file_get_contents($url);
+	$fields = explode("|", $response);
+	// Now the values
+	$url = OC_Kubernetes_Util::$KUBE_URL."get_containers.php?user_id=".$uid;
+	$response = file_get_contents($url);
+	$rows = explode("\n", $response);	
 	foreach ($rows as $row) {
-		$container = array("pod_name"=>"","container_name"=>"","status"=>"", "ssh_port"=>"", "https_port"=> "", "uri"=>"");
-		$cells = explode("|", $row);
-
-		$container["pod_name"] = $cells[0] ?? "";
-		$container["container_name"] = $cells[1] ?? "";
-		$container["status"] = $cells[7] ?? "";
-		$container["ssh_port"] = $cells[8] ?? "";
-		$container["https_port"] = $cells[9] ?? "";
-		$container["uri"] = $cells[10] ?? "";
+		if(empty($row)){
+			continue;
+		}
+		$values = explode("|", $row);
+		$container = [];
+		$i = 0;
+		foreach($values as $value){
+			$container[$fields[$i++]] = $value??"";
+		}
 		array_push($table, $container);
-	}	
-        return $table;
-    }
+	}
+		return $table;
+	}
 
-    public static function addRow($index, $value)
-    {
-	echo "<td id=\"$index\"  class=\"$value\">
-                 <div class=\"$index\">
-                      <span id=\"$index\">$value</span>
-                 </div>
-              </td>";
-    }
+	public static function addRow($index, $value){
+	echo "<td id=\"".$index."\" class=\"$value\">
+				 <div class='col-xs-8 filelink-wrap'>
+						<span>".$value."</span>
+				 </div>
+				</td>";
+	}
 
 
-    public static function getImages()
-    {
-	$dir =  'pod_manifests';
+	public static function getImages(){
+	$dir =	'pod_manifests';
 	$dir = \OC\Files\Filesystem::normalizePath($dir);
 
 	try {
@@ -49,7 +47,7 @@ class OC_Kubernetes_Util {
 		if (!$dirInfo || !$dirInfo->getType() === 'dir') {
 			header("HTTP/1.0 404 Not Found");
 			exit();
-		}	
+		}
 
 		$permissions = $dirInfo->getPermissions();
 
@@ -93,39 +91,36 @@ class OC_Kubernetes_Util {
 		));
 	}
 
-  }
+	}
 
 
-  public static function createPod($yaml_file, $ssh_key, $storage_path, $uid)
-  {
+	public static function createPod($yaml_file, $ssh_key, $storage_path, $uid){
 	$encoded_key = rawurlencode ($ssh_key);
-	$complete_uri = OC_Kubernetes_Util::$URI."run_pod.php?user_id=".$uid."&storage_path=".$storage_path."&public_key=".$encoded_key."&yaml_uri=/files/pod_manifests/".$yaml_file;
+	$complete_uri = OC_Kubernetes_Util::$KUBE_URL."run_pod.php?user_id=".$uid."&storage_path=".$storage_path."&public_key=".$encoded_key."&yaml_uri=/files/pod_manifests/".$yaml_file;
 	$response = file_get_contents($complete_uri);
 	// TODO Add exceptions and handling
 	return $response;
-  } 
+	} 
 
-  public static function deletePod($pod_name, $uid) 
-  {
-	  $complete_uri = OC_Kubernetes_Util::$URI."delete_pod.php?user_id=".$uid."&pod=".$pod_name;
-	  $response = file_get_contents($complete_uri);
-	  return $response;
-  }
+	public static function deletePod($pod_name, $uid) {
+		$complete_uri = OC_Kubernetes_Util::$KUBE_URL."delete_pod.php?user_id=".$uid."&pod=".$pod_name;
+		$response = file_get_contents($complete_uri);
+		return $response;
+	}
 
-  public static function getLogs($pod_name, $uid)
-  {
-	  $file_path = "/tmp/";
-	  $complete_uri = OC_Kubernetes_Util::$URI."get_pod_logs.php?user_id=".$uid."&pod=".$pod_name;
-	  $response = file_get_contents($complete_uri);
+	public static function getLogs($pod_name, $uid){
+		$file_path = "/tmp/";
+		$complete_uri = OC_Kubernetes_Util::$KUBE_URL."get_pod_logs.php?user_id=".$uid."&pod=".$pod_name;
+		$response = file_get_contents($complete_uri);
 
-	  $file = $file_path.$pod_name."log";
-	  $logfile = fopen($file, "w") or die("Unable to open file!");
-	  fwrite($logfile, $response);
-	  fclose($logfile);
+		$file = $file_path.$pod_name."log";
+		$logfile = fopen($file, "w") or die("Unable to open file!");
+		fwrite($logfile, $response);
+		fclose($logfile);
 
-	  $type = filetype($file);
-	  header("Content-type: $type");
-  	  header("Content-Disposition: attachment;filename=$pod_name.log");
-       	  readfile($file);
-  }
+		$type = filetype($file);
+		header("Content-type: $type");
+			header("Content-Disposition: attachment;filename=$pod_name.log");
+		 		readfile($file);
+	}
 }

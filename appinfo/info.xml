@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
    <info>
-	<id>kubernetes_app</id>
+	<id>user_pods</id>
 	<name>Kubernetes Management</name>
 	<description>Enable users to create and manage their pods</description>
 	<version>0.1</version>
