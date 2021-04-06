@@ -1,96 +1,105 @@
 table th .columntitle {
-		display: inline-block !important;
+    display: inline-block !important;
 }
 
-li
-{
-  list-style-type: none;
+li {
+    list-style-type: none;
 }
 
 .normaltext {
-	font-size:80%
-} 
+    font-size: 80%
+}
 
 .spanpanel {
-	margin-left: 1.5%;
+    margin-left: 1.5%;
 }
+
 .podname {
-	font-weight:bold;
+    font-weight: bold;
 }
 
 #pod-create {
-	z-index: 1;
+    z-index: 1;
 }
 
 .apanel {
-	width:100%;
-	border:solid 1px #e4e4e4;
-	margin-bottom:20px;
-/*	height:15em; */
-	display:none
+    width: 100%;
+    border: solid 1px #e4e4e4;
+    margin-bottom: 20px;
+    /*	height:15em; */
+    display: none
 }
 
 #ssh {
-	padding-left: 1.5%;
-	padding-top: 1%;
+    padding-left: 1.5%;
+    padding-top: 1%;
 }
 
 .newpod-span {
-	float: right;
-	margin-right: 10px;
-	margin-top: -35px;
+    float: right;
+    margin-right: 10px;
+    margin-top: -35px;
 }
 
 .sshpod {
-	width: 60% !important;
-	line-height: 50px;
+    width: 60% !important;
+    line-height: 50px;
 }
 
 .storagepath {
-	width: 35% !important;
+    width: 35% !important;
 }
 
 #storage {
-	padding-left: 1.5%;
+    padding-left: 1.5%;
 }
 
 #description {
-	padding-left: 1.5%;
-	padding-right: 30%;
-	padding-top: 1%;
+    padding-left: 1.5%;
+    padding-right: 30%;
+    padding-top: 1%;
 }
+
 #podinput {
-	line-height: 1.5;
-	padding: 2px 0px 4px 5px;
-	margin-top:10px;
-	margin-left:15px;
-	position: relative;
-	width: 255px;
+    line-height: 1.5;
+    padding: 2px 0px 4px 5px;
+    margin-top: 10px;
+    margin-left: 15px;
+    position: relative;
+    width: 255px;
 }
 
 .newpodform {
-	margin-left:20px; 
-	margin-bottom:20px; 
-	position:absolute
+    margin-left: 20px;
+    margin-bottom: 20px;
+    position: absolute
 }
 
 .loader {
-  border: 16px solid #f3f3f3; /* Light grey */
-  border-top: 16px solid #056a92; /* Blue */
-  border-radius: 50%;
-  width: 120px;
-  height: 120px;
-  margin: auto;
-  margin-top: 6%;
-  animation: spin 2s linear infinite;
+    border: 16px solid #f3f3f3;
+    /* Light grey */
+    border-top: 16px solid #056a92;
+    /* Blue */
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    margin: auto;
+    margin-top: 6%;
+    animation: spin 2s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
-.btn-pod, .btn-pod-vertical {
+.btn-pod,
+.btn-pod-vertical {
     position: relative;
     display: inline-block;
     vertical-align: middle;
@@ -99,4 +108,3 @@ li
 #dialogalert {
     font-size: 12px;
 }
-
