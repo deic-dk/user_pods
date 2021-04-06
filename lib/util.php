@@ -139,15 +139,15 @@ class OC_Kubernetes_Util {
   public static function createPod($yaml_file, $ssh_key, $storage_path, $uid)
   {
 	$complete_uri = self::$CADDY_URI."run_pod.php?user_id=".$uid."&yaml_uri=/files/pod_manifests/".$yaml_file;
-	if (is_null($ssh_key) != false) {
+	if (is_null($ssh_key) == false) {
 		$encoded_key = rawurlencode($ssh_key);
-		if (is_null($storage_path) != false) {
+		if (is_null($storage_path) == false) {
 			$complete_uri = $complete_uri."&storage_path=".$storage_path."&public_key=".$encoded_key;
 		} else  {
 			$complete_uri = $complete_uri."&public_key=".$encoded_key;
 		}
 	} else {
-		if (is_null($storage_path) != false) {
+		if (is_null($storage_path) == false) {
 			$complete_uri = $complete_uri."&storage_path=".$storage_path;
 		}
 	}
