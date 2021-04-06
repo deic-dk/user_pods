@@ -117,17 +117,17 @@
                 OC_Kubernetes_Util::addRow($sshport[0], $sshport[1]);
                 OC_Kubernetes_Util::addRow($status[0], $status[1]);
                 echo  "<td id='uri' class=\"$uri\" style='display:none;'>
-				<div class='uri'><a class='uri' href=$uri target='_blank'>
-				<span id='uri'>" . $uri_text . "</span></a>
-				</div>
-			      </td>
-			      <td id='image' class=\"$image\" style='display:none;'>
-				<div class='image'><a class='image' href=$image target='_blank'>
-				<span id='image'>" . $image . "</span></a>
-			      </td>
-			      <td><a href='#' original-title='Delete pod' id='delete-pod' class='action icon icon-trash-empty' style='text-decoration:none;color:#c5c5c5;font-size:16px;background-image:none'></a>
-				</td>
-			     </tr>";
+                            <div class='uri'><a class='uri' href=$uri target='_blank'>
+                                <span id='uri'>" . $uri_text . "</span></a>
+                            </div>
+                        </td>
+                        <td id='image' class=\"$image\" style='display:none;'>
+                            <div class='image'><a class='image' href=$image target='_blank'>
+                                <span id='image'>" . $image . "</span></a>
+                        </td>
+                        <td><a href='#' original-title='Delete pod' id='delete-pod' class='action icon icon-trash-empty' style='text-decoration:none;color:#c5c5c5;font-size:16px;background-image:none'></a>
+                        </td>
+                        </tr>";
             }
             ?>
         </tbody>

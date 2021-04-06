@@ -155,17 +155,17 @@ $(document).ready(function () {
         var image = $(this).closest('tr').find('span#image').html();
         var image_uri = dockerhub_uri + image;
         var html = '<div><span><h3 class="oc-dialog-title" style="padding-left:25px;"><span>' + pod + '</span></h3></span><a class="oc-dialog-close close svg"></a>\
-			<div id="meta_data_container" class=\'' + pod + '\'>\
-			<div style="position:absolute; left:40px; top:80px;">Original image on Docker Hub:\
-		    <div><a href=\'' + image_uri + '\'target="_blank">' + image_uri + '</a></div></div>\
-			<div style="position:absolute; left:40px; top:140px;">\
-			<div id="uri">Access web service:</div>\
-			<div><a href=\'' + complete_uri + '\'target="_blank">' + complete_uri + '</a></div></div>\
-          	<div style="position:absolute; bottom:40px; left:40px;" >\
-			<div>Download the logs of your container:</div><p></p>\
-			<button id="download-logs" class="download btn btn-primary btn-flat">Download</button>&nbsp\
-			</div>\
-            </div>';
+                    <div id="meta_data_container" class=\'' + pod + '\'>\
+                    <div style="position:absolute; left:40px; top:80px;">Original image on Docker Hub:\
+                    <div><a href=\'' + image_uri + '\'target="_blank">' + image_uri + '</a></div></div>\
+                    <div style="position:absolute; left:40px; top:140px;">\
+                    <div id="uri">Access web service:</div>\
+                    <div><a href=\'' + complete_uri + '\'target="_blank">' + complete_uri + '</a></div></div>\
+                    <div style="position:absolute; bottom:40px; left:40px;" >\
+                    <div>Download the logs of your container:</div><p></p>\
+                    <button id="download-logs" class="download btn btn-primary btn-flat">Download</button>&nbsp\
+                    </div>\
+                    </div>';
 
         $(html).dialog({
             dialogClass: "oc-dialog",
