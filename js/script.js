@@ -23,7 +23,8 @@ $(document).ready(function () {
                 var image_github_uri = github_uri + select_value;
                 var image_dockerhub_uri = dockerhub_uri + jsondata.data.included[2];
                 var dockerhub_description = jsondata.data.included[3];
-
+		var mount_path = jsondata.data.included[4];
+		var mount_path_text = "The folder is mounted in " + mount_path + " inside the container";
                 var webdav_link = 'https://' + hostname + '/storage/' + OC.currentUser;
                 var webdav_link_ref = '<a href=\'' + webdav_link + '\'target="_blank">' + webdav_link + '</a>';
                 var image_info = '<span style="padding-left:1%"><a href=\'' + image_github_uri + '\'target="_blank">GitHub page</a></span>\
@@ -34,6 +35,9 @@ $(document).ready(function () {
                 $('#description').empty();
                 $('#description').append(dockerhub_description);
 
+		$('#mount-path').empty();
+		$('#mount-path').append(mount_path_text);
+
                 if (jsondata.data.included[0] == true) {
                     $('div#ssh').css('visibility', 'visible');
                 } else {
@@ -42,7 +46,8 @@ $(document).ready(function () {
                 if (jsondata.data.included[1] == true) {
                     $('div#storage').css('visibility', 'visible');
                     $('#webdav').empty();
-                    $('#webdav').append(webdav_link_ref);
+			var webdav_text = 'Available at: ' + webdav_link_ref;	
+                    $('#webdav').append(webdav_text);
 
                 } else {
                     $('div#storage').css('visibility', 'hidden');

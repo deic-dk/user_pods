@@ -23,21 +23,21 @@ class OC_Kubernetes_Util
 	public static function getUserPods($uid)
 	{
 		$table = array();
-		$complete_uri = OC_Kubernetes_Util::$CADDY_URI . "get_containers.php?user_id=" . $uid;
+		$complete_uri = self::$CADDY_URI . "get_containers.php?fields=true&user_id=" . $uid;
 		$response = file_get_contents($complete_uri);
+		$fields = explode("|", $response);
+		$url = self::$CADDY_URI."get_containers.php?user_id=".$uid;
+		$response = file_get_contents($url);
 		$rows = explode("\n", $response);
-		array_pop($rows);
+		//array_pop($rows);
 		foreach ($rows as $row) {
-			$container = array("pod_name" => "", "container_name" => "", "image" => "", "status" => "", "ssh_port" => "", "https_port" => "", "uri" => "");
-			$cells = explode("|", $row);
-
-			$container["pod_name"] = $cells[0] ?? "";
-			$container["container_name"] = $cells[1] ?? "";
-			$container["image"] = $cells[2] ?? "";
-			$container["status"] = $cells[7] ?? "";
-			$container["ssh_port"] = $cells[8] ?? "";
-			$container["https_port"] = $cells[9] ?? "";
-			$container["uri"] = $cells[10] ?? "";
+			if (empty($row)) { continue; }
+			$values = explode("|", $row);
+			$container = [];
+			$i = 0;
+			foreach($values as $value) {
+				$container[$fields[$i++]] = $value??"";
+			}
 			array_push($table, $container);
 		}
 		return $table;
@@ -118,6 +118,7 @@ class OC_Kubernetes_Util
 
 		$has_ssh = false;
 		$has_mount = false;
+		$mountPath = "";
 
 		$temp = explode("image:", $yaml_content);
 		$image_name = trim(explode(PHP_EOL, $temp[1])[0]);
@@ -130,8 +131,9 @@ class OC_Kubernetes_Util
 
 		if (strpos($yaml_content, "mountPath") != false) {
 			$has_mount = true;
+			$mountPath = explode(PHP_EOL, explode("mountPath",$yaml_content)[1])[0];
 		}
-		return array($has_ssh, $has_mount, $image_name, $image_description);
+		return array($has_ssh, $has_mount, $image_name, $image_description, $mountPath);
 	}
 
 	public static function createPod($yaml_file, $ssh_key, $storage_path, $uid)

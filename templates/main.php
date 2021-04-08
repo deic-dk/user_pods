@@ -29,6 +29,7 @@
                 <div id="storage" style="visibility:hidden;"><input class="storagepath" id="storagepath" type="text" placeholder="Folder under /storage to mount in the pod/container...">
                     <span id="webdav"></span>
                 </div>
+		<div id="mount-path"></div>
                 <span class="newpod-span">
                     <div id="ok" class="btn-pod" original-title="">
                         <a class="btn btn-default btn-flat" href="#">Add</a>
@@ -92,8 +93,12 @@
                 $status = array("status", $container["status"]);
                 $sshport = array("ssh_port", $container["ssh_port"]);
                 $httpsport = array("https_port", $container["https_port"]);
-                $token = $container["uri"];
-                $image = $container["image"];
+		if (array_key_exists("uri",$container)){
+			$token = $container["uri"];
+		}else {
+			$token = "";
+		}
+                $image = $container["image_name"];
 
                 if (strpos($token, 'token') == true) {
                     $uri = 'https://kube.sciencedata.dk:' . $httpsport[1] . '/' . $token;
