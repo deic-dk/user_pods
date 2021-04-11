@@ -45,8 +45,8 @@ class OC_Kubernetes_Util
 
 	public static function addRow($index, $value)
 	{
-		echo "<td id=\"$index\"  class=\"$value\">
-                 <div class=\"$index\">
+		echo "<td class=\"$value\">
+                 <div>
                       <span id=\"$index\">$value</span>
                  </div>
               </td>";

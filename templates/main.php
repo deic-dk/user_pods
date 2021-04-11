@@ -1,8 +1,8 @@
-<div id="app-content" style="transition: all 0.3s ease 0s;">
+<div id="app-content">
     <div id="app-content-kubernetes" class="viewcontainer">
         <div id="controls">
             <div class="row">
-                <div class="text-right" style="margin-right: 19px;">
+                <div class="text-right button-right">
                     <div class="actions creatable">
                         <div id="create" original-title="">
                             <a id="pod-create" class="btn btn-primary btn-flat" href="#">
@@ -23,10 +23,10 @@
                         ?>
                     </select>
                 </span>
-                <span id="links"></span>
                 <div id="description"></div>
-                <div id="ssh" style="visibility:hidden;"><input class="sshpod" id="sshpod" type="text" placeholder="Paste your public SSH key here..."></div>
-                <div id="storage" style="visibility:hidden;"><input class="storagepath" id="storagepath" type="text" placeholder="Folder under /storage to mount in the pod/container...">
+		<span id="links"></span>
+                <div id="ssh"><input class="sshpod" id="sshpod" type="text" placeholder="Paste your public SSH key here..."></div>
+                <div id="storage"><input class="storagepath" id="storagepath" type="text" placeholder="Folder under /storage to mount in the pod/container...">
                     <span id="webdav"></span>
                 </div>
 		<div id="mount-path"></div>
@@ -42,13 +42,13 @@
             </div>
         </div>
     </div>
-    <div id="loading" style="display: none;">
-        <div id="loading-text" style="font-size:large; text-align:center;">
+    <div id="loading">
+        <div id="loading-text">
             Creating your pod... Please wait
         </div>
         <div class="loader"></div>
     </div>
-    <h2 style="padding-left:1%">Running pods</h2>
+    <h2 id="table-h">Running pods</h2>
     <table id="podstable" class="panel">
         <thead class="panel-heading">
             <tr>
@@ -62,22 +62,22 @@
                         </div>
                     </div>
                 </th>
-                <th id="headerDisplay" class="column-display" style="padding-right:3%; width:1%">
+                <th id="headerDisplay" class="column-display">
                     <div class="display sort columntitle" data-sort="public">
                         <span>Container name</span>
                     </div>
                 </th>
-                <th id="headerDisplay" class="column-display" style="padding-right:3%; width:1%">
+                <th id="headerDisplay" class="column-display">
                     <div class="size sort columntitle" data-sort="size">
                         <span>HTTPS port</span>
                     </div>
                 </th>
-                <th id="headerDisplay" class="column-display" style="padding-right:3%; width:1%">
+                <th id="headerDisplay" class="column-display">
                     <div class="size sort columntitle" data-sort="size">
                         <span>SSH port</span>
                     </div>
                 </th>
-                <th id="headerDisplay" class="column-display" style="padding-right:3%; width:1%">
+                <th id="headerDisplay" class="column-display">
                     <div class="size sort columntitle" data-sort="size">
                         <span>Status</span>
                     </div>
@@ -109,7 +109,7 @@
                 }
 
                 echo "<tr id=\"$podname[1]\" class='container-row'>
-				<td id=\"$podname[1]\" class=\"$podname[0]\" name=\"$podname[1]\" data-group=\"$podname[1]\" style='height:34px' >
+				<td id=\"$podname[1]\">
 				<div class='row'>
 					<div class='col-xs-1 text-right '></div>
 					<a class='name'>
@@ -121,16 +121,16 @@
                 OC_Kubernetes_Util::addRow($httpsport[0], $httpsport[1]);
                 OC_Kubernetes_Util::addRow($sshport[0], $sshport[1]);
                 OC_Kubernetes_Util::addRow($status[0], $status[1]);
-                echo  "<td id='uri' class=\"$uri\" style='display:none;'>
-                            <div class='uri'><a class='uri' href=$uri target='_blank'>
+                echo  "<td class='uri'>
+                            <div><a href=$uri target='_blank'>
                                 <span id='uri'>" . $uri_text . "</span></a>
                             </div>
                         </td>
-                        <td id='image' class=\"$image\" style='display:none;'>
-                            <div class='image'><a class='image' href=$image target='_blank'>
+                        <td class='image'>
+                            <div><a href=$image target='_blank'>
                                 <span id='image'>" . $image . "</span></a>
                         </td>
-                        <td><a href='#' original-title='Delete pod' id='delete-pod' class='action icon icon-trash-empty' style='text-decoration:none;color:#c5c5c5;font-size:16px;background-image:none'></a>
+                        <td><a href='#' original-title='Delete pod' id='delete-pod' class='action icon icon-trash-empty'></a>
                         </td>
                         </tr>";
             }
@@ -155,6 +155,6 @@
     </table>
 </div>
 </div>
-<div id='dialogalert' title='Delete Confirmation' style='display:none;'>
+<div id='dialogalert' title='Delete Confirmation'>
     <p>Are you sure you want to delete this container?</p>
 </div>

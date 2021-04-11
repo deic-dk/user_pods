@@ -1,9 +1,41 @@
+#app-content {
+	transition: all 0.3s ease 0s;
+}
+
+h2#table-h {
+	padding-left:1%;
+}
+
+#headerDisplay {
+	padding-right:3%; 
+	width:1%;
+}
+
+.button-right {
+	margin-right: 19px;
+}
+
 table th .columntitle {
     display: inline-block !important;
 }
 
 li {
     list-style-type: none;
+}
+
+td {
+	height:34px;
+}
+
+td.image, td.uri {
+	display:none;
+}
+
+#delete-pod {
+	text-decoration:none;
+	color:#c5c5c5;
+	font-size:16px;
+	background-image:none
 }
 
 .normaltext {
@@ -30,15 +62,16 @@ li {
     display: none
 }
 
-#ssh {
+#ssh, #storage {
     padding-left: 1.5%;
-    padding-top: 1%;
+	display: none;
 }
 
 .newpod-span {
     float: right;
     margin-right: 10px;
     margin-top: -35px;
+    display: none;
 }
 
 .sshpod {
@@ -48,10 +81,6 @@ li {
 
 .storagepath {
     width: 35% !important;
-}
-
-#storage {
-    padding-left: 1.5%;
 }
 
 #description {
@@ -75,6 +104,20 @@ li {
     margin-left: 20px;
     margin-bottom: 20px;
     position: absolute
+}
+
+.box-left {
+	padding-left:1.5%;
+	padding-bottom:1%;
+}
+
+#loading {
+	display: none;
+}
+
+#loading-text {
+	font-size:large; 
+	text-align:center;
 }
 
 .loader {
@@ -109,4 +152,27 @@ li {
 
 #dialogalert {
     font-size: 12px;
+	display:none;
+}
+
+h3.oc-dialog-title {
+	padding-left:25px;	
+}
+
+.image-title {
+	position:absolute; 
+	left:40px; 
+	top:80px;
+}
+
+.uri-title {
+	position:absolute; 
+	left:40px; 
+	top:140px;
+}
+
+.logs-panel {
+	position:absolute; 
+	bottom:40px; 
+	left:40px;
 }

@@ -25,10 +25,10 @@ $(document).ready(function () {
                 var dockerhub_description = jsondata.data.included[3];
 		var mount_path = jsondata.data.included[4];
 		var mount_path_text = "The folder is mounted in " + mount_path + " inside the container";
-                var webdav_link = 'https://' + hostname + '/storage/' + OC.currentUser;
+                var webdav_link = 'https://' + OC.currentUser + '@' + hostname + '/storage/';
                 var webdav_link_ref = '<a href=\'' + webdav_link + '\'target="_blank">' + webdav_link + '</a>';
-                var image_info = '<span style="padding-left:1%"><a href=\'' + image_github_uri + '\'target="_blank">GitHub page</a></span>\
-				    			<span style="padding-left:1%"><a href=\'' + image_dockerhub_uri + '\'target="_blank">DockerHub page</a></span>';
+                var image_info = '<div class="box-left">Read more on <a href=\'' + image_github_uri + '\'target="_blank">GitHub</a>\
+				    			<span>and on <a href=\'' + image_dockerhub_uri + '\'target="_blank">DockerHub</a></span></div>';
                 $('#links').empty();
                 $('#links').append(image_info);
 
@@ -37,20 +37,22 @@ $(document).ready(function () {
 
 		$('#mount-path').empty();
 		$('#mount-path').append(mount_path_text);
+		
+		$('.newpod-span').css('display', 'block');
 
                 if (jsondata.data.included[0] == true) {
-                    $('div#ssh').css('visibility', 'visible');
+                    $('div#ssh').css('display', 'block');
                 } else {
-                    $('div#ssh').css('visibility', 'hidden');
+                    $('div#ssh').css('display', 'none');
                 }
                 if (jsondata.data.included[1] == true) {
-                    $('div#storage').css('visibility', 'visible');
+                    $('div#storage').css('display', 'block');
                     $('#webdav').empty();
 			var webdav_text = 'Available at: ' + webdav_link_ref;	
                     $('#webdav').append(webdav_text);
 
                 } else {
-                    $('div#storage').css('visibility', 'hidden');
+                    $('div#storage').css('display', 'none');
                 }
             }
 
@@ -72,6 +74,7 @@ $(document).ready(function () {
             beforeSend: function () {
                 $('#podstable').css("visibility", "hidden");
                 $('#pod-create').css("visibility", "hidden");
+		    $('#table-h').css("visibility", "hidden");
                 $('#newpod').slideToggle();
                 $('#newpod').val("");
                 $('#loading').css("display", "block");
@@ -112,10 +115,11 @@ $(document).ready(function () {
                         },
                         method: 'post',
                         beforeSend: function () {
-                            $('#podstable').css("visibility", "hidden");
-                            $('#pod-create').css("visibility", "hidden");
+                            $("#podstable").css("visibility", "hidden");
+                            $("#pod-create").css("visibility", "hidden");
+				$("#table-h").css("visibility", "hidden");
                             $("#loading-text").text("Deleting your pod... Please wait");
-                            $('#loading').css("display", "block");
+                            $("#loading").css("display", "block");
                         },
                         complete: function () {
 
@@ -159,14 +163,14 @@ $(document).ready(function () {
 
         var image = $(this).closest('tr').find('span#image').html();
         var image_uri = dockerhub_uri + image;
-        var html = '<div><span><h3 class="oc-dialog-title" style="padding-left:25px;"><span>' + pod + '</span></h3></span><a class="oc-dialog-close close svg"></a>\
+        var html = '<div><span><h3 class="oc-dialog-title"><span>' + pod + '</span></h3></span><a class="oc-dialog-close close svg"></a>\
                     <div id="meta_data_container" class=\'' + pod + '\'>\
-                    <div style="position:absolute; left:40px; top:80px;">Original image on Docker Hub:\
+                    <div class="image-title">Original image on Docker Hub:\
                     <div><a href=\'' + image_uri + '\'target="_blank">' + image_uri + '</a></div></div>\
-                    <div style="position:absolute; left:40px; top:140px;">\
+                    <div class="uri-title">\
                     <div id="uri">Access web service:</div>\
                     <div><a href=\'' + complete_uri + '\'target="_blank">' + complete_uri + '</a></div></div>\
-                    <div style="position:absolute; bottom:40px; left:40px;" >\
+                    <div class="logs-panel">\
                     <div>Download the logs of your container:</div><p></p>\
                     <button id="download-logs" class="download btn btn-primary btn-flat">Download</button>&nbsp\
                     </div>\
