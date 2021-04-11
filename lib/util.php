@@ -5,13 +5,12 @@ class OC_Kubernetes_Util
 	private static $CADDY_URI = 'http://10.0.0.12/';
 	private static $GITHUB_URI = 'https://raw.githubusercontent.com/deic-dk/pod_manifests/main/';
 	private static $DOCKERHUB_URI = 'https://hub.docker.com/v2/repositories/';
-	/**
-	 * @brief Get all user's pods
-	 * @param  string $uid Name of the user
-	 * @return array  with pod names of a user
-	 */
-
+	
 	public static function createStorageDir($uid)
+	/**
+	 * @brief Create a dedicated folder for the user to be used for mounting in a pod
+	 * @param  string $uid Name of the user
+	 */
 	{
 		$folder_path = "/tank/storage/" . $uid;
 
@@ -21,29 +20,41 @@ class OC_Kubernetes_Util
 	}
 
 	public static function getUserPods($uid)
+	/**
+	 * @brief Get all user's pods
+	 * @param  string $uid Name of the user
+	 * @return array  with data for each pod
+	 */
 	{
 		$table = array();
 		$complete_uri = self::$CADDY_URI . "get_containers.php?fields=true&user_id=" . $uid;
 		$response = file_get_contents($complete_uri);
 		$fields = explode("|", $response);
-		$url = self::$CADDY_URI."get_containers.php?user_id=".$uid;
+		$url = self::$CADDY_URI . "get_containers.php?user_id=" . $uid;
 		$response = file_get_contents($url);
 		$rows = explode("\n", $response);
 		//array_pop($rows);
 		foreach ($rows as $row) {
-			if (empty($row)) { continue; }
+			if (empty($row)) {
+				continue;
+			}
 			$values = explode("|", $row);
 			$container = [];
 			$i = 0;
-			foreach($values as $value) {
-				$container[$fields[$i++]] = $value??"";
+			foreach ($values as $value) {
+				$container[$fields[$i++]] = $value ?? "";
 			}
 			array_push($table, $container);
 		}
 		return $table;
 	}
 
-	public static function addRow($index, $value)
+	public static function addCell($index, $value)
+	/**
+	 * @brief Populate a cell of the pods table with corresponding information
+	 * @param  string $index the name of a field (e.g. https_port)
+	 * @param string $value the value of a field (e.g. 200 for https_port)
+	 */
 	{
 		echo "<td class=\"$value\">
                  <div>
@@ -53,6 +64,11 @@ class OC_Kubernetes_Util
 	}
 
 	private static function getContent($uri)
+	/**
+	 * @brief Get HTML content of a link
+	 * @param  string $uri a web link
+	 * @return string HTML content
+	 */
 	{
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $uri);
@@ -65,6 +81,10 @@ class OC_Kubernetes_Util
 	}
 
 	public static function getImages()
+	/**
+	 * @brief Get the filenames of the image YAML files from GitHub
+	 * @return array with the YAML filenames
+	 */
 	{
 		$default_pods_uri =  'https://github.com/deic-dk/pod_manifests';
 		try {
@@ -102,6 +122,11 @@ class OC_Kubernetes_Util
 	}
 
 	public static function getDockerhubDescription($image_name)
+	/**
+	 * @brief Get a description of an image from DockerHub
+	 * @param string $image_name Name of the docker image
+	 * @return string  a description of the image
+	 */
 	{
 		$dockerhub_uri = self::$DOCKERHUB_URI . $image_name . '/';
 		$dict = json_decode(self::getContent($dockerhub_uri));
@@ -111,6 +136,11 @@ class OC_Kubernetes_Util
 	}
 
 	public static function checkImage($yaml_file)
+	/**
+	 * @brief Parse a YAML file of an image and extract information such as ssh key, mount path and image name/description
+	 * @param  string $yaml_file Name of the the YAML file
+	 * @return array  with data of the YAML file
+	 */
 	{
 		$github_uri = self::$GITHUB_URI . $yaml_file;
 
@@ -131,12 +161,20 @@ class OC_Kubernetes_Util
 
 		if (strpos($yaml_content, "mountPath") != false) {
 			$has_mount = true;
-			$mountPath = explode(PHP_EOL, explode("mountPath",$yaml_content)[1])[0];
+			$mountPath = explode(PHP_EOL, explode("mountPath", $yaml_content)[1])[0];
 		}
 		return array($has_ssh, $has_mount, $image_name, $image_description, $mountPath);
 	}
 
 	public static function createPod($yaml_file, $ssh_key, $storage_path, $uid)
+	/**
+	 * @brief Send a GET request to the kube server for creating a new pod
+	 * @param  string $yaml_file Name of the YAML file
+	 * @param string $ssh_key Public SSH key
+	 * @param string $storage_path Path name to mount in the container
+	 * @param string $uid Name of the user
+	 * @return string  Response from the kube server 
+	 */
 	{
 		$complete_uri = self::$CADDY_URI . "run_pod.php?user_id=" . $uid . "&yaml_uri=/files/pod_manifests/" . $yaml_file;
 		if (is_null($ssh_key) == false) {
@@ -157,19 +195,30 @@ class OC_Kubernetes_Util
 		return $response;
 	}
 
-	private static function getAppDir($user)
+	private static function getAppDir($uid)
+	/**
+	 * @brief Create a folder for the user in the application's directory on the server
+	 * @param  string $uid Name of the user
+	 * @return string Name of the user's directory on the server
+	 */
 	{
-		\OC_User::setUserId($user);
-		\OC_Util::setupFS($user);
+		\OC_User::setUserId($uid);
+		\OC_Util::setupFS($uid);
 		$fs = \OCP\Files::getStorage('kubernetes_app');
 		if (!$fs) {
-			\OC_Log::write('kubernetes_app', "ERROR, could not access files of user " . $user, \OC_Log::ERROR);
+			\OC_Log::write('kubernetes_app', "ERROR, could not access files of user " . $uid, \OC_Log::ERROR);
 			return null;
 		}
 		return $fs->getLocalFile('/');
 	}
 
 	public static function deletePod($pod_name, $uid)
+	/**
+	 * @brief Sends a GET request to the kube server for deleting a user's pod
+	 * @param string $pod_name Name of the pod
+	 * @param  string $uid Name of the user
+	 * @return string  Response from the kube server
+	 */
 	{
 		$complete_uri = OC_Kubernetes_Util::$CADDY_URI . "delete_pod.php?user_id=" . $uid . "&pod=" . $pod_name;
 		$response = file_get_contents($complete_uri);
@@ -177,6 +226,11 @@ class OC_Kubernetes_Util
 	}
 
 	public static function getLogs($pod_name, $uid)
+	/**
+	 * @brief Sends a GET request to the kube server for retrieving the logs of a pod
+	 * @param string $pod_name Name of the pod
+	 * @param  string $uid Name of the user
+	 */
 	{
 		$file_path = self::getAppDir($uid) . "/pod_logs/";
 

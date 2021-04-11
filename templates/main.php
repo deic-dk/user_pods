@@ -24,12 +24,12 @@
                     </select>
                 </span>
                 <div id="description"></div>
-		<span id="links"></span>
+                <span id="links"></span>
                 <div id="ssh"><input class="sshpod" id="sshpod" type="text" placeholder="Paste your public SSH key here..."></div>
                 <div id="storage"><input class="storagepath" id="storagepath" type="text" placeholder="Folder under /storage to mount in the pod/container...">
                     <span id="webdav"></span>
                 </div>
-		<div id="mount-path"></div>
+                <div id="mount-path"></div>
                 <span class="newpod-span">
                     <div id="ok" class="btn-pod" original-title="">
                         <a class="btn btn-default btn-flat" href="#">Add</a>
@@ -93,11 +93,11 @@
                 $status = array("status", $container["status"]);
                 $sshport = array("ssh_port", $container["ssh_port"]);
                 $httpsport = array("https_port", $container["https_port"]);
-		if (array_key_exists("uri",$container)){
-			$token = $container["uri"];
-		}else {
-			$token = "";
-		}
+                if (array_key_exists("uri", $container)) {
+                    $token = $container["uri"];
+                } else {
+                    $token = "";
+                }
                 $image = $container["image_name"];
 
                 if (strpos($token, 'token') == true) {
@@ -117,10 +117,10 @@
 					</a>
 				</div>
 				</td>";
-                OC_Kubernetes_Util::addRow($containername[0], $containername[1]);
-                OC_Kubernetes_Util::addRow($httpsport[0], $httpsport[1]);
-                OC_Kubernetes_Util::addRow($sshport[0], $sshport[1]);
-                OC_Kubernetes_Util::addRow($status[0], $status[1]);
+                OC_Kubernetes_Util::addCell($containername[0], $containername[1]);
+                OC_Kubernetes_Util::addCell($httpsport[0], $httpsport[1]);
+                OC_Kubernetes_Util::addCell($sshport[0], $sshport[1]);
+                OC_Kubernetes_Util::addCell($status[0], $status[1]);
                 echo  "<td class='uri'>
                             <div><a href=$uri target='_blank'>
                                 <span id='uri'>" . $uri_text . "</span></a>
