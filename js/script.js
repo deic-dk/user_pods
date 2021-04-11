@@ -194,7 +194,7 @@ $(document).ready(function () {
         $('.ui-helper-clearfix').css("display", "none");
 
         $("#download-logs").live('click', function () {
-            OC.redirect(OC.linkTo('kubernetes_app', 'ajax/getLogs.php') + '?file=' + pod);
+            OC.redirect(OC.linkTo('kubernetes_app', 'ajax/actions.php') + '?pod=' + pod);
         });
     });
 
