@@ -27,13 +27,11 @@ class OC_Kubernetes_Util
 	 */
 	{
 		$table = array();
-		$complete_uri = self::$CADDY_URI . "get_containers.php?fields=true&user_id=" . $uid;
+		$complete_uri = self::$CADDY_URI . "get_containers.php?fields=include&user_id=" . $uid;
 		$response = file_get_contents($complete_uri);
-		$fields = explode("|", $response);
-		$url = self::$CADDY_URI . "get_containers.php?user_id=" . $uid;
-		$response = file_get_contents($url);
 		$rows = explode("\n", $response);
-		//array_pop($rows);
+		$fields = explode("|", $rows[0]);
+		array_shift($rows);
 		foreach ($rows as $row) {
 			if (empty($row)) {
 				continue;
