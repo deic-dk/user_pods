@@ -1,5 +1,5 @@
 <div id="app-content">
-    <div id="app-content-kubernetes" class="viewcontainer">
+    <div id="app-content-kubernetes" class="viewcontainer" value=<?php p(isset($_['dockerhub'])?$_['dockerhub']:''); ?>>
         <div id="controls">
             <div class="row">
                 <div class="text-right button-right">
@@ -25,11 +25,11 @@
                 </span>
                 <div id="description"></div>
                 <span id="links"></span>
-                <div id="ssh"><input class="sshpod" id="sshpod" type="text" placeholder="Paste your public SSH key here..."></div>
-                <div id="storage"><input class="storagepath" id="storagepath" type="text" placeholder="Folder under /storage to mount in the pod/container...">
+                <div id="ssh" class="box-left"><h4> Public SSH key</h4><div><input class="sshpod box" id="sshpod" type="text" placeholder="Paste your public SSH key here..."></div></div>
+		<div id="storage" class="box-left"><h4>Volume mount</h4><input class="storagepath box" id="storagepath" type="text" placeholder="Folder under /storage to mount in the pod/container...">
                     <span id="webdav"></span>
+			<div id="mount-path"></div>
                 </div>
-                <div id="mount-path"></div>
                 <span class="newpod-span">
                     <div id="ok" class="btn-pod" original-title="">
                         <a class="btn btn-default btn-flat" href="#">Add</a>

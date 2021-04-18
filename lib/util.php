@@ -4,7 +4,7 @@ class OC_Kubernetes_Util
 {
 	private static $CADDY_URI = 'http://10.0.0.12/';
 	private static $GITHUB_URI = 'https://raw.githubusercontent.com/deic-dk/pod_manifests/main/';
-	private static $DOCKERHUB_URI = 'https://hub.docker.com/v2/repositories/';
+	private static $DOCKERHUB_URI = 'v2/repositories/';
 	
 	public static function createStorageDir($uid)
 	/**
@@ -119,31 +119,35 @@ class OC_Kubernetes_Util
 		}
 	}
 
-	public static function getDockerhubDescription($image_name)
+	public static function getDockerhubDescription($image_name, $dockerhub)
 	/**
 	 * @brief Get a description of an image from DockerHub
 	 * @param string $image_name Name of the docker image
 	 * @return string  a description of the image
 	 */
 	{
-		$dockerhub_uri = self::$DOCKERHUB_URI . $image_name . '/';
+		$dockerhub_uri = $dockerhub.self::$DOCKERHUB_URI . $image_name . '/';
 		$dict = json_decode(self::getContent($dockerhub_uri));
 
 		$description = $dict->{'full_description'};
 		return $description;
 	}
 
-	public static function checkImage($yaml_file)
+	public static function checkImage($yaml_file, $dockerhub)
 	/**
 	 * @brief Parse a YAML file of an image and extract information such as ssh key, mount path and image name/description
 	 * @param  string $yaml_file Name of the the YAML file
-	 * @return array  with data of the YAML file
+	 * @return array  with data of the YAML file and the docker image
 	 */
 	{
-		$github_uri = self::$GITHUB_URI . $yaml_file;
+		$filename = explode('.', $yaml_file)[0];
 
-		$yaml_content = self::getContent($github_uri);
+		$yaml_github_uri = self::$GITHUB_URI . $yaml_file;
+		$markdown_github_uri = self::$GITHUB_URI . $filename . '.md';
 
+		$yaml_content = self::getContent($yaml_github_uri);
+		$markdown_content = self::getContent($markdown_github_uri);
+			
 		$has_ssh = false;
 		$has_mount = false;
 		$mountPath = "";
@@ -151,7 +155,7 @@ class OC_Kubernetes_Util
 		$temp = explode("image:", $yaml_content);
 		$image_name = trim(explode(PHP_EOL, $temp[1])[0]);
 
-		$image_description = self::getDockerhubDescription($image_name);
+		$image_description = self::getDockerhubDescription($image_name, $dockerhub);
 
 		if (strpos($yaml_content, "SSH_PUBLIC_KEY") !== false) {
 			$has_ssh = true;
@@ -161,7 +165,7 @@ class OC_Kubernetes_Util
 			$has_mount = true;
 			$mountPath = explode(PHP_EOL, explode("mountPath", $yaml_content)[1])[0];
 		}
-		return array($has_ssh, $has_mount, $image_name, $image_description, $mountPath);
+		return array($has_ssh, $has_mount, $image_name, $image_description, $mountPath, $markdown_content);
 	}
 
 	public static function createPod($yaml_file, $ssh_key, $storage_path, $uid)

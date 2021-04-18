@@ -14,6 +14,7 @@ OC_Util::addScript( 'core', 'singleselect' );
 OC_Util::addScript('core', 'jquery.inview');
 
 $tmpl = new OCP\Template('kubernetes_app', 'main', 'user');
+$tmpl->assign('dockerhub', 'https://hub.docker.com/');
 $tmpl->printPage();
 
 OC_Kubernetes_Util::createStorageDir(OCP\User::getUser());

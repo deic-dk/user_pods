@@ -14,7 +14,7 @@ if (isset($_POST['pod_name']) ) {
 	OCP\JSON::success();
 }
 if (isset($_POST['yaml_file'])) {
-	$included = OC_Kubernetes_Util::checkImage($_POST['yaml_file']);
+	$included = OC_Kubernetes_Util::checkImage($_POST['yaml_file'], $_POST['dockerhub']);
 	OCP\JSON::success(array('data' => array('included'=>$included)));
 }
 if (isset($_GET['pod'])) {

@@ -1,7 +1,7 @@
 $(document).ready(function () {
     var hostname = $(location).attr('host');;
 
-    var dockerhub_uri = 'https://hub.docker.com/r/';
+    var dockerhub_uri = $('div#app-content-kubernetes').attr('value');
     var github_uri = 'https://github.com/deic-dk/pod_manifests/blob/main/';
 
     $('a#pod-create').click(function () {
@@ -17,23 +17,24 @@ $(document).ready(function () {
     $("#podinput").change(function () {
         var select_value = $(this).val()
         $.post(OC.filePath('kubernetes_app', 'ajax', 'actions.php'), {
-            yaml_file: select_value
+            yaml_file: select_value,
+		dockerhub: dockerhub_uri
         }, function (jsondata) {
             if (jsondata.status == 'success') {
                 var image_github_uri = github_uri + select_value;
-                var image_dockerhub_uri = dockerhub_uri + jsondata.data.included[2];
+                var image_dockerhub_uri = dockerhub_uri + 'r/' + jsondata.data.included[2];
                 var dockerhub_description = jsondata.data.included[3];
                 var mount_path = jsondata.data.included[4];
+		    var yaml_description = jsondata.data.included[5];
                 var mount_path_text = "The folder is mounted in " + mount_path + " inside the container";
                 var webdav_link = 'https://' + OC.currentUser + '@' + hostname + '/storage/';
                 var webdav_link_ref = '<a href=\'' + webdav_link + '\'target="_blank">' + webdav_link + '</a>';
-                var image_info = '<div class="box-left">Read more on <a href=\'' + image_github_uri + '\'target="_blank">GitHub</a>\
-				    			<span>and on <a href=\'' + image_dockerhub_uri + '\'target="_blank">DockerHub</a></span></div>';
-                $('#links').empty();
-                $('#links').append(image_info);
-
+                var image_info = '<div class="box">Find out more on <a href=\'' + image_dockerhub_uri + '\'target="_blank">DockerHub</a></div>';
+		    var yaml_info = '<div class="box">Find out more on <a href=\'' + image_github_uri + '\'target="_blank">Github</a></div>';
+		    
                 $('#description').empty();
-                $('#description').append(dockerhub_description);
+                $('#description').append('<h4>Image description</h4><p>' + dockerhub_description + '</p>' + image_info + 
+			'<h4>YAML description</h4><p>' + yaml_description + '</p>' + yaml_info);
 
                 $('#mount-path').empty();
                 $('#mount-path').append(mount_path_text);
@@ -162,7 +163,7 @@ $(document).ready(function () {
         var complete_uri = 'https://kube.sciencedata.dk:' + https_port + '/' + uri;
 
         var image = $(this).closest('tr').find('span#image').html();
-        var image_uri = dockerhub_uri + image;
+        var image_uri = dockerhub_uri + 'r/' + image;
         var html = '<div><span><h3 class="oc-dialog-title"><span>' + pod + '</span></h3></span><a class="oc-dialog-close close svg"></a>\
                     <div id="meta_data_container" class=\'' + pod + '\'>\
                     <div class="image-title">Original image on Docker Hub:\
