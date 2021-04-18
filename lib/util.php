@@ -5,7 +5,7 @@ class OC_Kubernetes_Util
 	private static $CADDY_URI = 'http://10.0.0.12/';
 	private static $GITHUB_URI = 'https://raw.githubusercontent.com/deic-dk/pod_manifests/main/';
 	private static $DOCKERHUB_URI = 'v2/repositories/';
-	
+
 	public static function createStorageDir($uid)
 	/**
 	 * @brief Create a dedicated folder for the user to be used for mounting in a pod
@@ -126,7 +126,7 @@ class OC_Kubernetes_Util
 	 * @return string  a description of the image
 	 */
 	{
-		$dockerhub_uri = $dockerhub.self::$DOCKERHUB_URI . $image_name . '/';
+		$dockerhub_uri = $dockerhub . self::$DOCKERHUB_URI . $image_name . '/';
 		$dict = json_decode(self::getContent($dockerhub_uri));
 
 		$description = $dict->{'full_description'};
@@ -147,7 +147,7 @@ class OC_Kubernetes_Util
 
 		$yaml_content = self::getContent($yaml_github_uri);
 		$markdown_content = self::getContent($markdown_github_uri);
-			
+
 		$has_ssh = false;
 		$has_mount = false;
 		$mountPath = "";

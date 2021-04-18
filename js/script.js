@@ -18,23 +18,23 @@ $(document).ready(function () {
         var select_value = $(this).val()
         $.post(OC.filePath('kubernetes_app', 'ajax', 'actions.php'), {
             yaml_file: select_value,
-		dockerhub: dockerhub_uri
+            dockerhub: dockerhub_uri
         }, function (jsondata) {
             if (jsondata.status == 'success') {
                 var image_github_uri = github_uri + select_value;
                 var image_dockerhub_uri = dockerhub_uri + 'r/' + jsondata.data.included[2];
                 var dockerhub_description = jsondata.data.included[3];
                 var mount_path = jsondata.data.included[4];
-		    var yaml_description = jsondata.data.included[5];
+                var yaml_description = jsondata.data.included[5];
                 var mount_path_text = "The folder is mounted in " + mount_path + " inside the container";
                 var webdav_link = 'https://' + OC.currentUser + '@' + hostname + '/storage/';
                 var webdav_link_ref = '<a href=\'' + webdav_link + '\'target="_blank">' + webdav_link + '</a>';
                 var image_info = '<div class="box">Find out more on <a href=\'' + image_dockerhub_uri + '\'target="_blank">DockerHub</a></div>';
-		    var yaml_info = '<div class="box">Find out more on <a href=\'' + image_github_uri + '\'target="_blank">Github</a></div>';
-		    
+                var yaml_info = '<div class="box">Find out more on <a href=\'' + image_github_uri + '\'target="_blank">Github</a></div>';
+
                 $('#description').empty();
-                $('#description').append('<h4>Image description</h4><p>' + dockerhub_description + '</p>' + image_info + 
-			'<h4>YAML description</h4><p>' + yaml_description + '</p>' + yaml_info);
+                $('#description').append('<h4>Image description</h4><p>' + dockerhub_description + '</p>' + image_info +
+                    '<h4>YAML description</h4><p>' + yaml_description + '</p>' + yaml_info);
 
                 $('#mount-path').empty();
                 $('#mount-path').append(mount_path_text);
