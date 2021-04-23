@@ -7,7 +7,7 @@ OCP\JSON::callCheck();
 $pod = $_POST['pod'];
 $uid = OCP\User::getUser();
 if ( isset ($pod)){
-	$result = OC_Kubernetes::deletePod( $pod, $uid);
+	$result = OC_Kubernetes::deletePod($pod, $uid);
 	OCP\JSON::success();
 }
 
