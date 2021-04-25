@@ -15,6 +15,7 @@ OC_Util::addScript('core', 'jquery.inview');
 
 $tmpl = new OCP\Template('kubernetes_app', 'main', 'user');
 $tmpl->assign('dockerhub', 'https://hub.docker.com/');
+$tmpl->assign('github', '/deic-dk/pod_manifests/');
 $tmpl->printPage();
 
 OC_Kubernetes_Util::createStorageDir(OCP\User::getUser());

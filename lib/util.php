@@ -3,8 +3,7 @@
 class OC_Kubernetes_Util
 {
 	private static $CADDY_URI = 'http://10.0.0.12/';
-	private static $GITHUB_URI = 'https://raw.githubusercontent.com/deic-dk/pod_manifests/main/';
-	private static $DOCKERHUB_URI = 'v2/repositories/';
+	private static $GITHUB_CONTENT_URI = 'https://raw.githubusercontent.com';
 
 	public static function createStorageDir($uid)
 	/**
@@ -78,13 +77,12 @@ class OC_Kubernetes_Util
 		return $data;
 	}
 
-	public static function getImages()
+	public static function getImages($default_pods_uri)
 	/**
 	 * @brief Get the filenames of the image YAML files from GitHub
 	 * @return array with the YAML filenames
 	 */
 	{
-		$default_pods_uri =  'https://github.com/deic-dk/pod_manifests';
 		try {
 			$res = self::getContent($default_pods_uri);
 			$type = '.yaml';
@@ -126,14 +124,14 @@ class OC_Kubernetes_Util
 	 * @return string  a description of the image
 	 */
 	{
-		$dockerhub_uri = $dockerhub . self::$DOCKERHUB_URI . $image_name . '/';
+		$dockerhub_uri = $dockerhub . 'v2/repositories/' . $image_name . '/';
 		$dict = json_decode(self::getContent($dockerhub_uri));
 
 		$description = $dict->{'full_description'};
 		return $description;
 	}
 
-	public static function checkImage($yaml_file, $dockerhub)
+	public static function checkImage($yaml_file, $dockerhub, $github_repo)
 	/**
 	 * @brief Parse a YAML file of an image and extract information such as ssh key, mount path and image name/description
 	 * @param  string $yaml_file Name of the the YAML file
@@ -142,8 +140,8 @@ class OC_Kubernetes_Util
 	{
 		$filename = explode('.', $yaml_file)[0];
 
-		$yaml_github_uri = self::$GITHUB_URI . $yaml_file;
-		$markdown_github_uri = self::$GITHUB_URI . $filename . '.md';
+		$yaml_github_uri = self::$GITHUB_CONTENT_URI . $github_repo . 'main/' . $yaml_file;
+		$markdown_github_uri = self::$GITHUB_CONTENT_URI . $github_repo . 'main/' . $filename . '.md';
 
 		$yaml_content = self::getContent($yaml_github_uri);
 		$markdown_content = self::getContent($markdown_github_uri);
@@ -168,7 +166,7 @@ class OC_Kubernetes_Util
 		return array($has_ssh, $has_mount, $image_name, $image_description, $mountPath, $markdown_content);
 	}
 
-	public static function createPod($yaml_file, $ssh_key, $storage_path, $uid)
+	public static function createPod($yaml_file, $ssh_key, $storage_path, $github_repo, $uid)
 	/**
 	 * @brief Send a GET request to the kube server for creating a new pod
 	 * @param  string $yaml_file Name of the YAML file
@@ -178,7 +176,17 @@ class OC_Kubernetes_Util
 	 * @return string  Response from the kube server 
 	 */
 	{
-		$complete_uri = self::$CADDY_URI . "run_pod.php?user_id=" . $uid . "&yaml_uri=/files/pod_manifests/" . $yaml_file;
+		$yaml_github_uri = self::$GITHUB_CONTENT_URI . $github_repo . 'main/' . $yaml_file;
+		$yaml_content = self::getContent($yaml_github_uri);
+
+		$file_path =  self::getAppDir($uid, 'files');
+
+		$file = $file_path . '/' . $yaml_file;
+		$temp_file = fopen($file, "w") or die("Unable to open file!");
+		fwrite($temp_file, $yaml_content);
+		fclose($temp_file);
+
+		$complete_uri = self::$CADDY_URI . "run_pod.php?user_id=" . $uid . "&yaml_uri=/files/" . $yaml_file;
 		if (is_null($ssh_key) == false) {
 			$encoded_key = rawurlencode($ssh_key);
 			if (is_null($storage_path) == false) {
@@ -193,11 +201,14 @@ class OC_Kubernetes_Util
 		}
 
 		$response = file_get_contents($complete_uri);
+
+		unlink($file);
+
 		// TODO Add exceptions and handling
 		return $response;
 	}
 
-	private static function getAppDir($uid)
+	private static function getAppDir($uid, $app)
 	/**
 	 * @brief Create a folder for the user in the application's directory on the server
 	 * @param  string $uid Name of the user
@@ -206,7 +217,7 @@ class OC_Kubernetes_Util
 	{
 		\OC_User::setUserId($uid);
 		\OC_Util::setupFS($uid);
-		$fs = \OCP\Files::getStorage('kubernetes_app');
+		$fs = \OCP\Files::getStorage($app);
 		if (!$fs) {
 			\OC_Log::write('kubernetes_app', "ERROR, could not access files of user " . $uid, \OC_Log::ERROR);
 			return null;
@@ -234,7 +245,7 @@ class OC_Kubernetes_Util
 	 * @param  string $uid Name of the user
 	 */
 	{
-		$file_path = self::getAppDir($uid) . "/pod_logs/";
+		$file_path = self::getAppDir($uid, 'kubernetes_app') . "/pod_logs/";
 
 		if (!is_dir($file_path)) {
 			mkdir($file_path, 0750, true);

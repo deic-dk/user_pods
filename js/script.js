@@ -1,8 +1,8 @@
 $(document).ready(function () {
     var hostname = $(location).attr('host');;
 
-    var dockerhub_uri = $('div#app-content-kubernetes').attr('value');
-    var github_uri = 'https://github.com/deic-dk/pod_manifests/blob/main/';
+    var dockerhub_uri = $('span#dockerhub_uri').attr('value');
+    var github_uri = $('span#github_uri').attr('value');
 
     $('a#pod-create').click(function () {
         $('#newpod').slideToggle();
@@ -18,10 +18,11 @@ $(document).ready(function () {
         var select_value = $(this).val()
         $.post(OC.filePath('kubernetes_app', 'ajax', 'actions.php'), {
             yaml_file: select_value,
-            dockerhub: dockerhub_uri
+            dockerhub: dockerhub_uri,
+		github: github_uri
         }, function (jsondata) {
             if (jsondata.status == 'success') {
-                var image_github_uri = github_uri + select_value;
+                var image_github_uri = 'https://github.com' + github_uri + '/blob/main/' + select_value;
                 var image_dockerhub_uri = dockerhub_uri + 'r/' + jsondata.data.included[2];
                 var dockerhub_description = jsondata.data.included[3];
                 var mount_path = jsondata.data.included[4];
@@ -69,7 +70,8 @@ $(document).ready(function () {
             data: {
                 pod_image: yaml_file,
                 ssh: ssh_key,
-                storage: storage
+                storage: storage,
+		    github: github_uri
             },
             method: 'post',
             beforeSend: function () {
@@ -94,8 +96,7 @@ $(document).ready(function () {
         var podSelected = $(this).closest('tr').attr('id');
         $('#dialogalert').dialog({
             buttons: [{
-                id: 'test',
-                'data-test': 'data test',
+                id: 'delete',
                 text: 'Delete',
                 click: function () {
                     $.post(OC.filePath('kubernetes_app', 'ajax', 'actions.php'), {
@@ -134,8 +135,7 @@ $(document).ready(function () {
                 }
             },
             {
-                id: 'test2',
-                'data-test': 'data test',
+                id: 'abort',
                 text: 'Cancel',
                 click: function () {
                     $(this).dialog('close');
@@ -145,6 +145,7 @@ $(document).ready(function () {
 
     });
 
+	// Correct the pod creation datetime to reflect the local browser datetime
     $("#podstable > tbody > tr").each(function () {
         var value = $(this).find("td span#status").text();
         if (~value.indexOf("Running")) {
