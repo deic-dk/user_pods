@@ -1,7 +1,7 @@
 <div id="app-content">
-	<div id="app-content-kubernetes" class="viewcontainer">
-    <span id="dockerhub_uri" value=<?php p(isset($_['dockerhub']) ? $_['dockerhub'] : ''); ?>></span>
-	<span id="github_uri" value=<?php p(isset($_['github']) ? $_['github'] : ''); ?>></span>
+    <div id="app-content-kubernetes" class="viewcontainer">
+        <span id="dockerhub_uri" value=<?php p(isset($_['dockerhub']) ? $_['dockerhub'] : ''); ?>></span>
+        <span id="github_uri" value=<?php p(isset($_['github']) ? $_['github'] : ''); ?>></span>
         <div id="controls">
             <div class="row">
                 <div class="text-right button-right">
@@ -18,7 +18,7 @@
                 <span class="spanpanel"> Choose service to run:
                     <select id="podinput" name="yaml" data-placeholder="YAML file">
                         <?php
-			$github_uri = 'https://github.com'. (isset($_['github']) ? $_['github'] : '');
+                        $github_uri = 'https://github.com' . (isset($_['github']) ? $_['github'] : '');
                         $images = OC_Kubernetes_Util::getImages($github_uri);
                         foreach ($images as $image) {
                             echo "<option value=\"$image\">$image</option>";

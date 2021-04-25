@@ -19,7 +19,7 @@ $(document).ready(function () {
         $.post(OC.filePath('kubernetes_app', 'ajax', 'actions.php'), {
             yaml_file: select_value,
             dockerhub: dockerhub_uri,
-		github: github_uri
+            github: github_uri
         }, function (jsondata) {
             if (jsondata.status == 'success') {
                 var image_github_uri = 'https://github.com' + github_uri + '/blob/main/' + select_value;
@@ -71,7 +71,7 @@ $(document).ready(function () {
                 pod_image: yaml_file,
                 ssh: ssh_key,
                 storage: storage,
-		    github: github_uri
+                github: github_uri
             },
             method: 'post',
             beforeSend: function () {
@@ -145,7 +145,7 @@ $(document).ready(function () {
 
     });
 
-	// Correct the pod creation datetime to reflect the local browser datetime
+    // Correct the pod creation datetime to reflect the local browser datetime
     $("#podstable > tbody > tr").each(function () {
         var value = $(this).find("td span#status").text();
         if (~value.indexOf("Running")) {
