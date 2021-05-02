@@ -155,14 +155,30 @@ class OC_Kubernetes_Util
 
 		$image_description = self::getDockerhubDescription($image_name, $dockerhub);
 
-		if (strpos($yaml_content, "SSH_PUBLIC_KEY") !== false) {
-			$has_ssh = true;
+		$parsed_yaml = yaml_parse($yaml_content);
+
+		$containers = $parsed_yaml['spec']['containers'];
+
+		foreach ($containers as $container) {
+			if (isset($container['env']) == true) {
+				$env = $container['env'];
+        			foreach ($env as $var) {
+                			if ($var['name'] == 'SSH_PUBLIC_KEY') {
+                        			$has_ssh = true;
+                			}
+				}
+			}
+			if (isset($container['volumeMounts']) == true) {
+				$volumes = $container['volumeMounts'];
+				foreach ($volumes as $volume) {
+					if (isset($volume['mountPath'])) {
+						$has_mount = true;
+						$mountPath = $volume['mountPath'];
+					}
+				}
+			}
 		}
 
-		if (strpos($yaml_content, "mountPath") != false) {
-			$has_mount = true;
-			$mountPath = explode(PHP_EOL, explode("mountPath", $yaml_content)[1])[0];
-		}
 		return array($has_ssh, $has_mount, $image_name, $image_description, $mountPath, $markdown_content);
 	}
 

@@ -33,7 +33,47 @@ foreach( $nodes as $elem ) {
 //    echo $test;
 }
 
-echo gethostname();
+$yaml = <<<EOD
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu-focal
+  labels:
+    app: ubuntu
+  annotations:
+    security.alpha.kubernetes.io/sysctls: net.ipv4.ping_group_range=0 2147483647
+spec:
+  containers:
+  - name: ubuntu-focal
+    image: sciencedata/ubuntu_focal_sciencedata
+    volumeMounts:
+      - name: sciencedata
+        mountPath: "/root/www"
+    ports:
+    - containerPort: 80
+      protocol: TCP
+    - containerPort: 22
+      protocol: TCP
+    env:
+    - name: SSH_PUBLIC_KEY
+      value: ""
+    - name: HOME_SERVER
+      value: ""
+  restartPolicy: Never
+...
+EOD;
 
+$parsed = yaml_parse($yaml);
+//var_dump($parsed);
+$containers = $parsed['spec']['containers'];
+foreach ($containers as $container) {
+	$env = $container['volumeMounts'];
+	foreach ($env as $var) {
+		if (isset($var['test'])) {
+			print_r ($var['mountPath']);
+		}
+	}
+}
 ?>
 
