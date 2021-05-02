@@ -1,3 +1,10 @@
+function mdToHtml(text) {
+	var converter = new showdown.Converter(),
+    	text      = text,
+    	html      = converter.makeHtml(text);
+	return html;
+}
+
 $(document).ready(function () {
     var hostname = $(location).attr('host');;
 
@@ -26,7 +33,7 @@ $(document).ready(function () {
                 var image_dockerhub_uri = dockerhub_uri + 'r/' + jsondata.data.included[2];
                 var dockerhub_description = jsondata.data.included[3];
                 var mount_path = jsondata.data.included[4];
-                var yaml_description = jsondata.data.included[5];
+                var yaml_description = mdToHtml(jsondata.data.included[5]);
                 var mount_path_text = "The folder is mounted in " + mount_path + " inside the container";
                 var webdav_link = 'https://' + OC.currentUser + '@' + hostname + '/storage/';
                 var webdav_link_ref = '<a href=\'' + webdav_link + '\'target="_blank">' + webdav_link + '</a>';
@@ -34,8 +41,7 @@ $(document).ready(function () {
                 var yaml_info = '<div class="box">Find out more on <a href=\'' + image_github_uri + '\'target="_blank">Github</a></div>';
 
                 $('#description').empty();
-                $('#description').append('<h4>Image description</h4><p>' + dockerhub_description + '</p>' + image_info +
-                    '<h4>YAML description</h4><p>' + yaml_description + '</p>' + yaml_info);
+                $('#description').append('<p>' + yaml_description + '</p>' + yaml_info);
 
                 $('#mount-path').empty();
                 $('#mount-path').append(mount_path_text);

@@ -9,6 +9,8 @@ OCP\Util::addStyle('kubernetes_app', 'kubernetes_app');
 OCP\Util::addStyle('files', 'files');
 
 OCP\Util::addScript('kubernetes_app', 'script');
+OCP\Util::addScript('kubernetes_app', 'showdown.min');
+
 OC_Util::addScript('core', 'multiselect');
 OC_Util::addScript('core', 'singleselect');
 OC_Util::addScript('core', 'jquery.inview');

@@ -54,6 +54,20 @@ td.image, td.uri {
     z-index: 1;
 }
 
+.kube-column {
+  float: left;
+  width: 50%;
+  padding-left: 1%;
+  padding-top: 1.5%;
+}
+
+/* Clear floats after the columns */
+.kube-row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
 .apanel {
     width: 100%;
     border: solid 1px #e4e4e4;
@@ -64,13 +78,14 @@ td.image, td.uri {
 
 #ssh, #storage {
 	display: none;
+	padding-top: 2.5%;
 }
 
 .newpod-span {
-    float: right;
-    margin-right: 10px;
-    margin-top: -35px;
     display: none;
+    margin: auto;
+    width: 60%;
+    padding: 10px;
 }
 
 .sshpod {
@@ -79,13 +94,12 @@ td.image, td.uri {
 }
 
 .storagepath {
-    width: 35% !important;
+    width: 60% !important;
 }
 
 #description {
     padding-left: 2.5%;
-    padding-right: 30%;
-    padding-top: 1%;
+    padding-right: 20%;
 }
 
 #podinput {
@@ -104,12 +118,13 @@ td.image, td.uri {
 }
 
 .box-left {
-	padding-left:2.5%;
+	padding-left:5.5%;
 	padding-bottom:1%;
 }
 
 .box {
 	padding-bottom:1.5% !important;
+	padding-top: 4%;
 }
 
 #loading {
@@ -176,4 +191,26 @@ h3.oc-dialog-title {
 	position:absolute; 
 	bottom:40px; 
 	left:40px;
+}
+
+.extra-info {
+  display: none;
+  line-height: 20px;
+  font-size: 12px;
+}
+
+.pod-info:hover .extra-info {
+  display: block;
+}
+
+.pod-info {
+  font-size: 15px;
+  border-radius: 15px;
+}
+
+.pod-info:hover {
+  background-color: white;
+  padding: 0 0 4px 8px;
+  width: 315px;
+  text-align: left !important;
 }
