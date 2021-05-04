@@ -33,7 +33,9 @@ $(document).ready(function() {
 		            url:OC.filePath('kubernetes', 'ajax','actions.php'),
 			    data: { pod : podSelected },
                             beforeSend: function(){
-				   $("#podstable").css("visibility", "hidden");
+				   $("#pod-create").css("visibility", "hidden");
+				   $("#podstable").css("visibility", "hidden"); 
+				   $("#myHead").css("visibility", "hidden");
                                    $("#loading").css("display", "block");
 				   $("#loading-text").text("Your pod is being deleted... Please wait!");
 			           },

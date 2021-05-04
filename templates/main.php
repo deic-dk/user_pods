@@ -32,13 +32,8 @@
   </div>
  </div> 
 </div>
-<div class="myHead">
-  <h3 style="
-      padding-bottom: 28px;
-      margin-left: 10px;
-      margin-top: 10px;
-">
-Your running pods:</h3>
+<div id="myHead">
+  <h3>Your running pods:</h3>
 </div>
 <div id="loading">
   <div id="loading-text">Your pod is being deleted.. Please wait!</div>
