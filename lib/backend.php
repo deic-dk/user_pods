@@ -49,11 +49,11 @@ class OC_Kubernetes {
     }
 
     
-    public static function createUserFolder($uid){
+    public static function createUserFolder($uid, $app){
 	  
 	    \OC_User::setUserId($uid);
-            \OC_Util:: setupFS($uid);
-	    $fs = \OCP\Files::getStorage('kubernetes');
+            \OC_Util::setupFS($uid);
+	    $fs = \OCP\Files::getStorage($app);
 	    if (!$fs){
 	       \OCP\Util::writeLog('kubernetes', 'Could not create a folder' .$uid, \OCP\Util::ERROR);
 	        return false;
@@ -65,7 +65,7 @@ class OC_Kubernetes {
 
       public static function getLogs( $pod, $uid ){
 
-          $log = "/tank/data/owncloud/kerverous/kubernetes/logs/";
+          $log = self::createUserFolder($uid, 'kubernetes') . "/logs/";
 	     if (!is_dir($log)){
 	     
 	        mkdir($log,0750, true);
@@ -77,12 +77,7 @@ class OC_Kubernetes {
             $final_file = file_put_contents($log_file, $response);
 	    return $log_file;
 
-	  /*  header('Content-Type: application/octet-stream');
-	    header('Content-Disposition: attachment; filename="'.basename($log_file)'"');
-	    header('Cache-Control: must-revalidate');
-	    header('Pragma: pyblic');
-	    header('Content-Length: ', filesize($log_file));
-	    readfile($log_file); */
+	 
       }
 
 /* public static function createPod($yaml_uri, $uid, $ssh_key, $storage_path){
