@@ -1,9 +1,9 @@
 function mdToHtml(text) {
-	// Convert markdown to HTML format
-	var converter = new showdown.Converter(),
-    	text      = text,
-    	html      = converter.makeHtml(text);
-	return html;
+    // Convert markdown to HTML format
+    var converter = new showdown.Converter(),
+        text = text,
+        html = converter.makeHtml(text);
+    return html;
 }
 
 $(document).ready(function () {
@@ -22,8 +22,8 @@ $(document).ready(function () {
 
     $("#podinput").prop("selectedIndex", -1);
 
-	// Pod information and user input
-    $("#podinput").change(function () { 
+    // Pod information and user input
+    $("#podinput").change(function () {
         var select_value = $(this).val()
         $.post(OC.filePath('kubernetes_app', 'ajax', 'actions.php'), {
             yaml_file: select_value,
@@ -69,7 +69,7 @@ $(document).ready(function () {
         });
     });
 
-	// Create a new pod
+    // Create a new pod
     $('#newpod #ok').on('click', function () {
         var yaml_file = $('#podinput').val();
         var ssh_key = $('.sshpod').val();
@@ -97,7 +97,7 @@ $(document).ready(function () {
             }
         });
     });
-	// Delete a pod
+    // Delete a pod
     $("#podstable td #delete-pod").live('click', function () {
         var podSelected = $(this).closest('tr').attr('id');
         $('#dialogalert').dialog({
@@ -159,7 +159,7 @@ $(document).ready(function () {
         }
     });
 
-	// User's pod information
+    // User's pod information
     $("#podstable .name").live('click', function () {
         var pod = $(this).closest('td').attr('id');
         var https_port = $(this).closest('tr').find("span#https_port").html();

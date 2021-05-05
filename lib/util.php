@@ -162,10 +162,10 @@ class OC_Kubernetes_Util
 		foreach ($containers as $container) {
 			if (isset($container['env']) == true) {
 				$env = $container['env'];
-        			foreach ($env as $var) {
-                			if ($var['name'] == 'SSH_PUBLIC_KEY') {
-                        			$has_ssh = true;
-                			}
+				foreach ($env as $var) {
+					if ($var['name'] == 'SSH_PUBLIC_KEY') {
+						$has_ssh = true;
+					}
 				}
 			}
 			if (isset($container['volumeMounts']) == true) {
@@ -193,36 +193,35 @@ class OC_Kubernetes_Util
 	 */
 	{
 		try {
-		$yaml_github_uri = self::$GITHUB_CONTENT_URI . $github_repo . 'main/' . $yaml_file;
-		$yaml_content = self::getContent($yaml_github_uri);
+			$yaml_github_uri = self::$GITHUB_CONTENT_URI . $github_repo . 'main/' . $yaml_file;
+			$yaml_content = self::getContent($yaml_github_uri);
 
-		$file_path =  self::getAppDir($uid, 'files');
+			$file_path =  self::getAppDir($uid, 'files');
 
-		$file = $file_path . '/' . $yaml_file;
-		$temp_file = fopen($file, "w") or die("Unable to open file!");
-		fwrite($temp_file, $yaml_content);
-		fclose($temp_file);
+			$file = $file_path . '/' . $yaml_file;
+			$temp_file = fopen($file, "w") or die("Unable to open file!");
+			fwrite($temp_file, $yaml_content);
+			fclose($temp_file);
 
-		$complete_uri = self::$CADDY_URI . "run_pod.php?user_id=" . $uid . "&yaml_url=/files/" . $yaml_file;
-		if (is_null($ssh_key) == false) {
-			$encoded_key = rawurlencode($ssh_key);
-			if (is_null($storage_path) == false) {
-				$complete_uri = $complete_uri . "&storage_path=" . $storage_path . "&public_key=" . $encoded_key;
+			$complete_uri = self::$CADDY_URI . "run_pod.php?user_id=" . $uid . "&yaml_url=/files/" . $yaml_file;
+			if (is_null($ssh_key) == false) {
+				$encoded_key = rawurlencode($ssh_key);
+				if (is_null($storage_path) == false) {
+					$complete_uri = $complete_uri . "&storage_path=" . $storage_path . "&public_key=" . $encoded_key;
+				} else {
+					$complete_uri = $complete_uri . "&public_key=" . $encoded_key;
+				}
 			} else {
-				$complete_uri = $complete_uri . "&public_key=" . $encoded_key;
+				if (is_null($storage_path) == false) {
+					$complete_uri = $complete_uri . "&storage_path=" . $storage_path;
+				}
 			}
-		} else {
-			if (is_null($storage_path) == false) {
-				$complete_uri = $complete_uri . "&storage_path=" . $storage_path;
-			}
-		}
 
-		$response = file_get_contents($complete_uri);
+			$response = file_get_contents($complete_uri);
 
-		unlink($file);
+			unlink($file);
 
-		return $response;
-
+			return $response;
 		} catch (\Exception $e) {
 			\OCP\Util::logException('Pod creation', $e);
 			OCP\JSON::error(array(

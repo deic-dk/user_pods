@@ -26,37 +26,37 @@
                         ?>
                     </select>
                 </span>
-		<div class="kube-row">
-			<div class="kube-column">
-				<div id="storage" class="box-left">
-                    			<h4>Volume mount</h4><input class="storagepath box" id="storagepath" type="text" placeholder="Folder under /storage to mount in the container...">
-    						<div class="pod-info">
-      							<i class="icon-info"></i>
+                <div class="kube-row">
+                    <div class="kube-column">
+                        <div id="storage" class="box-left">
+                            <h4>Volume mount</h4><input class="storagepath box" id="storagepath" type="text" placeholder="Folder under /storage to mount in the container...">
+                            <div class="pod-info">
+                                <i class="icon-info"></i>
 
-      							<span class="extra-info">
-								<span id="webdav"></span>
-                                        			<div id="mount-path"></div>
-      							</span>
-    						</div>
-                		</div>
-				<div id="ssh" class="box-left">
-                                        <h4> Public SSH key</h4>
-                                        <div><input class="sshpod box" id="sshpod" type="text" placeholder="Paste your public SSH key here..."></div>
-                                </div>
-				<span class="newpod-span">
-                    			<div id="ok" class="btn-pod" original-title="">
-                        			<a class="btn btn-default btn-flat" href="#">Add</a>
-                    			</div>
-                    			<div id="cancel" class="btn-pod" original-title="">
-                        			<a class="btn btn-default btn-flat" href="#">Cancel</a>
-                    			</div>
-                		</span>
-			</div>
-  			<div class="kube-column">
-				<div id="description"></div>
-				<span id="links"></span>
-			</div>
-		</div>
+                                <span class="extra-info">
+                                    <span id="webdav"></span>
+                                    <div id="mount-path"></div>
+                                </span>
+                            </div>
+                        </div>
+                        <div id="ssh" class="box-left">
+                            <h4> Public SSH key</h4>
+                            <div><input class="sshpod box" id="sshpod" type="text" placeholder="Paste your public SSH key here..."></div>
+                        </div>
+                        <span class="newpod-span">
+                            <div id="ok" class="btn-pod" original-title="">
+                                <a class="btn btn-default btn-flat" href="#">Add</a>
+                            </div>
+                            <div id="cancel" class="btn-pod" original-title="">
+                                <a class="btn btn-default btn-flat" href="#">Cancel</a>
+                            </div>
+                        </span>
+                    </div>
+                    <div class="kube-column">
+                        <div id="description"></div>
+                        <span id="links"></span>
+                    </div>
+                </div>
 
             </div>
         </div>
