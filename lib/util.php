@@ -192,6 +192,7 @@ class OC_Kubernetes_Util
 	 * @return string  Response from the kube server 
 	 */
 	{
+		try {
 		$yaml_github_uri = self::$GITHUB_CONTENT_URI . $github_repo . 'main/' . $yaml_file;
 		$yaml_content = self::getContent($yaml_github_uri);
 
@@ -202,7 +203,7 @@ class OC_Kubernetes_Util
 		fwrite($temp_file, $yaml_content);
 		fclose($temp_file);
 
-		$complete_uri = self::$CADDY_URI . "run_pod.php?user_id=" . $uid . "&yaml_uri=/files/" . $yaml_file;
+		$complete_uri = self::$CADDY_URI . "run_pod.php?user_id=" . $uid . "&yaml_url=/files/" . $yaml_file;
 		if (is_null($ssh_key) == false) {
 			$encoded_key = rawurlencode($ssh_key);
 			if (is_null($storage_path) == false) {
@@ -220,8 +221,17 @@ class OC_Kubernetes_Util
 
 		unlink($file);
 
-		// TODO Add exceptions and handling
 		return $response;
+
+		} catch (\Exception $e) {
+			\OCP\Util::logException('Pod creation', $e);
+			OCP\JSON::error(array(
+				'data' => array(
+					'exception' => '\Exception',
+					'message' => $l->t('Unknown error')
+				)
+			));
+		}
 	}
 
 	private static function getAppDir($uid, $app)

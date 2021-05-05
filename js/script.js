@@ -1,4 +1,5 @@
 function mdToHtml(text) {
+	// Convert markdown to HTML format
 	var converter = new showdown.Converter(),
     	text      = text,
     	html      = converter.makeHtml(text);
@@ -21,7 +22,8 @@ $(document).ready(function () {
 
     $("#podinput").prop("selectedIndex", -1);
 
-    $("#podinput").change(function () {
+	// Pod information and user input
+    $("#podinput").change(function () { 
         var select_value = $(this).val()
         $.post(OC.filePath('kubernetes_app', 'ajax', 'actions.php'), {
             yaml_file: select_value,
@@ -67,6 +69,7 @@ $(document).ready(function () {
         });
     });
 
+	// Create a new pod
     $('#newpod #ok').on('click', function () {
         var yaml_file = $('#podinput').val();
         var ssh_key = $('.sshpod').val();
@@ -88,16 +91,13 @@ $(document).ready(function () {
                 $('#newpod').val("");
                 $('#loading').css("display", "block");
             },
-            complete: function () {
-                // Hide loading
-            },
             success: function (data) {
                 location.reload();
 
             }
         });
     });
-
+	// Delete a pod
     $("#podstable td #delete-pod").live('click', function () {
         var podSelected = $(this).closest('tr').attr('id');
         $('#dialogalert').dialog({
@@ -129,9 +129,6 @@ $(document).ready(function () {
                             $("#loading-text").text("Deleting your pod... Please wait");
                             $("#loading").css("display", "block");
                         },
-                        complete: function () {
-
-                        },
                         success: function (data) {
                             location.reload();
                         }
@@ -162,7 +159,7 @@ $(document).ready(function () {
         }
     });
 
-
+	// User's pod information
     $("#podstable .name").live('click', function () {
         var pod = $(this).closest('td').attr('id');
         var https_port = $(this).closest('tr').find("span#https_port").html();
