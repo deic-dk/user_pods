@@ -1,8 +1,100 @@
-$(document).ready(function() {
-	var hostname = $(location).attr('host');;
+var dockerhub_url = 'https://hub.docker.com/r/';
+var kube_public_url = 'https://kube.sciencedata.dk';
 
-	var dockerhub_uri = 'https://hub.docker.com/r/';
-	var github_uri = 'https://github.com/deic-dk/pod_manifests/blob/main/';
+function parseUrl( url ) {
+  var a = document.createElement('a');
+  a.href = url;
+  return a;
+}
+
+function getRow(container){
+	var str = "";
+	for(const col in container){
+		str += "	<td>"+
+		"\n	<div column="+col+">"+
+		"\n		<span>"+(col=="url"||col=="ssh_url"?"<a href='"+container[col]+"'>"+container[col]+"</a>":container[col])+"</span>"+
+		"\n	</div>"+
+		"\n</td>"	};
+	str +="\n<td><a href='#' title="+t('user_pods', 'Delete pod')+" class='delete-pod action icon icon-trash-empty'></a></td>";
+	str ="	<tr pod_name='"+container['pod_name']+"' container_name='"+container['container_name']+"'>"+str+"\n</tr>";
+	return str;
+}
+
+function getContainers(podNames){
+	$("#loading-text").text(t("user_pods", "Working..."));
+	$('#loading').show();
+	$.ajax({
+		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
+		data:  {action: 'get_containers', pod_names: podNames},
+		success: function(jsondata) {
+			if(jsondata.status == 'error'){
+				if(jsondata.data &&jsondata.data.error && jsondata.data.error == 'authentication_error'){
+					OC.redirect('/');
+				}
+			}
+			jsondata.data.forEach(function(value, index, array){
+				if(index==0){
+					if(!$('table#podstable thead tr th').length){
+						for(const col in value){
+							$('table#podstable thead tr').append("						<th class='column-display'>"+
+							"\n							<div class='display sort columntitle' data-sort='public'>"+
+							"\n								<span>"+col+"</span>"+
+							"\n							</div>"+
+							"\n						</th>");
+						}
+						$('table#podstable thead tr').append("n						<th class='column-display'></th>");
+					}
+				}
+				$('tbody#fileList').append(getRow(value));
+			});
+			if(!podNames){
+				$('table#podstable tfoot.summary tr td span.info').remove();
+				$('table#podstable tfoot.summary tr td').append("<span class='info' containers='"+jsondata.data.length+"'>"+
+						jsondata.data.length+" "+(jsondata.data.length==1?t("user_pods", "container"):t("user_pods", "containers"))+
+						"</span");
+			}
+			$('#loading').hide();
+		},
+	error: function(){
+			$('#loading').hide();
+			OC.dialogs.alert(t("user_pods", "Something went wrong..."), t("user_pods", "Error"));
+		}
+	});
+}
+
+function runPod(yaml_file, ssh_key, storage_path){
+	$('#loading').show();
+	$.ajax({url: OC.filePath('user_pods', 'ajax', 'actions.php'),
+		data: {action: 'create_pod', yaml_file: yaml_file, public_key: ssh_key, storage_path: storage_path}, 
+		method: 'post',
+		success: function(jsondata) {
+			if(jsondata.status == 'error'){
+				if(jsondata.data && jsondata.data.error && jsondata.data.error == 'authentication_error'){
+					OC.redirect('/');
+				}
+			}
+			// Get pod name from line like
+			// pod/ubuntu-focal-kerverous-3 created
+			var podName = jsondata.message.replace(/[\s\S]+\npod\/(.*) created\n[\s\S]+/, '$1');
+			if(podName && podName!=jsondata.message){
+				$('#loading').show();
+				getContainers([podName]);
+				var containers_now = parseInt($('table#podstable tfoot.summary tr td span.info').attr('containers'), 10) +1;
+				$('table#podstable tfoot.summary tr td span.info').remove();
+				$('table#podstable tfoot.summary tr td').append("<span class='info' containers='"+containers_now+"'>"+
+						containers_now+" "+(containers_now==1?t("user_pods", "container"):t("user_pods", "containers"))+
+						"</span");
+			}
+			else{
+				OC.dialogs.alert(t("user_pods", "Something went wrong..."), t("user_pods", "Error"));
+			}
+			$('#loading').hide();
+		}
+	});
+}
+
+	$(document).ready(function() {
+	var hostname = $(location).attr('host');
 
 	$('a#pod-create').click(function() {
 		$('#newpod').slideToggle();
@@ -12,107 +104,132 @@ $(document).ready(function() {
 		$('#newpod').slideToggle();
 	});
 
-	$("#podinput").prop("selectedIndex", -1);
+	$("#yaml_file").prop("selectedIndex", -1);
 
-	$("#podinput").change(function () {
-        	var select_value = $(this).val()
-		$.post(OC.filePath('kubernetes_app', 'ajax', 'actions.php') ,{ yaml_file : select_value } ,  function (jsondata){
-                            if(jsondata.status == 'success'){
-				var image_github_uri = github_uri + select_value;
-				var image_dockerhub_uri = dockerhub_uri + jsondata.data.included[2];
-				var dockerhub_description = jsondata.data.included[3];
-
-				var webdav_link = 'https://' + hostname + '/storage/' + OC.currentUser;
-				var webdav_link_ref  = '<a href=\''+webdav_link+'\'target="_blank">'+webdav_link+'</a>';
-				var image_info = '<span style="padding-left:1%"><a href=\''+image_github_uri+'\'target="_blank">GitHub page</a></span>\
-				    			<span style="padding-left:1%"><a href=\''+image_dockerhub_uri+'\'target="_blank">DockerHub page</a></span>';
+	$("#yaml_file").change(function () {
+		$("#loading-text").text(t("user_pods", "Working..."));
+		$('#loading').show();
+		var select_value = $(this).val();
+		if(!select_value) {
+			$('div#storage').hide();
+			$('div#ssh').hide();
+			$('#webdav').empty();
+		}
+		if(!select_value){
+			$('#loading').hide();
+			return;
+		}
+		$.post(OC.filePath('user_pods', 'ajax', 'actions.php') , { action: 'check_manifest', yaml_file : select_value } ,  function (jsondata){
+			$('#loading').hide();
+			if(jsondata.status == 'success'){
+				var link = '<span><a href=\''+jsondata.data['manifest_url']+'\'target="_blank">YAML source</a></span>';
 				$('#links').empty();
-				$('#links').append(image_info);
-
+				$('#links').append(link);
 				$('#description').empty();
-				$('#description').append(dockerhub_description);
-
-				if (jsondata.data.included[0]==true) {
-					$('div#ssh').css('visibility', 'visible');
+				$('#description').append(marked(jsondata.data['manifest_info']));
+				if (jsondata.data['pod_accepts_public_key']==true) {
+					$('div#ssh').show();
 				}
 				else {
-					$('div#ssh').css('visibility', 'hidden');
+					$('div#ssh').hide();
 				}
-				if (jsondata.data.included[1]==true) {
-					$('div#storage').css('visibility', 'visible');
-					$('#webdav').empty();
-					$('#webdav').append(webdav_link_ref);
-
+				if (jsondata.data['pod_mount_path'] && jsondata.data['pod_mount_path']['sciencedata']) {
+					var storage_input = "";
+					for (var containerIndex in jsondata.data['container_infos']) {
+						var container = jsondata.data['container_infos'][containerIndex];
+						for (var name in container['mount_paths']) {
+							if(name=='sciencedata'){
+								var mountPath = container['mount_paths'][name];
+								var mountName = new String(mountPath).substring(mountPath.lastIndexOf('/') + 1); 
+								if(mountPath && mountName){
+									storage_input = storage_input+
+									'<input image_name="'+container['image_name']+'" type="text" placeholder="'+
+									t('user_pods', 'Storage path')+'" image="'+container['image_name']+'" mountPath="'+mountPath+'" title="'+
+									t('user_pods', 'Directory under')+' '+
+									'<a href=\'https://'+encodeURIComponent($('head').attr('data-user'))+'@'+
+									location.hostname+'/storage/\' target=\'_blank\'>/storage/</a> '+t('user_pods', 'to mount on')
+									+' <b>'+mountPath+'</b> '+t('user_pods', 'inside')+' '+container['image_name']+', '+t('user_pods', 'and serve via https.')+
+									'"></input>'+
+									"\n";
+									// Although they yaml can, in principle have different containers with different mounts, or multiple mounts in one container,
+									// run_pod only supports one storage_path
+									break;
+								}
+							}
+						}
+					}
+					$('div#storage').show();
+					$('#storage').empty();
+					$('#storage').append(storage_input);
+					$('#storage input').tipsy({html: true, hoverable: true});
 				}
 				else {
-					$('div#storage').css('visibility', 'hidden');
+					$('div#storage').hide();
 				}
-			    }
-
-		});
-    	});
-
-	$('#newpod #ok').on('click', function() {
-		var yaml_file = $('#podinput').val();
-		var ssh_key = $('.sshpod').val();
-		var storage = $('.storagepath').val();
-		if( ssh_key != "" && storage != "") {
-			$.ajax({url: OC.filePath('user_pods', 'ajax', 'actions.php'),
-				data: {pod_image: yaml_file, ssh: ssh_key, storage: storage}, 
-				method: 'post',
-				beforeSend: function() {
-					$('#podstable').css("visibility", "hidden");
-					$('#pod-create').css("visibility", "hidden");
-					$('#newpod').slideToggle();
-					$('#newpod').val("");
-					$('#loading').css("display", "block");
-    				},
-    				complete: function() {
-        				// Hide loading
-    				},
-    				success: function(data) {
-					location.reload();
-
-			}				
+			}
+			else if(jsondata.status == 'error'){
+				if(jsondata.data &&jsondata.data.error && jsondata.data.error == 'authentication_error'){
+					OC.redirect('/');
+				}
+			}
 		});
 	});
 
-	$("#podstable td #delete-pod").live('click', function() {
-		var podSelected = $(this).closest('tr').attr('id');
-                $( '#dialogalert' ).dialog({ buttons: [ { id:'test','data-test':'data test', text: 'Delete', click: function() {
-			$.post(OC.filePath('user_pods', 'ajax', 'actions.php') ,{ pod_name : podSelected } ,  function (jsondata){ 
+	$('#newpod #ok').on('click', function() {
+		var yaml_file = $('#yaml_file').val();
+		var ssh_key = $('#public_key').val();
+		var storage_path = "";
+		 $('#storage input').each(function(el){
+			 if($(this).attr('image_name') ){
+				storage_path = $(this).val();
+				// Although the yaml can, in principle have different containers with different mounts, or multiple mounts in one container,
+				// run_pod only supports one storage_path
+				if(!storage_path ||  storage_path== "") {
+					OC.dialogs.alert(t("user_pods", "Please fill in the directory to mount from your home server"), t("user_pods", "Missing storage path"));
+				}
+				else{
+					runPod(yaml_file, ssh_key, storage_path);
+				}
+				return false;
+			 }
+		 });
+	});
 
-                            if(jsondata.status == 'success'){ 
-                             	location.reload();
-
-			    } 
-			    
-
-		      });
-			
+	$("#podstable td .delete-pod").live('click', function() {
+		var podSelected = $(this).closest('tr').find('td div[column="pod_name"] span').text().trim();
+		$( '#dialogalert' ).html("<div>"+t("user_pods","Are you sure you want to delete the pod")+" "+podSelected+"?</div>");
+		$( '#dialogalert' ).dialog({buttons: [ { id:'test','data-test':'data test', text: 'Delete', click: function(el) {
 			$.ajax({url: OC.filePath('user_pods', 'ajax', 'actions.php'),
-				data: {pod_name: podSelected},
+				data: {action: "delete_pod", pod_name: podSelected},
 				method: 'post',
 				beforeSend: function() {
-					$('#podstable').css("visibility", "hidden");
-					$('#pod-create').css("visibility", "hidden");
-					$("#loading-text").text("Deleting your pod... Please wait");
-					$('#loading').css("display", "block");
+					$("#loading-text").text(t("user_pods", "Deleting your pod..."));
+					$('#loading').show();
 				},
 				complete: function() {
-					
 				},
 				success: function(data) {
-					location.reload();
+					if(data.status == 'success'){
+						$('tr[pod_name="'+podSelected+'"]').remove();
+						var containers_now = parseInt($('table#podstable tfoot.summary tr td span.info').attr('containers'), 10) -1;
+						$('table#podstable tfoot.summary tr td span.info').remove();
+						$('table#podstable tfoot.summary tr td').append("<span class='info' containers='"+containers_now+"'>"+
+								containers_now+" "+(containers_now==1?t("user_pods", "container"):t("user_pods", "containers"))+
+								"</span");
+						$('#loading').hide();
+					}
+					else if(data.status == 'error'){
+						if(data.data.error && data.data && data.data.error == 'authentication_error'){
+							OC.redirect('/');
+						}
+					}
 				}
 			});
+			$(this).dialog( 'close' ); } },
+			{ id:'test2','data-test':'data test', text: 'Cancel', click: function() {
+				$(this).dialog( 'close' ); } } ] });
+	});
 
-                $(this).dialog( 'close' ); } },
-                { id:'test2','data-test':'data test', text: 'Cancel', click: function() {
-                $(this).dialog( 'close' ); } } ] });
-
-        });
-	
 	$("#podstable > tbody > tr").each(function() {
   		var value = $(this).find("td span#status").text();
 		if (~value.indexOf("Running")) {
@@ -127,23 +244,22 @@ $(document).ready(function() {
 	$("#podstable .name").live('click', function() {
 		var pod = $(this).closest('td').attr('id') ;
 		var https_port = $(this).closest('tr').find("span#https_port").html();
-		var uri = $(this).closest('tr').find('span#uri').html();
-		var complete_uri = 'https://kube.sciencedata.dk:' + https_port + '/' + uri;
-
+		var url = $(this).closest('tr').find('span#url').html();
+		var complete_url = kube_public_url+':' + https_port + '/' + url;
 		var image = $(this).closest('tr').find('span#image').html();
-		var image_uri = dockerhub_uri + image;
+		var image_url = dockerhub_url + image;
 		var html = '<div><span><h3 class="oc-dialog-title" style="padding-left:25px;"><span>'+ pod+'</span></h3></span><a class="oc-dialog-close close svg"></a>\
 			<div id="meta_data_container" class=\''+ pod +'\'>\
 			<div style="position:absolute; left:40px; top:80px;">Original image on Docker Hub:\
-		        <div><a href=\''+image_uri+'\'target="_blank">'+ image_uri + '</a></div></div>\
+			<div><a href=\''+image_url+'\'target="_blank">'+ image_url + '</a></div></div>\
 			<div style="position:absolute; left:40px; top:140px;">\
-			<div id="uri">Access web service:</div>\
-			<div><a href=\''+complete_uri+'\'target="_blank">'+ complete_uri +'</a></div></div>\
-          		<div style="position:absolute; bottom:40px; left:40px;" >\
+			<div id="url">Access web service:</div>\
+			<div><a href=\''+complete_url+'\'target="_blank">'+ complete_url +'</a></div></div>\
+			<div style="position:absolute; bottom:40px; left:40px;" >\
 			<div>Download the logs of your container:</div><p></p>\
 			<button id="download-logs" class="download btn btn-primary btn-flat">Download</button>&nbsp\
 			</div>\
-                        </div>';
+</div>';
 
 		$(html).dialog({
 			  dialogClass: "oc-dialog",
@@ -158,7 +274,7 @@ $(document).ready(function() {
 		$('.oc-dialog-close').live('click', function() {
 			$(".oc-dialog").hide();
 			$('.modalOverlay').remove();
-        	});
+		});
 
 		$('.ui-helper-clearfix').css("display", "none");
 
@@ -168,9 +284,12 @@ $(document).ready(function() {
 	});
 
 	$(document).click(function(e){
-          if (!$(e.target).parents().filter('.oc-dialog').length && !$(e.target).parents().filter('.name').length ) {
-                $(".oc-dialog").hide();
-		$('.modalOverlay').remove();
-           }
-        });
+		if (!$(e.target).parents().filter('.oc-dialog').length && !$(e.target).parents().filter('.name').length ) {
+			$(".oc-dialog").hide();
+			$('.modalOverlay').remove();
+			}
+		});
+	
+	getContainers();
+	
 });

@@ -1,200 +1,231 @@
 <?php
 
 class OC_Kubernetes_Util {
-    private static $CADDY_URI = 'http://10.0.0.12/';
-    private static $GITHUB_URI = 'https://raw.githubusercontent.com/deic-dk/pod_manifests/main/';
-    private static $DOCKERHUB_URI = 'https://hub.docker.com/v2/repositories/';
-     /**
-     * @brief Get all user's pods
-     * @param  string $uid Name of the user
-     * @return array  with pod names of a user
-     */
+	
+	private static $KUBE_PRIVATE_IP = '10.0.0.12';
+	private static $KUBE_PUBLIC_IP = 'kube.sciencedata.dk';
+	public static $GITHUB_URL = 'https://raw.githubusercontent.com/deic-dk/pod_manifests/main/';
+	private static $DOCKERHUB_URL = 'https://hub.docker.com/v2/repositories/';
+	private static $STORAGE_DIR = "/tank/storage/";
+	private static $MANIFESTS_URL = 'https://github.com/deic-dk/pod_manifests';
+	
 
-    public static function createStorageDir($uid)
-    {
-	  $folder_path = "/tank/storage/".$uid;
+	/**
+	 * @brief Get all user's pods
+	 * @param  string $uid Name of the user
+	 * @return array  with pod names of a user
+	 */
+	public static function createStorageDir($uid) {
+		$folder_path = self::$STORAGE_DIR . $uid;
+		if (!is_dir($folder_path)) {
+			mkdir($folder_path, 0755, true);
+		}
+	}
 
-	  if (!is_dir($folder_path))
-	  {
-    		mkdir($folder_path, 0755, true);
-	  } 
-    }
-
-    public static function getUserPods( $uid )
-    {
-  	$table = array();		
-	$complete_uri = OC_Kubernetes_Util::$CADDY_URI."get_containers.php?user_id=".$uid;
-	$response = file_get_contents($complete_uri);
-	$rows = explode("\n", $response);
-	array_pop($rows);
-	foreach ($rows as $row) {
-		$container = array("pod_name"=>"","container_name"=>"", "image"=>"", "status"=>"", "ssh_port"=>"", "https_port"=> "", "uri"=>"");
-		$cells = explode("|", $row);
-
-		$container["pod_name"] = $cells[0] ?? "";
-		$container["container_name"] = $cells[1] ?? "";
-		$container["image"] = $cells[2] ?? "";
-		$container["status"] = $cells[7] ?? "";
-		$container["ssh_port"] = $cells[8] ?? "";
-		$container["https_port"] = $cells[9] ?? "";
-		$container["uri"] = $cells[10] ?? "";
-		array_push($table, $container);
-	}	
-        return $table;
-    }
-
-    public static function addRow($index, $value)
-    {
-	echo "<td id=\"$index\"  class=\"$value\">
-                 <div class=\"$index\">
-                      <span id=\"$index\">$value</span>
-                 </div>
-              </td>";
-    }
-
-    private static function getContent($uri) 
-    {
-	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, $uri);
-	curl_setopt($ch,CURLOPT_USERAGENT,'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
-	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	$data = curl_exec($ch);
-	curl_close($ch);
-	return $data;
-    }
-
-    public static function getImages()
-    {
-	$default_pods_uri =  'https://github.com/deic-dk/pod_manifests';
-	try {
-		$res = self::getContent($default_pods_uri);
-		$type = '.yaml';
-		$filenames = array();
-
-		$dom = new DomDocument();
-		$dom->loadHTML($res, LIBXML_NOERROR);
-
-		$finder = new DomXPath($dom);
-		$classname="js-navigation-open Link--primary";
-		$nodes = $finder->query("//*[contains(@class, '$classname')]");
-
-		foreach( $nodes as $elem ) {
-    			$filename = $elem->textContent;
-			$len = strlen($type);
-
-			$is_yaml = (substr($filename, -$len) === $type);
-			if ($is_yaml == true) {
-				array_push($filenames, $filename);
+	public static function getContainers($uid, $podNames=null){
+		$containers = array();
+		// pod_name|container_name|image_name|pod_ip|node_ip|owner|age(s)|status|ssh_port|https_port|uri
+		$url = 'http://'.self::$KUBE_PRIVATE_IP."/get_containers.php?fields=include&user_id=".$uid;
+		$response = file_get_contents($url);
+		$rows = explode("\n", trim($response));
+		$fields = explode("|", array_shift($rows));
+		foreach($rows as $row) {
+			if(empty($row)){
+				continue;
+			}
+			$values = explode("|", $row);
+			$container = [];
+			$i = 0;
+			foreach($values as $value){
+				$container[$fields[$i]] = empty($value)?"":$value;
+				++$i;
+			}
+			if(!empty($container['uri'])||!empty($container['https_port'])){
+				$container['url'] = 'https://'.self::$KUBE_PUBLIC_IP.(empty($container['https_port'])?'':':'.$container['https_port']).
+					'/'.(empty($container['uri'])?'':$container['uri']);
+			}
+			else{
+				$container['url'] = '';
+			}
+			unset($container['uri']);
+			unset($container['https_port']);
+			if(!empty($container['ssh_port'])){
+				$container['ssh_url'] = 'ssh://'.
+					(empty($container['ssh_username'])?'':$container['ssh_username'].'@').
+					self::$KUBE_PUBLIC_IP.':'.$container['ssh_port'];
+			}
+			else{
+				$container['ssh_url'] = '';
+			}
+			unset($container['ssh_port']);
+			unset($container['ssh_username']);
+			if(!empty($container['age'])){
+				$container['age'] = floor($container['age'] / 3600) . gmdate(":i:s", $container['age'] % 3600);
+			}
+			if(empty($podNames) || in_array($container['pod_name'], $podNames)){
+				array_push($containers, $container);
 			}
 		}
-
-		return $filenames;
-
-	} catch (\Exception $e) {
-		\OCP\Util::logException('Pods', $e);
-		OCP\JSON::error(array(
-			'data' => array(
-			'exception' => '\Exception',
-			'message' => $l->t('Unknown error')
-			)
-		));
+		\OC_Log::write('user_pods', "Got containers from " . $url.": ".serialize($containers), \OC_Log::WARN);
+		return $containers;
 	}
 
-  }
-
-  public static function getDockerhubDescription($image_name)
-  {
-	  $dockerhub_uri = self::$DOCKERHUB_URI.$image_name.'/';
-	  $dict = json_decode(self::getContent($dockerhub_uri));
-
-	  $description = $dict->{'full_description'};
-	  return $description;
-  }
-
-  public static function checkImage($yaml_file)
-  {     
-	$github_uri = self::$GITHUB_URI.$yaml_file;
-
-	$yaml_content = self::getContent($github_uri);
-
-	$has_ssh = false;
-	$has_mount = false;
-
-	$temp = explode("image:",$yaml_content);
-	$image_name = trim(explode(PHP_EOL, $temp[1])[0]);
-
-	$image_description = self::getDockerhubDescription($image_name);
-
-	if( strpos($yaml_content, "SSH_PUBLIC_KEY") !== false) {
-		$has_ssh = true;	
+	private static function getContent($uri) {
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $uri);
+		curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		$data = curl_exec($ch);
+		curl_close($ch);
+		return $data;
 	}
 
-	if( strpos($yaml_content, "mountPath") != false) {
-		$has_mount = true;
-	}
-	return array($has_ssh, $has_mount, $image_name, $image_description);
-  }
-
-  public static function createPod($yaml_file, $ssh_key, $storage_path, $uid)
-  {
-	$complete_uri = self::$CADDY_URI."run_pod.php?user_id=".$uid."&yaml_uri=/files/pod_manifests/".$yaml_file;
-	if (is_null($ssh_key) != false) {
-		$encoded_key = rawurlencode($ssh_key);
-		if (is_null($storage_path) != false) {
-			$complete_uri = $complete_uri."&storage_path=".$storage_path."&public_key=".$encoded_key;
-		} else  {
-			$complete_uri = $complete_uri."&public_key=".$encoded_key;
+	public static function getManifests() {
+		try {
+			$res = self::getContent(self::$MANIFESTS_URL);
+			$type = '.yaml';
+			$filenames = array();
+			$dom = new DomDocument();
+			$dom->loadHTML($res, LIBXML_NOERROR);
+			$finder = new DomXPath($dom);
+			$classname = "js-navigation-open Link--primary";
+			$nodes = $finder->query("//*[contains(@class, '$classname')]");
+			foreach ($nodes as $elem) {
+				$filename = $elem->textContent;
+				$len = strlen($type);
+				$is_yaml = (substr($filename, -$len) === $type);
+				if ($is_yaml == true) {
+					array_push($filenames, $filename);
+				}
+			}
+			return $filenames;
 		}
-	} else {
-		if (is_null($storage_path) != false) {
-			$complete_uri = $complete_uri."&storage_path=".$storage_path;
+		catch(\Exception $e) {
+			\OCP\Util::logException('Pods', $e);
+			OCP\JSON::error(array(
+				'data' => array(
+					'exception' => get_class($e),
+					'message' =>  $e->getMessage()
+				)
+			));
 		}
 	}
 
-	$response = file_get_contents($complete_uri);
-	// TODO Add exceptions and handling
-	return $response;
-  } 
-
-  private static function getAppDir($user){
-	\OC_User::setUserId($user);
-	\OC_Util::setupFS($user);
-	$fs = \OCP\Files::getStorage('kubernetes_app');
-	if(!$fs){
-		\OC_Log::write('kubernetes_app', "ERROR, could not access files of user ".$user, \OC_Log::ERROR);
-		return null;
+	public static function getDockerhubDescription($image_name) {
+		$dockerhub_url = self::$DOCKERHUB_URL . $image_name . '/';
+		$dict = json_decode(self::getContent($dockerhub_url));
+		$description = $dict->{'full_description'};
+		return $description;
 	}
-	return $fs->getLocalFile('/');
-  }
 
-  public static function deletePod($pod_name, $uid) 
-  {
-	  $complete_uri = OC_Kubernetes_Util::$CADDY_URI."delete_pod.php?user_id=".$uid."&pod=".$pod_name;
-	  $response = file_get_contents($complete_uri);
-	  return $response;
-  }
+	/**
+	 * Get available information on a manifest from our yaml repository.
+	 * @param $yaml_file
+	 * @return associative array with information
+	 */
+	public static function checkManifest($yaml_file) {
+		if(empty($yaml_file)){
+			return [];
+		}
+		$github_url = self::$GITHUB_URL . $yaml_file;
+		$yaml = self::getContent($github_url);
+		$arr = yaml_parse($yaml);
+		$md_file = preg_replace('/\.yaml$/', '.md', $yaml_file);
+		$github_md_url = self::$GITHUB_URL . $md_file;
+		$manifest_info = file_get_contents($github_md_url);
+		$pod_accepts_public_key = false;
+		$pod_username = "";
+		$pod_mount_path = [];
+		$containerInfos = [];
+		if(!empty($arr['spec']['containers'])){
+			foreach($arr['spec']['containers'] as $container){
+				$accepts_public_key = false;
+				$mountPaths = [];
+				$image_name = "";
+				if(!empty($container['image'])){
+					$image_name = $container['image'];
+				}
+				//$image_description = self::getDockerhubDescription($image_name);
+				if(!empty($container['env'])){
+					foreach($container['env'] as $env){
+						if(!empty($env['name']) && $env['name']=="SSH_PUBLIC_KEY"){
+							$accepts_public_key = true;
+							$pod_accepts_public_key = true;
+						}
+						if(!empty($env['name']) && $env['name']=="USERNAME" && !empty($env['value'])){
+							$username = $env['value'];
+							$pod_username = $env['value'];
+						}
+					}
+				}
+				if(!empty($container['volumeMounts'])){
+					$pod_mount_path[$container['volumeMounts'][0]['name']]= $container['volumeMounts'][0]['mountPath'];
+					foreach($container['volumeMounts'] as $volumeMount){
+						$mountPaths[$volumeMount['name']] = $volumeMount['mountPath'];
+					}
+				}
+				$containerInfos[] = [
+					'image_name'=>$image_name,
+					//'image_description'=>$image_description,
+					'accepts_public_key'=>$accepts_public_key,
+						'username'=>$username,
+					'mount_paths'=>$mountPaths
+				];
+			}
+		}
+		return ['manifest_url'=>$github_url, 'manifest_info'=>$manifest_info,
+				'pod_accepts_public_key'=>$pod_accepts_public_key, 'pod_username'=>$pod_username,
+				'pod_mount_path'=>$pod_mount_path, 'container_infos'=>$containerInfos];
+	}
 
-  public static function getLogs($pod_name, $uid)
-  {
-	  $file_path = self::getAppDir($uid)."/pod_logs/";
+	public static function createPod($yaml_url, $public_key, $storage_path, $uid) {
+		$url = 'http://'.self::$KUBE_PRIVATE_IP . "/run_pod.php?user_id=" . $uid .
+			"&yaml_url=" . $yaml_url;
+		if (!empty($public_key)) {
+			$encoded_key = rawurlencode($public_key);
+			$url = $url . "&public_key=" . $encoded_key;
+		}
+		if(!empty($storage_path)){
+			$url = $url . "&storage_path=" . $storage_path;
+		}
+		return file_get_contents($url);
+	}
 
-	  if (!is_dir($file_path))
-	  {
-    		mkdir($file_path, 0750, true);
-	  }	
-	  
-	  $complete_uri = OC_Kubernetes_Util::$CADDY_URI."get_pod_logs.php?user_id=".$uid."&pod=".$pod_name;
-	  $response = file_get_contents($complete_uri);
+	private static function getAppDir($user) {
+		\OC_User::setUserId($user);
+		\OC_Util::setupFS($user);
+		$fs = \OCP\Files::getStorage('user_pods');
+		if (!$fs) {
+			\OC_Log::write('user_pods', "ERROR, could not access files of user " . $user, \OC_Log::ERROR);
+			return null;
+		}
+		return $fs->getLocalFile('/');
+	}
 
-	  $file = $file_path.$pod_name.".log";
-	  $logfile = fopen($file, "w") or die("Unable to open file!");
-	  fwrite($logfile, $response);
-	  fclose($logfile);
+	public static function deletePod($pod_name, $uid) {
+		$complete_uri = 'http://'.self::$KUBE_PRIVATE_IP . "/delete_pod.php?user_id=" . $uid . "&pod=" . $pod_name;
+		$response = file_get_contents($complete_uri);
+		return $response;
+	}
 
-	  $type = filetype($file);
-	  header("Content-type: $type");
-  	  header("Content-Disposition: attachment;filename=$pod_name.log");
-       	  readfile($file);
-  }
+	public static function getLogs($pod_name, $uid) {
+		$file_path = self::getAppDir($uid) . "/pod_logs/";
+		if (!is_dir($file_path)) {
+			mkdir($file_path, 0750, true);
+		}
+
+		$complete_uri = 'http://'.self::$KUBE_PRIVATE_IP . "/get_pod_logs.php?user_id=" . $uid . "&pod=" . $pod_name;
+		$response = file_get_contents($complete_uri);
+		$file = $file_path . $pod_name . ".log";
+		$logfile = fopen($file, "w") or die("Unable to open file!");
+		fwrite($logfile, $response);
+		fclose($logfile);
+		$type = filetype($file);
+		header("Content-type: $type");
+		header("Content-Disposition: attachment;filename=$pod_name.log");
+		readfile($file);
+	}
+
 }
+

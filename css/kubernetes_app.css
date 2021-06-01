@@ -27,7 +27,7 @@ li
 	border:solid 1px #e4e4e4;
 	margin-bottom:20px;
 /*	height:15em; */
-	display:none
+	display:none;
 }
 
 #ssh {
@@ -38,15 +38,14 @@ li
 .newpod-span {
 	float: right;
 	margin-right: 10px;
-	margin-top: -35px;
+	margin-top: 12px;
 }
 
-.sshpod {
+#public_key {
 	width: 60% !important;
-	line-height: 50px;
 }
 
-.storagepath {
+#storage_path {
 	width: 35% !important;
 }
 
@@ -54,12 +53,16 @@ li
 	padding-left: 1.5%;
 }
 
+#storage input {
+	width: 240px;
+}
+
 #description {
 	padding-left: 1.5%;
 	padding-right: 30%;
 	padding-top: 1%;
 }
-#podinput {
+#yaml_file {
 	line-height: 1.5;
 	padding: 2px 0px 4px 5px;
 	margin-top:10px;
@@ -72,17 +75,6 @@ li
 	margin-left:20px; 
 	margin-bottom:20px; 
 	position:absolute
-}
-
-.loader {
-  border: 16px solid #f3f3f3; /* Light grey */
-  border-top: 16px solid #056a92; /* Blue */
-  border-radius: 50%;
-  width: 120px;
-  height: 120px;
-  margin: auto;
-  margin-top: 6%;
-  animation: spin 2s linear infinite;
 }
 
 @keyframes spin {
@@ -98,5 +90,67 @@ li
 
 #dialogalert {
     font-size: 12px;
+    white-space: normal;
+}
+
+.column-display {
+	padding-right:3%;
+	width:1%;
+}
+
+.text-right {
+	margin-right: 19px;
+}
+
+#ssh, #storage, #loading, #dialogalert {
+	display: none;
+}
+
+#loading-text {
+	text-align: center;
+}
+
+#loading {
+	position: fixed;
+	left: 47%;
+	background-color: #b5cc2d4d;
+	padding: 8px;
+	z-index: 10;
+}
+
+.running_pods {
+	padding-left: 1%;
+}
+
+#podstable {
+	width: 100%;
+}
+
+#newpod {
+	padding-bottom: 6px;
+}
+
+.app-user_pods div#running_pods {
+	overflow-x: scroll;
+}
+
+#podstable .summary .info {
+	margin-left: 0;
+}
+
+#podstable .summary {
+	height: 58px;
+}
+
+#podstable .delete-pod {
+	text-decoration:none;
+	color:#c5c5c5;
+	font-size:16px;
+	background-image:none';
+	padding: 3px 24px 5px 0
+}
+
+.app-user_pods .icon-loading-dark {
+	background-size: 16px;
 }
 
