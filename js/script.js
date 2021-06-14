@@ -38,7 +38,7 @@ function getContainers(podNames){
 						for(const col in value){
 							$('table#podstable thead tr').append("						<th class='column-display'>"+
 							"\n							<div class='display sort columntitle' data-sort='public'>"+
-							"\n								<span>"+col+"</span>"+
+							"\n								<span>"+t('user_pods', col)+"</span>"+
 							"\n							</div>"+
 							"\n						</th>");
 						}
@@ -63,6 +63,7 @@ function getContainers(podNames){
 }
 
 function runPod(yaml_file, ssh_key, storage_path){
+	$("#loading-text").text(t("user_pods", "Creating pod..."));
 	$('#loading').show();
 	$.ajax({url: OC.filePath('user_pods', 'ajax', 'actions.php'),
 		data: {action: 'create_pod', yaml_file: yaml_file, public_key: ssh_key, storage_path: storage_path}, 
@@ -133,11 +134,13 @@ function runPod(yaml_file, ssh_key, storage_path){
 				else {
 					$('div#ssh').hide();
 				}
-				if (jsondata.data['pod_mount_path'] && jsondata.data['pod_mount_path']['sciencedata']) {
+				if (jsondata.data['pod_mount_path'] &&(jsondata.data['pod_mount_path']['sciencedata'] ||  jsondata.data['pod_mount_path']['local'])) {
+					var mount_src = jsondata.data['pod_mount_src'] ;
 					var storage_input = "";
 					for (var containerIndex in jsondata.data['container_infos']) {
 						var container = jsondata.data['container_infos'][containerIndex];
 						for (var name in container['mount_paths']) {
+							// Notice that local mounts are specified in the yaml - to avoid rogue mounting
 							if(name=='sciencedata'){
 								var mountPath = container['mount_paths'][name];
 								var mountName = new String(mountPath).substring(mountPath.lastIndexOf('/') + 1); 
@@ -152,7 +155,7 @@ function runPod(yaml_file, ssh_key, storage_path){
 									'"></input>'+
 									"\n";
 									// Although they yaml can, in principle have different containers with different mounts, or multiple mounts in one container,
-									// run_pod only supports one storage_path
+									// run_pod only supports one nfs_storage_path
 									break;
 								}
 							}
@@ -179,6 +182,10 @@ function runPod(yaml_file, ssh_key, storage_path){
 		var yaml_file = $('#yaml_file').val();
 		var ssh_key = $('#public_key').val();
 		var storage_path = "";
+		if(!$('#storage input').length){
+			runPod(yaml_file, ssh_key, storage_path);
+			return false;
+		}
 		 $('#storage input').each(function(el){
 			 if($(this).attr('image_name') ){
 				storage_path = $(this).val();

@@ -28,6 +28,11 @@ li
 	margin-bottom:20px;
 /*	height:15em; */
 	display:none;
+	user-select: text;
+}
+
+.apanel pre {
+	user-select: text;
 }
 
 #ssh {

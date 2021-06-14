@@ -137,6 +137,7 @@ class OC_Kubernetes_Util {
 		$pod_accepts_public_key = false;
 		$pod_username = "";
 		$pod_mount_path = [];
+		$pod_mount_src = "";
 		$containerInfos = [];
 		if(!empty($arr['spec']['containers'])){
 			foreach($arr['spec']['containers'] as $container){
@@ -157,6 +158,9 @@ class OC_Kubernetes_Util {
 							$username = $env['value'];
 							$pod_username = $env['value'];
 						}
+						if(!empty($env['name']) && $env['name']=="MOUNT_SRC" && !empty($env['value'])){
+							$pod_mount_src = $env['value'];
+						}
 					}
 				}
 				if(!empty($container['volumeMounts'])){
@@ -176,7 +180,8 @@ class OC_Kubernetes_Util {
 		}
 		return ['manifest_url'=>$github_url, 'manifest_info'=>$manifest_info,
 				'pod_accepts_public_key'=>$pod_accepts_public_key, 'pod_username'=>$pod_username,
-				'pod_mount_path'=>$pod_mount_path, 'container_infos'=>$containerInfos];
+				'pod_mount_path'=>$pod_mount_path, 'pod_mount_src'=>$pod_mount_src,
+				'container_infos'=>$containerInfos];
 	}
 
 	public static function createPod($yaml_url, $public_key, $storage_path, $uid) {
