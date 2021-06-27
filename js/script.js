@@ -20,7 +20,7 @@ function getRow(container){
 	return str;
 }
 
-function getContainers(podNames){
+function getContainers(podNames, callback){
 	$("#loading-text").text(t("user_pods", "Working..."));
 	$('#loading').show();
 	$.ajax({
@@ -44,6 +44,9 @@ function getContainers(podNames){
 						}
 						$('table#podstable thead tr').append("n						<th class='column-display'></th>");
 					}
+				}
+				if(callback){
+					callback();
 				}
 				$('tbody#fileList').append(getRow(value));
 			});
@@ -85,6 +88,7 @@ function runPod(yaml_file, ssh_key, storage_path){
 				$('table#podstable tfoot.summary tr td').append("<span class='info' containers='"+containers_now+"'>"+
 						containers_now+" "+(containers_now==1?t("user_pods", "container"):t("user_pods", "containers"))+
 						"</span");
+				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').remove();});}, 12000)
 			}
 			else{
 				OC.dialogs.alert(t("user_pods", "Something went wrong..."), t("user_pods", "Error"));
