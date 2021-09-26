@@ -159,3 +159,21 @@ li
 	background-size: 16px;
 }
 
+.user_pods_logo {
+	vertical-align: bottom;
+	margin-right: 8px;
+	top: 4px;
+	position: relative;
+	width: 36px;
+}
+
+fieldset#userPodsSettings table tbody tr td {
+	padding-right: 18px;
+}
+
+#kubernetesstatus {
+	top: 2px;
+	position: relative;
+}
+
+

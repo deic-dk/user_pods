@@ -11,3 +11,4 @@ OCP\App::addNavigationEntry(
          )
     );
 	
+\OCP\App::registerAdmin('user_pods', 'settings');

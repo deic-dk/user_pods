@@ -26,8 +26,7 @@
 					<select id="yaml_file" title=<?php p($l->t("YAML file")); ?>>
 						<?php
 						echo "<option value=''></option>";
-						$manifests = OC_Kubernetes_Util::getManifests();
-						foreach ($manifests as $manifest) {
+						foreach ($_['manifests'] as $manifest) {
 							echo "<option value='".$manifest."'>$manifest</option>";
 						}
 						?>
