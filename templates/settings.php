@@ -2,7 +2,7 @@
 <h2><img src="/apps/user_pods/img/kubernetes.png" class="user_pods_logo"> Kubernetes for users</h2>
   <br>
 	<p>Set parameters to interact with your Kubernetes installation image repository.</p>
-	<p>Notice - one of your Kubernetes control-plane nodes must hav
+	<p>Notice - one of your Kubernetes control-plane nodes must have
 	 <a href="https://github.com/deic-dk/sciencedata_kubernetes">sciencedata_kubernetes</a> installed
 	 and serve the provided PHP scripts. Moreover a file server must be available and configured to serve
 	 "/storage" via WebDAV and NFS.</p>
