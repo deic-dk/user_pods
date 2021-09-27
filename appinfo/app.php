@@ -7,7 +7,7 @@ OCP\App::addNavigationEntry(
            'order' => 6,
            'icon'  => OCP\Util::imagePath( 'user_pods', 'kubernetes.png' ),
            'href'  => OCP\Util::linkTo( 'index.php/apps/user_pods' , 'index.php' ),
-           'name'  => 'Compute'
+           'name'  => 'Pods'
          )
     );
 	
