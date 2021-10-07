@@ -79,7 +79,10 @@ function runPod(yaml_file, ssh_key, storage_path){
 			}
 			// Get pod name from line like
 			// pod/ubuntu-focal-kerverous-3 created
-			var podName = jsondata.message.replace(/[\s\S]+\npod\/(.*) created\n[\s\S]+/, '$1');
+			var podName;
+			if(jsondata.message){
+				podName = jsondata.message.replace(/[\s\S]+\npod\/(.*) created\n[\s\S]+/, '$1');
+			}
 			if(podName && podName!=jsondata.message){
 				$('#loading').show();
 				getContainers([podName]);
@@ -88,7 +91,9 @@ function runPod(yaml_file, ssh_key, storage_path){
 				$('table#podstable tfoot.summary tr td').append("<span class='info' containers='"+containers_now+"'>"+
 						containers_now+" "+(containers_now==1?t("user_pods", "container"):t("user_pods", "containers"))+
 						"</span");
-				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').remove();});}, 12000)
+				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').remove();});}, 10000)
+				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').remove();});}, 30000)
+				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').remove();});}, 60000)
 			}
 			else{
 				OC.dialogs.alert(t("user_pods", "Something went wrong..."), t("user_pods", "Error"));
