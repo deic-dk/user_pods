@@ -132,7 +132,9 @@ function runPod(yaml_file, ssh_key, storage_path){
 		$.post(OC.filePath('user_pods', 'ajax', 'actions.php') , { action: 'check_manifest', yaml_file : select_value } ,  function (jsondata){
 			$('#loading').hide();
 			if(jsondata.status == 'success'){
-				var link = '<span><a href=\''+jsondata.data['manifest_url']+'\'target="_blank">YAML source</a></span>';
+				var yaml_url = jsondata.data['manifest_url'].replace(/^https:\/\/raw\.githubusercontent\.com\/deic-dk\/pod_manifests\/main\//,
+						'https://github.com/deic-dk/pod_manifests/blob/main/');
+				var link = '<span><a href=\''+yaml_url+'\'target="_blank">YAML source</a></span>';
 				$('#links').empty();
 				$('#links').append(link);
 				$('#description').empty();
@@ -305,6 +307,12 @@ function runPod(yaml_file, ssh_key, storage_path){
 			$('.modalOverlay').remove();
 			}
 		});
+	
+	$('#pods_refresh').click(function(e){
+		$('#podstable #fileList tr').remove();
+		$('table#podstable tfoot.summary tr td span.info').remove();
+		getContainers();
+	})
 	
 	getContainers();
 	
