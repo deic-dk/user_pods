@@ -65,11 +65,11 @@ function getContainers(podNames, callback){
 	});
 }
 
-function runPod(yaml_file, ssh_key, storage_path){
+function runPod(yaml_file, ssh_key, storage_path, file){
 	$("#loading-text").text(t("user_pods", "Creating pod..."));
 	$('#loading').show();
 	$.ajax({url: OC.filePath('user_pods', 'ajax', 'actions.php'),
-		data: {action: 'create_pod', yaml_file: yaml_file, public_key: ssh_key, storage_path: storage_path}, 
+		data: {action: 'create_pod', yaml_file: yaml_file, public_key: ssh_key, storage_path: storage_path, file:file}, 
 		method: 'post',
 		success: function(jsondata) {
 			if(jsondata.status == 'error'){
@@ -103,7 +103,88 @@ function runPod(yaml_file, ssh_key, storage_path){
 	});
 }
 
-	$(document).ready(function() {
+function loadYaml(yaml_file){
+
+	$("#loading-text").text(t("user_pods", "Working..."));
+	$('#loading').show();
+	var select_value = yaml_file || $(this).val();
+	if(!select_value) {
+		$('div#storage').hide();
+		$('div#ssh').hide();
+		$('#webdav').empty();
+	}
+	if(!select_value){
+		$('#loading').hide();
+		return;
+	}
+	$.post(OC.filePath('user_pods', 'ajax', 'actions.php') , { action: 'check_manifest', yaml_file : select_value } ,  function (jsondata){
+		$('#loading').hide();
+		if(jsondata.status == 'success'){
+			var yaml_url = jsondata.data['manifest_url'].replace(/^https:\/\/raw\.githubusercontent\.com\/deic-dk\/pod_manifests\/main\//,
+					'https://github.com/deic-dk/pod_manifests/blob/main/');
+			var link = '<span><a href=\''+yaml_url+'\'target="_blank">YAML source</a></span>';
+			$('#links').empty();
+			$('#links').append(link);
+			$('#description').empty();
+			$('#description').append(marked(jsondata.data['manifest_info']));
+			if (jsondata.data['pod_accepts_public_key']==true) {
+				$('div#ssh').show();
+			}
+			else {
+				$('div#ssh').hide();
+			}
+			if (jsondata.data['pod_accepts_file']==true) {
+				$('div#file').show();
+			}
+			else {
+				$('div#file').hide();
+			}
+			if (jsondata.data['pod_mount_path'] &&(jsondata.data['pod_mount_path']['sciencedata'] ||  jsondata.data['pod_mount_path']['local'])) {
+				var mount_src = jsondata.data['pod_mount_src'] ;
+				var storage_input = "";
+				for (var containerIndex in jsondata.data['container_infos']) {
+					var container = jsondata.data['container_infos'][containerIndex];
+					for (var name in container['mount_paths']) {
+						// Notice that local mounts are specified in the yaml - to avoid rogue mounting
+						if(name=='sciencedata'){
+							var mountPath = container['mount_paths'][name];
+							var mountName = new String(mountPath).substring(mountPath.lastIndexOf('/') + 1); 
+							if(mountPath && mountName){
+								storage_input = storage_input+
+								'<input image_name="'+container['image_name']+'" type="text" placeholder="'+
+								t('user_pods', 'Storage path')+'" image="'+container['image_name']+'" mountPath="'+mountPath+'" title="'+
+								t('user_pods', 'Directory under')+' '+
+								'<a href=\'https://'+encodeURIComponent($('head').attr('data-user'))+'@'+
+								location.hostname+'/storage/\' target=\'_blank\'>/storage/</a> '+t('user_pods', 'to mount on')
+								+' <b>'+mountPath+'</b> '+t('user_pods', 'inside')+' '+container['image_name']+', '+t('user_pods', 'and serve via https.')+
+								'"></input>'+
+								"\n";
+								// Although they yaml can, in principle have different containers with different mounts, or multiple mounts in one container,
+								// run_pod only supports one nfs_storage_path
+								break;
+							}
+						}
+					}
+				}
+				$('div#storage').show();
+				$('#storage').empty();
+				$('#storage').append(storage_input);
+				$('#storage input').tipsy({html: true, hoverable: true});
+			}
+			else {
+				$('div#storage').hide();
+			}
+		}
+		else if(jsondata.status == 'error'){
+			if(jsondata.data &&jsondata.data.error && jsondata.data.error == 'authentication_error'){
+				OC.redirect('/');
+			}
+		}
+	});
+}
+
+$(document).ready(function() {
+
 	var hostname = $(location).attr('host');
 
 	$('a#pod-create').click(function() {
@@ -117,84 +198,16 @@ function runPod(yaml_file, ssh_key, storage_path){
 	$("#yaml_file").prop("selectedIndex", -1);
 
 	$("#yaml_file").change(function () {
-		$("#loading-text").text(t("user_pods", "Working..."));
-		$('#loading').show();
-		var select_value = $(this).val();
-		if(!select_value) {
-			$('div#storage').hide();
-			$('div#ssh').hide();
-			$('#webdav').empty();
-		}
-		if(!select_value){
-			$('#loading').hide();
-			return;
-		}
-		$.post(OC.filePath('user_pods', 'ajax', 'actions.php') , { action: 'check_manifest', yaml_file : select_value } ,  function (jsondata){
-			$('#loading').hide();
-			if(jsondata.status == 'success'){
-				var yaml_url = jsondata.data['manifest_url'].replace(/^https:\/\/raw\.githubusercontent\.com\/deic-dk\/pod_manifests\/main\//,
-						'https://github.com/deic-dk/pod_manifests/blob/main/');
-				var link = '<span><a href=\''+yaml_url+'\'target="_blank">YAML source</a></span>';
-				$('#links').empty();
-				$('#links').append(link);
-				$('#description').empty();
-				$('#description').append(marked(jsondata.data['manifest_info']));
-				if (jsondata.data['pod_accepts_public_key']==true) {
-					$('div#ssh').show();
-				}
-				else {
-					$('div#ssh').hide();
-				}
-				if (jsondata.data['pod_mount_path'] &&(jsondata.data['pod_mount_path']['sciencedata'] ||  jsondata.data['pod_mount_path']['local'])) {
-					var mount_src = jsondata.data['pod_mount_src'] ;
-					var storage_input = "";
-					for (var containerIndex in jsondata.data['container_infos']) {
-						var container = jsondata.data['container_infos'][containerIndex];
-						for (var name in container['mount_paths']) {
-							// Notice that local mounts are specified in the yaml - to avoid rogue mounting
-							if(name=='sciencedata'){
-								var mountPath = container['mount_paths'][name];
-								var mountName = new String(mountPath).substring(mountPath.lastIndexOf('/') + 1); 
-								if(mountPath && mountName){
-									storage_input = storage_input+
-									'<input image_name="'+container['image_name']+'" type="text" placeholder="'+
-									t('user_pods', 'Storage path')+'" image="'+container['image_name']+'" mountPath="'+mountPath+'" title="'+
-									t('user_pods', 'Directory under')+' '+
-									'<a href=\'https://'+encodeURIComponent($('head').attr('data-user'))+'@'+
-									location.hostname+'/storage/\' target=\'_blank\'>/storage/</a> '+t('user_pods', 'to mount on')
-									+' <b>'+mountPath+'</b> '+t('user_pods', 'inside')+' '+container['image_name']+', '+t('user_pods', 'and serve via https.')+
-									'"></input>'+
-									"\n";
-									// Although they yaml can, in principle have different containers with different mounts, or multiple mounts in one container,
-									// run_pod only supports one nfs_storage_path
-									break;
-								}
-							}
-						}
-					}
-					$('div#storage').show();
-					$('#storage').empty();
-					$('#storage').append(storage_input);
-					$('#storage input').tipsy({html: true, hoverable: true});
-				}
-				else {
-					$('div#storage').hide();
-				}
-			}
-			else if(jsondata.status == 'error'){
-				if(jsondata.data &&jsondata.data.error && jsondata.data.error == 'authentication_error'){
-					OC.redirect('/');
-				}
-			}
-		});
+		loadYaml();
 	});
 
 	$('#newpod #ok').on('click', function() {
 		var yaml_file = $('#yaml_file').val();
 		var ssh_key = $('#public_key').val();
+		var file = $('#file_input').val();
 		var storage_path = "";
 		if(!$('#storage input').length){
-			runPod(yaml_file, ssh_key, storage_path);
+			runPod(yaml_file, ssh_key, storage_path, file);
 			return false;
 		}
 		 $('#storage input').each(function(el){
@@ -206,7 +219,7 @@ function runPod(yaml_file, ssh_key, storage_path){
 					OC.dialogs.alert(t("user_pods", "Please fill in the directory to mount from your home server"), t("user_pods", "Missing storage path"));
 				}
 				else{
-					runPod(yaml_file, ssh_key, storage_path);
+					runPod(yaml_file, ssh_key, storage_path, file);
 				}
 				return false;
 			 }
@@ -314,6 +327,16 @@ function runPod(yaml_file, ssh_key, storage_path){
 		getContainers();
 	})
 	
-	getContainers();
-	
+	getContainers([], function(){
+		if(typeof getGetParam !== 'undefined' && getGetParam('file') && getGetParam('yaml_file')){
+			var yaml_file = getGetParam('yaml_file');
+			var file = getGetParam('file');
+			$('#newpod').show();
+			$.when(loadYaml(yaml_file)).then(function(){
+				$('#yaml_file').val(yaml_file);
+				$('#file_input').val(file);
+			});
+		}
+	});
+
 });

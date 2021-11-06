@@ -5,18 +5,18 @@ $privateIP = $_POST['privateIP'];
 $storageDir = $_POST['storageDir'];
 $manifestsURL = $_POST['manifestsURL'];
 $rawManifestsURL = $_POST['rawManifestsURL'];
+$nbViewerPrivateURL = $_POST['nbViewerPrivateURL'];
+$nbViewerPublicURL = $_POST['nbViewerPublicURL'];
+$nbViewerPublicURL = $_POST['nbViewerPublicURL'];
+$jupyterYamlFile = $_POST['jupyterYamlFile'];
 
-$ret = true;
+OC_Appconfig::setValue('user_pods', 'publicIP', $publicIP);
+OC_Appconfig::setValue('user_pods', 'privateIP', $privateIP);
+OC_Appconfig::setValue('user_pods', 'storageDir', $storageDir);
+OC_Appconfig::setValue('user_pods', 'manifestsURL', $manifestsURL);
+OC_Appconfig::setValue('user_pods', 'rawManifestsURL', $rawManifestsURL);
+OC_Appconfig::setValue('user_pods', 'nbViewerPrivateURL', $nbViewerPrivateURL);
+OC_Appconfig::setValue('user_pods', 'nbViewerPublicURL', $nbViewerPublicURL);
+OC_Appconfig::setValue('user_pods', 'jupyterYamlFile', $jupyterYamlFile);
 
-OC_Appconfig::setValue('user_pods', 'publicIP', $publicIP) || empty($publicIP) || $ret = false;
-OC_Appconfig::setValue('user_pods', 'privateIP', $privateIP) || empty($privateIP) || $ret = false;;
-OC_Appconfig::setValue('user_pods', 'storageDir', $storageDir) || empty($storageDir) || $ret = false;;
-OC_Appconfig::setValue('user_pods', 'manifestsURL', $manifestsURL) || empty($manifestsURL) || $ret = false;;
-OC_Appconfig::setValue('user_pods', 'rawManifestsURL', $rawManifestsURL) || empty($rawManifestsURL) || $ret = false;;
-
-if($ret){
-	OCP\JSON::success();
-}
-else{
-	OCP\JSON::error();
-}
+OCP\JSON::success();

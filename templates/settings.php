@@ -1,3 +1,6 @@
+<?php
+$l = OC_L10N::get('user_pods');
+?>
 <fieldset id="userPodsSettings" class="section" >
 <h2><img src="/apps/user_pods/img/kubernetes.png" class="user_pods_logo"> Kubernetes for users</h2>
   <br>
@@ -9,7 +12,7 @@
 	<table>
 		<tr>
 			<td>
-				<label for='publicIP'>Public IP of your Kubernetes frontend</label>
+				<label for='publicIP'><?php p($l->t('Public IP of your Kubernetes frontend'));?></label>
 			</td>
 			<td>
 				<input type='text' id='publicIP' title='Public IP' style='width:475px' />
@@ -17,7 +20,7 @@
 		</tr>
 		<tr>
 			<td>
-				<label for='privateIP'>Private IP of your Kubernetes frontend</label>
+				<label for='privateIP'><?php p($l->t('Private IP of your Kubernetes frontend'));?></label>
 			</td>
 			<td>
 				<input type='text' id='privateIP' title='Private IP' style='width:475px' />
@@ -25,7 +28,7 @@
 		</tr>
 		<tr>
 			<td>
-				<label for='storageDir'>Directory exposed as /storage via WebDAV and NFS (NFSv4.1)</label>
+				<label for='storageDir'><?php p($l->t('Directory exposed as /storage via WebDAV and NFS (NFSv4.1)'));?></label>
 			</td>
 			<td>
 				<input type='text' id='storageDir' title='Storage directory' style='width:475px' />
@@ -33,7 +36,7 @@
 		</tr>
 		<tr>
 			<td>
-				<label for='manifestsURL'>URL of the Github repository holding your manifests</label>
+				<label for='manifestsURL'><?php p($l->t('URL of the Github repository holding your manifests'));?></label>
 				<p>(https://github.com/some_repo/)</p>
 			</td>
 			<td>
@@ -42,11 +45,35 @@
 		</tr>
 		<tr>
 			<td>
-				<label for='rawManifestsURL'>URL of the Github repository holding your raw manifests</label>
+				<label for='rawManifestsURL'><?php p($l->t('URL of the Github repository holding your raw manifests'));?></label>
 				<p>(https://raw.githubusercontent.com/some_repo/main/)</p>
 			</td>
 			<td>
 				<input type='text' id='rawManifestsURL' title='Github raw manifests URL' style='width:475px' />
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<label for='nbViewerPublicURL'><?php p($l->t('Public URL of nbviewer server'));?></label>
+			</td>
+			<td>
+				<input type='text' id='nbViewerPublicURL' title='nbViewerPublicURL' IP' style='width:475px' />
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<label for='nbViewerPrivateURL'><?php p($l->t('Private URL of nbviewer server'));?></label>
+			</td>
+			<td>
+				<input type='text' id='nbViewerPrivateURL' title='nbViewerPrivateURL' IP' style='width:475px' />
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<label for='jupyterYamlFile'><?php p($l->t('YAML file to use for running Jupyter notebooks'));?></label>
+			</td>
+			<td>
+				<input type='text' id='jupyterYamlFile' title='jupyterYamlFile' IP' style='width:475px' />
 			</td>
 		</tr>
 	</table>

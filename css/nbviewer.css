@@ -1,0 +1,46 @@
+#nbbar {
+	text-align: right;
+	margin-top: 12px;
+	margin-bottom: 12px;
+}
+
+#nbframe {
+	width:100%;
+	height:88vh;
+	display:block;
+	position:absolute;
+	z-index: 20;
+	top:14px;
+}
+
+#app-content-public #nbframe {
+	width: 99%;
+	height: 92vh;
+	top: 36px;
+}
+
+#nbbar #close {
+	margin-right: 20px;
+	position: relative;
+	z-index: 1;
+	cursor: pointer;
+}
+
+.nbviewer .container-main {
+	padding-left: 0;
+	padding-right: 0;
+	width: 96%;
+}
+
+body.nbviewer {
+	padding-top: 0;
+}
+
+#nbbar #run {
+	margin-right: 32px;
+}
+
+#app-content-public #imgframe img.publicpreview.ipynb {
+	cursor: pointer;
+}
+

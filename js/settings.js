@@ -7,6 +7,9 @@ $(document).ready(function() {
 		var storageDir = $('#storageDir').val();
 		var manifestsURL = $('#manifestsURL').val();
 		var rawManifestsURL = $('#rawManifestsURL').val();
+		var nbViewerPrivateURL = $('#nbViewerPrivateURL').val();
+		var nbViewerPublicURL = $('#nbViewerPublicURL').val();
+		var jupyterYamlFile = $('#jupyterYamlFile').val();
 		$.ajax(OC.linkTo('user_pods', 'ajax/set_settings.php'), {
 			type: "POST",
 			data: {
@@ -14,7 +17,10 @@ $(document).ready(function() {
 				privateIP: privateIP,
 				storageDir: storageDir,
 				manifestsURL: manifestsURL,
-				rawManifestsURL: rawManifestsURL
+				rawManifestsURL: rawManifestsURL,
+				nbViewerPrivateURL: nbViewerPrivateURL,
+				nbViewerPublicURL: nbViewerPublicURL,
+				jupyterYamlFile: jupyterYamlFile
 			},
 			dataType: 'json',
 			success: function(s) {
@@ -34,6 +40,9 @@ $(document).ready(function() {
 			$('#storageDir').val( s['storageDir']);
 			$('#manifestsURL').val( s['manifestsURL']);
 			$('#rawManifestsURL').val( s['rawManifestsURL']);
+			$('#nbViewerPrivateURL').val( s['nbViewerPrivateURL']);
+			$('#nbViewerPublicURL').val( s['nbViewerPublicURL']);
+			$('#jupyterYamlFile').val( s['jupyterYamlFile']);
 		}
 	});
 

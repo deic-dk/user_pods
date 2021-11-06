@@ -41,6 +41,19 @@ li
 	padding-top: 1%;
 }
 
+#file {
+	padding-left: 1.5%;
+	padding-top: 1%;
+}
+
+#file_input {
+	width: 240px;
+}
+
+#file_text {
+	margin-right: 12px;
+}
+
 .newpod-span {
 	float: right;
 	margin-right: 10px;
@@ -108,7 +121,7 @@ li
 	margin-right: 19px;
 }
 
-#ssh, #storage, #loading, #dialogalert {
+#ssh, #storage, #loading, #dialogalert, #file {
 	display: none;
 }
 
@@ -177,8 +190,12 @@ fieldset#userPodsSettings table tbody tr td {
 	position: relative;
 }
 
-#pods_refresh{
+#pods_refresh {
 	font-size: 24px;
 	margin-left: 8px;
 	height: 35px;
+}
+
+#podstable tbody a {
+	color: #0376a3;
 }

@@ -32,6 +32,7 @@ class OC_Kubernetes_Util {
 		$containers = array();
 		// pod_name|container_name|image_name|pod_ip|node_ip|owner|age(s)|status|ssh_port|https_port|uri
 		$url = 'http://'.$this->privateIP."/get_containers.php?fields=include&user_id=".$uid;
+		\OCP\Util::writeLog('user_pods', 'GETting: '.$url, \OC_Log::WARN);
 		$response = file_get_contents($url);
 		$rows = explode("\n", trim($response));
 		$fields = explode("|", array_shift($rows));
@@ -134,6 +135,8 @@ class OC_Kubernetes_Util {
 		$github_md_url = $this->rawManifestsURL . $md_file;
 		$manifest_info = file_get_contents($github_md_url);
 		$pod_accepts_public_key = false;
+		$pod_accepts_file = false;
+		$pod_file = "";
 		$pod_username = "";
 		$pod_mount_path = [];
 		$pod_mount_src = "";
@@ -159,6 +162,12 @@ class OC_Kubernetes_Util {
 						if(!empty($env['name']) && $env['name']=="MOUNT_SRC" && !empty($env['value'])){
 							$pod_mount_src = $env['value'];
 						}
+						if(!empty($env['name']) && $env['name']=="FILE"){
+							$pod_accepts_file = true;
+							if(!empty($env['value'])){
+								$pod_file = $env['value'];
+							}
+						}
 					}
 				}
 				if(!empty($container['volumeMounts'])){
@@ -177,20 +186,25 @@ class OC_Kubernetes_Util {
 			}
 		}
 		return ['manifest_url'=>$github_url, 'manifest_info'=>$manifest_info,
-				'pod_accepts_public_key'=>$pod_accepts_public_key, 'pod_username'=>$pod_username,
+				'pod_accepts_public_key'=>$pod_accepts_public_key,
+				'pod_accepts_file'=>$pod_accepts_file, 'pod_file'=>$pod_file,
+				'pod_username'=>$pod_username,
 				'pod_mount_path'=>$pod_mount_path, 'pod_mount_src'=>$pod_mount_src,
 				'container_infos'=>$containerInfos];
 	}
 
-	public function createPod($yaml_url, $public_key, $storage_path, $uid) {
+	public function createPod($uid, $yaml_url, $public_key, $storage_path, $file) {
 		$url = 'http://'.$this->privateIP . "/run_pod.php?user_id=" . $uid .
-			"&yaml_url=" . $yaml_url;
+		"&yaml_url=" . $yaml_url;
 		if (!empty($public_key)) {
 			$encoded_key = rawurlencode($public_key);
 			$url = $url . "&public_key=" . $encoded_key;
 		}
 		if(!empty($storage_path)){
 			$url = $url . "&storage_path=" . $storage_path;
+		}
+		if(!empty($file)){
+			$url = $url . "&file=" . $file;
 		}
 		return file_get_contents($url);
 	}

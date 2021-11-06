@@ -11,8 +11,8 @@ if($_REQUEST['action']=='create_pod') {
 		OCP\JSON::error(array('data' => array('message'=>'No YAML file specified')));
 	}
 	$yaml_url = $util->rawManifestsURL.trim($_POST['yaml_file']);
-	$message = $util->createPod($yaml_url, trim($_POST['public_key']),
-			trim($_POST['storage_path']), OCP\User::getUser());
+	$message = $util->createPod(OCP\User::getUser(), $yaml_url, trim($_POST['public_key']),
+			trim($_POST['storage_path']), trim($_POST['file']));
 	OCP\JSON::success(array('message'=>$message));
 }
 elseif($_REQUEST['action']=='delete_pod') {

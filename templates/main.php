@@ -27,7 +27,9 @@
 						<?php
 						echo "<option value=''></option>";
 						foreach ($_['manifests'] as $manifest) {
-							echo "<option value='".$manifest."'>$manifest</option>";
+							echo "<option value='".$manifest."'".
+								(!empty($_REQUEST['yaml_file'])&&$_REQUEST['yaml_file']==$manifest?" selected='selected'":"").
+								">".$manifest."</option>";
 						}
 						?>
 					</select>
@@ -46,6 +48,9 @@
 					title="<?php p($l->t("Paste your public SSH key here")); ?>"></textarea></div>
 				<div id="storage">
 				</div>
+				<div id="file"><span id="file_text"><?php p($l->t("File")); ?>:</span>
+					<input id="file_input" type="text" placeholder="<?php p($l->t("Optional file to open")); ?>"
+					title="<?php p($l->t("Path of file for to open in your pod")); ?>"><?php echo(printf(empty($_REQUEST['file']))?$_REQUEST['file']:''); ?></input></div>
 			</div>
 		</div> 
 	</div>
