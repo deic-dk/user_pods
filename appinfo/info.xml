@@ -5,6 +5,11 @@
 	<description>Enable users to create and manage their pods</description>
 	<version>0.1</version>
 	<licence>AGPL </licence>
-	<author>Ioanna Psylla </author>
+	<author>Ioanna Psylla</author>
+	<author>Ioanna Psylla</author>
+	<author>Frederik Orellana</author>
+	<remote>
+		<notebooks>appinfo/remote.php</notebooks>
+	</remote>
 	<require>4.93</require>
   </info>

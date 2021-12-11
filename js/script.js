@@ -107,7 +107,7 @@ function loadYaml(yaml_file){
 
 	$("#loading-text").text(t("user_pods", "Working..."));
 	$('#loading').show();
-	var select_value = yaml_file || $(this).val();
+	var select_value = yaml_file || $('#yaml_file').val();
 	if(!select_value) {
 		$('div#storage').hide();
 		$('div#ssh').hide();
