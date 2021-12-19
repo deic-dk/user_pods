@@ -16,12 +16,12 @@ $sections = array_unique(array_column($groupPublicFileInfos, 'group'));
 
 $sectionsArray = array_map(function($section) use ($groupPublicFileInfos){
 	return ["header"=>dbGetGroupDescription($section), "links"=>array_map(function($row) use ($section, $groupPublicFileInfos){
-					if($row['is_dir']){
+					if($row['item_type']=='folder'){
 						// "text" will be overridden - loaded from description.txt
-						return ["text"=>$row['filename'], "target"=>$row['url'], "img"=>"cover.png"];
+						return ["text"=>$row['filename'], "target"=>$row['target'], "url"=>$row['url'], "img"=>$row['url']."cover.png", "type"=>$row['item_type']];
 					}
 					else{
-						return ["text"=>$row['filename'], "target"=>$row['url'], "img"=>"/img/file-jupyter.png"];
+						return ["text"=>$row['filename'], "target"=>$row['target'], "url"=>$row['url'], "img"=>"/img/file-jupyter-o.png", "type"=>$row['item_type']];
 					}
 				},
 				array_filter($groupPublicFileInfos, function($dbRow) use ($section){
@@ -31,8 +31,9 @@ $sectionsArray = array_map(function($section) use ($groupPublicFileInfos){
 }, $sections);
 
 $ret = [
-	"title" => "ScienceNotebooks",
-	"subtitle" => "Copy-paste-compute! Share your calculations with colleagues, students and the world. Jupyter Notebooks shared by ScienceData users",
+	"title" => "ScienceNotebooks | Share your calculations",
+	"image" => "<img src='/static/img/science_notebooks.png' width='192px'/>",
+	"subtitle" => "Jupyter Notebooks shared by <a href='https://sciencedata.dk'>ScienceData users</a>",
 	"text" => "<a href='https://sciencedata.dk/sites/developer/Notebooks/index#publishing_notebooks'>Contribute</a>",
 	"show_input" => false,
 	"sections" => $sectionsArray
@@ -54,7 +55,8 @@ function dbGetNotebooksAndDirsSharedPublic($infoArr) {
 		$result = $stmt->execute($arr);
 		while($row = $result->fetchRow()){
 			if(!empty($row['token'])){
-				$info['url'] = $master.'/shared/'.$row['token'];
+				$info['target'] = preg_replace('|^https://|', '/urls/', $master).'public/'.$row['token'].'/?base_name='.substr($row['file_target'], 1);
+				$info['url'] = $master.'public/'.$row['token'].'/';
 				break;
 			}
 		}
@@ -85,17 +87,7 @@ function dbGetNotebooksAndDirsSharedWithGroup() {
 		$info['group'] = $row['share_with'];
 		$info['filename'] = trim($row['file_target'], '/');
 		$info['fileid'] = $row['item_source'];
-		$fileRow = \OCA\FilesSharding\Lib::dbGetFile($row['item_source']);
-		// We need some/any userid to get the id of the directory mimetype
-		$dirMimeId = empty($dirMimeId)?getDirMimeId($row['uid_owner']):$dirMimeId;
-		// Skip non .ipynb files
-		if($fileRow['mimetype']!=$dirMimeId && substr($info['filename'], -6)!='.ipynb'){
-			continue;
-		}
-		$info['is_dir'] = false;
-		if($fileRow['mimetype']==$dirMimeId){
-			$info['is_dir'] = true;
-		}
+		$info['item_type'] = $row['item_type'];
 		$info['owner_uid'] = $row['uid_owner'];
 		$info['owner_display_name'] = \OCP\User::getDisplayName($row['uid_owner']);
 		$infoArr[$row['item_source']] = $info;
