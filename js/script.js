@@ -60,7 +60,7 @@ function getContainers(podNames, callback){
 		},
 	error: function(){
 			$('#loading').hide();
-			OC.dialogs.alert(t("user_pods", "Something went wrong..."), t("user_pods", "Error"));
+			OC.dialogs.alert(t("user_pods", "get_containers: Something went wrong..."), t("user_pods", "Error"));
 		}
 	});
 }
@@ -96,7 +96,7 @@ function runPod(yaml_file, ssh_key, storage_path, file){
 				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').remove();});}, 60000)
 			}
 			else{
-				OC.dialogs.alert(t("user_pods", "Something went wrong..."), t("user_pods", "Error"));
+				OC.dialogs.alert(t("user_pods", "run_pod: Something went wrong..."), t("user_pods", "Error"));
 			}
 			$('#loading').hide();
 		}
