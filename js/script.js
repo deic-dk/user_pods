@@ -60,7 +60,7 @@ function getContainers(podNames, callback){
 		},
 	error: function(){
 			$('#loading').hide();
-			OC.dialogs.alert(t("user_pods", "get_containers: Something went wrong..."), t("user_pods", "Error"));
+			//OC.dialogs.alert(t("user_pods", "get_containers: Something went wrong..."), t("user_pods", "Error"));
 		}
 	});
 }
@@ -104,7 +104,7 @@ function runPod(yaml_file, ssh_key, storage_path, file){
 }
 
 function loadYaml(yaml_file){
-
+	 $('#public_key').val('');
 	$("#loading-text").text(t("user_pods", "Working..."));
 	$('#loading').show();
 	var select_value = yaml_file || $('#yaml_file').val();
@@ -208,6 +208,9 @@ $(document).ready(function() {
 		var storage_path = "";
 		if(!$('#storage input').length){
 			runPod(yaml_file, ssh_key, storage_path, file);
+			if($('#public_key:visible').length && (!ssh_key ||  ssh_key== "")) {
+				OC.dialogs.alert(t("user_pods", "Please fill in a public SSH key"), t("user_pods", "Missing SSH key"));
+			}
 			return false;
 		}
 		 $('#storage input').each(function(el){

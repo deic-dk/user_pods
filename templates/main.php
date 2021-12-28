@@ -44,7 +44,7 @@
 					</div>
 				</span>
 				<div id="description"></div>
-				<div id="ssh"><textarea id="public_key" type="text" placeholder="<?php p($l->t("Optional public SSH key")); ?>"
+				<div id="ssh"><textarea id="public_key" type="text" placeholder="<?php p($l->t("Public SSH key")); ?>"
 					title="<?php p($l->t("Paste your public SSH key here")); ?>"></textarea></div>
 				<div id="storage">
 				</div>
