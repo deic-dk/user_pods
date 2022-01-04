@@ -204,8 +204,9 @@ class OC_Kubernetes_Util {
 			$url = $url . "&storage_path=" . $storage_path;
 		}
 		if(!empty($file)){
-			$url = $url . "&file=" . $file;
+			$url = $url . "&file=" . rawurlencode($file);
 		}
+		\OC_Log::write('user_pods', "Calling " . $url, \OC_Log::WARN);
 		return file_get_contents($url);
 	}
 

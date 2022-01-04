@@ -1,7 +1,5 @@
 <?php
 
-OCP\User::checkLoggedIn();
-OCP\App::checkAppEnabled('user_pods');
 require_once 'lib/base.php';
 require_once('apps/chooser/appinfo/apache_note_user.php');
 

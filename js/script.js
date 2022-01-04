@@ -45,9 +45,6 @@ function getContainers(podNames, callback){
 						$('table#podstable thead tr').append("n						<th class='column-display'></th>");
 					}
 				}
-				if(callback){
-					callback();
-				}
 				$('tbody#fileList').append(getRow(value));
 			});
 			if(!podNames){
@@ -57,6 +54,9 @@ function getContainers(podNames, callback){
 						"</span");
 			}
 			$('#loading').hide();
+			if(callback){
+				callback();
+			}
 		},
 	error: function(){
 			$('#loading').hide();
@@ -91,9 +91,9 @@ function runPod(yaml_file, ssh_key, storage_path, file){
 				$('table#podstable tfoot.summary tr td').append("<span class='info' containers='"+containers_now+"'>"+
 						containers_now+" "+(containers_now==1?t("user_pods", "container"):t("user_pods", "containers"))+
 						"</span");
-				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').remove();});}, 10000)
-				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').remove();});}, 30000)
-				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').remove();});}, 60000)
+				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').first().remove();});}, 10000)
+				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').first().remove();});}, 30000)
+				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').first().remove();});}, 60000)
 			}
 			else{
 				OC.dialogs.alert(t("user_pods", "run_pod: Something went wrong..."), t("user_pods", "Error"));
@@ -189,6 +189,10 @@ $(document).ready(function() {
 
 	$('a#pod-create').click(function() {
 		$('#newpod').slideToggle();
+		$('#pod-create').toggleClass('btn-primary');
+		$('#pod-create').toggleClass('btn-default');
+		$('#newpod #ok a').toggleClass('btn-default');
+		$('#newpod #ok a').toggleClass('btn-primary');
 	});
 
 	$('#newpod #cancel').click(function() {
@@ -332,12 +336,16 @@ $(document).ready(function() {
 	
 	getContainers([], function(){
 		if(typeof getGetParam !== 'undefined' && getGetParam('file') && getGetParam('yaml_file')){
-			var yaml_file = getGetParam('yaml_file');
-			var file = getGetParam('file');
+			var yaml_file = decodeURIComponent(getGetParam('yaml_file'));
+			var file = decodeURIComponent(getGetParam('file'));
 			$('#newpod').show();
+			$('#pod-create').removeClass('btn-primary');
+			$('#pod-create').addClass('btn-default');
 			$.when(loadYaml(yaml_file)).then(function(){
 				$('#yaml_file').val(yaml_file);
 				$('#file_input').val(file);
+				$('#newpod #ok a').removeClass('btn-default');
+				$('#newpod #ok a').addClass('btn-primary');
 			});
 		}
 	});
