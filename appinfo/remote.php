@@ -34,7 +34,7 @@ $ret = [
 	"title" => "ScienceNotebooks | Share your calculations",
 	"image" => "<img src='/static/img/science_notebooks.png' width='192px'/>",
 	"subtitle" => "Jupyter Notebooks on <a href='https://sciencedata.dk'>ScienceData</a>",
-	"text" => "<a href='https://sciencedata.dk/sites/developer/Notebooks/index#publishing_notebooks'>Contribute</a>",
+		"text" => "This website hosts <a href='https://jupyter.org'>Jupyter</a> notebooks for research and education with special emphasis on relevance for Danish academia. All ScienceData users can directly import and execute the notebooks in their browser and are also encouraged to <a href='https://sciencedata.dk/sites/developer/Notebooks/index#publishing_notebooks'>contribute</a>.",
 	"show_input" => false,
 	"sections" => $sectionsArray
 ];

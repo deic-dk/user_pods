@@ -86,11 +86,14 @@ function runPod(yaml_file, ssh_key, storage_path, file){
 			if(podName && podName!=jsondata.message){
 				$('#loading').show();
 				getContainers([podName]);
-				var containers_now = parseInt($('table#podstable tfoot.summary tr td span.info').attr('containers'), 10) +1;
-				$('table#podstable tfoot.summary tr td span.info').remove();
-				$('table#podstable tfoot.summary tr td').append("<span class='info' containers='"+containers_now+"'>"+
-						containers_now+" "+(containers_now==1?t("user_pods", "container"):t("user_pods", "containers"))+
-						"</span");
+				var containers_now;
+				$.when(containers_now = parseInt($('table#podstable tfoot.summary tr td span.info').attr('containers'), 10) +1).then(
+						function(){
+							$('table#podstable tfoot.summary tr td span.info').remove();
+							$('table#podstable tfoot.summary tr td').append("<span class='info' containers='"+containers_now+"'>"+
+								containers_now+" "+(containers_now==1?t("user_pods", "container"):t("user_pods", "containers"))+
+								"</span");
+						});
 				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').first().remove();});}, 10000)
 				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').first().remove();});}, 30000)
 				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').first().remove();});}, 60000)
@@ -248,13 +251,15 @@ $(document).ready(function() {
 				},
 				success: function(data) {
 					if(data.status == 'success'){
-						$('tr[pod_name="'+podSelected+'"]').remove();
-						var containers_now = parseInt($('table#podstable tfoot.summary tr td span.info').attr('containers'), 10) -1;
-						$('table#podstable tfoot.summary tr td span.info').remove();
-						$('table#podstable tfoot.summary tr td').append("<span class='info' containers='"+containers_now+"'>"+
-								containers_now+" "+(containers_now==1?t("user_pods", "container"):t("user_pods", "containers"))+
-								"</span");
-						$('#loading').hide();
+						var containers_now;
+						$.when(containers_now = parseInt($('table#podstable tfoot.summary tr td span.info').attr('containers'), 10) -1).then(function(){
+								$('tr[pod_name="'+data.pod+'"]').remove();
+								$('table#podstable tfoot.summary tr td span.info').remove();
+								$('table#podstable tfoot.summary tr td').append("<span class='info' containers='"+containers_now+"'>"+
+										containers_now+" "+(containers_now==1?t("user_pods", "container"):t("user_pods", "containers"))+
+										"</span");
+								$('#loading').hide();
+							});
 					}
 					else if(data.status == 'error'){
 						if(data.data.error && data.data && data.data.error == 'authentication_error'){
