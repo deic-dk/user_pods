@@ -18,7 +18,11 @@ $sectionsArray = array_map(function($section) use ($groupPublicFileInfos){
 	return ["header"=>dbGetGroupDescription($section), "links"=>array_map(function($row) use ($section, $groupPublicFileInfos){
 					if($row['item_type']=='folder'){
 						// "text" will be overridden - loaded from description.txt
-						return ["text"=>$row['filename'], "target"=>$row['target'], "url"=>$row['url'], "img"=>$row['url']."cover.png", "type"=>$row['item_type']];
+						// Load cover.png via web interface, not webdav as the latter messes up session
+						$coverUrl = str_replace('/public/', '/shared/', $row['url']);
+						$coverUrl = preg_replace('|/$|', '', $coverUrl);
+						$coverUrl = $coverUrl.'?files=cover.png&download';
+						return ["text"=>$row['filename'], "target"=>$row['target'], "url"=>$row['url'], "img"=>$coverUrl, "type"=>$row['item_type']];
 					}
 					else{
 						return ["text"=>$row['filename'], "target"=>$row['target'], "url"=>$row['url'], "img"=>"/img/file-jupyter-o.png", "type"=>$row['item_type']];
