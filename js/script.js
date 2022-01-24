@@ -89,6 +89,7 @@ function runPod(yaml_file, ssh_key, storage_path, file){
 				var containers_now;
 				$.when(containers_now = parseInt($('table#podstable tfoot.summary tr td span.info').attr('containers'), 10) +1).then(
 						function(){
+							containers_now = Math.max(0, containers_now);
 							$('table#podstable tfoot.summary tr td span.info').remove();
 							$('table#podstable tfoot.summary tr td').append("<span class='info' containers='"+containers_now+"'>"+
 								containers_now+" "+(containers_now==1?t("user_pods", "container"):t("user_pods", "containers"))+
@@ -253,6 +254,7 @@ $(document).ready(function() {
 					if(data.status == 'success'){
 						var containers_now;
 						$.when(containers_now = parseInt($('table#podstable tfoot.summary tr td span.info').attr('containers'), 10) -1).then(function(){
+								containers_now = Math.max(0, containers_now);
 								$('tr[pod_name="'+data.pod+'"]').remove();
 								$('table#podstable tfoot.summary tr td span.info').remove();
 								$('table#podstable tfoot.summary tr td').append("<span class='info' containers='"+containers_now+"'>"+
