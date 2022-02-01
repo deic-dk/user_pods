@@ -1,5 +1,8 @@
 <div id="app-content">
 	<div id="app-content-kubernetes" class="viewcontainer">
+	<div class="info">
+	Notice: Currently, pods are in beta testing. Use at your own risk - pods may be terminated or restarted.
+	We appreciate <a href="mailto:cloud@deic.dk">feedback</a></div>
 		<div id="controls">
 			<div class="row">
 				<div class="text-right">

@@ -1,7 +1,7 @@
 <?php
 
 OC::$CLASSPATH['OC_Kubernetes_Util'] ='apps/user_pods/lib/util.php';
-/*
+
 OCP\App::addNavigationEntry(
 	array( 'id'    => 'user_pods',
 		'order' => 6,
@@ -10,7 +10,7 @@ OCP\App::addNavigationEntry(
 		'name'  => 'Pods'
 	)
 );
-*/
+
 OCP\App::registerAdmin('user_pods', 'settings');
 if(!isset($_SERVER['REQUEST_URI']) || strpos(ltrim($_SERVER['REQUEST_URI'], "/"),
 		ltrim(OC::$WEBROOT."/index.php/apps/user_pods/","/"))!==0){
