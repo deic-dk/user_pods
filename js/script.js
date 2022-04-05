@@ -65,42 +65,63 @@ function getContainers(podNames, callback){
 	});
 }
 
-function runPod(yaml_file, ssh_key, storage_path, file){
+function runPod(yaml_file, ssh_key, storage_path, file) {
 	$("#loading-text").text(t("user_pods", "Creating pod..."));
 	$('#loading').show();
-	$.ajax({url: OC.filePath('user_pods', 'ajax', 'actions.php'),
-		data: {action: 'create_pod', yaml_file: yaml_file, public_key: ssh_key, storage_path: storage_path, file:file}, 
+	$.ajax({
+		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
+		data: {
+			action: 'create_pod',
+			yaml_file: yaml_file,
+			public_key: ssh_key,
+			storage_path: storage_path,
+			file: file
+		},
 		method: 'post',
 		success: function(jsondata) {
-			if(jsondata.status == 'error'){
-				if(jsondata.data && jsondata.data.error && jsondata.data.error == 'authentication_error'){
+			if (jsondata.status == 'error') {
+				if (jsondata.data && jsondata.data.error && jsondata.data.error == 'authentication_error') {
 					OC.redirect('/');
+				} else if (jsondata.data.message) {
+					OC.dialogs.alert(t("user_pods", "run_pod: " + jsondata.data.message), t("user_pods", "Error"));
 				}
-			}
-			// Get pod name from line like
-			// pod/ubuntu-focal-kerverous-3 created
-			var podName;
-			if(jsondata.message){
-				podName = jsondata.message.replace(/[\s\S]+\npod\/(.*) created\n[\s\S]+/, '$1');
-			}
-			if(podName && podName!=jsondata.message){
-				$('#loading').show();
-				getContainers([podName]);
-				var containers_now;
-				$.when(containers_now = parseInt($('table#podstable tfoot.summary tr td span.info').attr('containers'), 10) +1).then(
-						function(){
+			} else {
+				// Get pod name from line like
+				// pod/ubuntu-focal-kerverous-3 created
+				var podName;
+				if (jsondata.message) {
+					podName = jsondata.message.replace(/[\s\S]+\npod\/(.*) created\n[\s\S]+/, '$1');
+				}
+				if (podName && podName != jsondata.message) {
+					$('#loading').show();
+					getContainers([podName]);
+					var containers_now;
+					$.when(containers_now = parseInt($('table#podstable tfoot.summary tr td span.info').attr('containers'), 10) + 1).then(
+						function() {
 							containers_now = Math.max(0, containers_now);
 							$('table#podstable tfoot.summary tr td span.info').remove();
-							$('table#podstable tfoot.summary tr td').append("<span class='info' containers='"+containers_now+"'>"+
-								containers_now+" "+(containers_now==1?t("user_pods", "container"):t("user_pods", "containers"))+
+							$('table#podstable tfoot.summary tr td').append("<span class='info' containers='" + containers_now + "'>" +
+								containers_now + " " + (containers_now == 1 ? t("user_pods", "container") : t("user_pods", "containers")) +
 								"</span");
 						});
-				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').first().remove();});}, 10000)
-				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').first().remove();});}, 30000)
-				setTimeout(function(){getContainers([podName], function(){$('tr[pod_name="'+podName+'"]').first().remove();});}, 60000)
-			}
-			else{
-				OC.dialogs.alert(t("user_pods", "run_pod: Something went wrong..."), t("user_pods", "Error"));
+					setTimeout(function() {
+						getContainers([podName], function() {
+							$('tr[pod_name="' + podName + '"]').first().remove();
+						});
+					}, 10000)
+					setTimeout(function() {
+						getContainers([podName], function() {
+							$('tr[pod_name="' + podName + '"]').first().remove();
+						});
+					}, 30000)
+					setTimeout(function() {
+						getContainers([podName], function() {
+							$('tr[pod_name="' + podName + '"]').first().remove();
+						});
+					}, 60000)
+				} else {
+					OC.dialogs.alert(t("user_pods", "run_pod: Something went wrong..."), t("user_pods", "Error"));
+				}
 			}
 			$('#loading').hide();
 		}

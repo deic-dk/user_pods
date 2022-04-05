@@ -9,6 +9,7 @@ $util = new OC_Kubernetes_Util();
 if($_REQUEST['action']=='create_pod') {
 	if(empty($_POST['yaml_file'])){
 		OCP\JSON::error(array('data' => array('message'=>'No YAML file specified')));
+        exit;
 	}
 	$yaml_url = $util->rawManifestsURL.trim($_POST['yaml_file']);
 	$message = $util->createPod(OCP\User::getUser(), $yaml_url, trim($_POST['public_key']),
