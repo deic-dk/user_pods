@@ -86,13 +86,8 @@ function runPod(yaml_file, ssh_key, storage_path, file) {
 					OC.dialogs.alert(t("user_pods", "run_pod: " + jsondata.data.message), t("user_pods", "Error"));
 				}
 			} else {
-				// Get pod name from line like
-				// pod/ubuntu-focal-kerverous-3 created
-				var podName;
-				if (jsondata.message) {
-					podName = jsondata.message.replace(/[\s\S]+\npod\/(.*) created\n[\s\S]+/, '$1');
-				}
-				if (podName && podName != jsondata.message) {
+				if (jsondata.data.podName) {
+					let podName = jsondata.data.podName;
 					$('#loading').show();
 					getContainers([podName]);
 					var containers_now;
