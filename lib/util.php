@@ -7,6 +7,7 @@ class OC_Kubernetes_Util {
 	private $storageDir;
 	private $manifestsURL;
 	public $rawManifestsURL;
+    public static $testing = false;
 	
 	function __construct(){
 		$this->publicIP  = OC_Appconfig::getValue('user_pods', 'publicIP');
@@ -32,6 +33,9 @@ class OC_Kubernetes_Util {
 		$containers = array();
 		// pod_name|container_name|image_name|pod_ip|node_ip|owner|age(s)|status|ssh_port|https_port|uri
 		$url = 'http://'.$this->privateIP."/get_containers.php?fields=include&user_id=".$uid;
+        if (self::$testing) {
+            $url = str_replace(".php", "_testing.php", $url);
+        }
 		\OCP\Util::writeLog('user_pods', 'GETting: '.$url, \OC_Log::WARN);
 		$response = file_get_contents($url);
 		$rows = explode("\n", trim($response));
@@ -196,6 +200,9 @@ class OC_Kubernetes_Util {
 	public function createPod($uid, $yaml_url, $public_key, $storage_path, $file) {
 		$url = 'http://'.$this->privateIP . "/run_pod.php?user_id=" . $uid .
 		"&yaml_url=" . $yaml_url;
+        if (self::$testing) {
+            $url = str_replace(".php", "_testing.php", $url);
+        }
 		if (!empty($public_key)) {
 			$encoded_key = rawurlencode($public_key);
 			$url = $url . "&public_key=" . $encoded_key;
@@ -223,6 +230,9 @@ class OC_Kubernetes_Util {
 
 	public function deletePod($pod_name, $uid) {
 		$complete_uri = 'http://'.$this->privateIP . "/delete_pod.php?user_id=" . $uid . "&pod=" . $pod_name;
+        if (self::$testing) {
+            $complete_uri = str_replace(".php", "_testing.php", $complete_uri);
+        }
 		$response = file_get_contents($complete_uri);
 		return $response;
 	}
