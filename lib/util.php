@@ -47,6 +47,12 @@ class OC_Kubernetes_Util {
 				$container[$fields[$i]] = empty($value)?"":$value;
 				++$i;
 			}
+//double check we don't show pod info to someone who isn't the owner
+			if ($container['owner'] !== $uid) {
+				\OCP\Util::writeLog('user_pods', 'kube backend returned pods not owned by user! uid: ' . $uid .
+					'owner: ' . $container['owner'], \OC_Log::ERROR);
+				continue;
+			}
 			if(!empty($container['uri'])||!empty($container['https_port'])){
 				$container['url'] = 'https://'.$this->publicIP.(empty($container['https_port'])?'':':'.$container['https_port']).
 					'/'.(empty($container['uri'])?'':$container['uri']);
