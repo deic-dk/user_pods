@@ -14,12 +14,13 @@ if($_REQUEST['action']=='create_pod') {
 	$yaml_url = $util->rawManifestsURL.trim($_POST['yaml_file']);
 	$message = $util->createPod(OCP\User::getUser(), $yaml_url, trim($_POST['public_key']),
 			trim($_POST['storage_path']), trim($_POST['file']));
-    if (preg_match('{[\s\S]+\npod\/(.*) created\n[\s\S]+}', $message, $matches)) {
-        OCP\JSON::success(array('data' => array('podName' => $matches[1])));
-    }
-    else {
-        OCP\JSON::error(array('data' => array('message'=>'Failed to create pod')));
-    }
+	$matchstr = $util::$testing ? '{[\s\S]*<pre>(.*)</pre>[\s\S]*}' : '{[\s\S]+\npod\/(.*) created\n[\s\S]+}';
+	if (preg_match($matchstr, $message, $matches)) {
+		OCP\JSON::success(array('data' => array('podName' => $matches[1])));
+	}
+	else {
+		OCP\JSON::error(array('data' => array('message'=>'Failed to create pod')));
+	}
 }
 elseif($_REQUEST['action']=='delete_pod') {
 	$message = $util->deletePod($_REQUEST['pod_name'], OCP\User::getUser());
