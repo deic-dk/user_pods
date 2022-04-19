@@ -32,7 +32,7 @@ function getExpandedTable(container) {
 
 function getRow(container){
 	//visible part
-    var str = "  <tr pod_name='"+container['pod_name']+"'>"+
+    var str = "  <tr class='simple' pod_name='"+container['pod_name']+"'>"+
         getRowElementPlain('pod_name', container['pod_name'])+
         getRowElementPlain('status', container['status'])+
         getRowElementLink('view', container['url'], 'view')+
@@ -44,45 +44,59 @@ function getRow(container){
     return str;
 }
 
-function getContainers(podNames, callback){
+function updateContainerCount(){
+    var count_shown = $('table#podstable tbody#fileList').children('tr.simple').length;
+		$('table#podstable tfoot.summary tr td span.info').remove();
+		$('table#podstable tfoot.summary tr td').append("<span class='info' containers='"+count_shown+"'>"+
+						                                        count_shown+" "+(count_shown===1?t("user_pods", "container"):t("user_pods", "containers"))+
+						                                        "</span");
+}
+
+function toggleExpanded(expander) {
+	if (expander.attr("class").search("icon-up-open") === -1) {
+		expander.closest('tr').next().show();
+		expander.removeClass("icon-down-open").addClass("icon-up-open");
+	} else {
+		expander.closest('tr').next().hide();
+		expander.removeClass("icon-up-open").addClass("icon-down-open");
+	}
+}
+
+function getContainers(callback) {
 	$("#loading-text").text(t("user_pods", "Working..."));
 	$('#loading').show();
 	$.ajax({
 		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
-		data:  {action: 'get_containers', pod_names: podNames},
+		data: {
+			action: 'get_containers',
+			pod_names: ''
+		},
 		success: function(jsondata) {
-			if(jsondata.status == 'error'){
-				if(jsondata.data &&jsondata.data.error && jsondata.data.error == 'authentication_error'){
+			if (jsondata.status == 'error') {
+				if (jsondata.data && jsondata.data.error && jsondata.data.error == 'authentication_error') {
 					OC.redirect('/');
 				}
 			}
-			jsondata.data.forEach(function(value, index, array){
-				if(index==0){
-					if(!$('table#podstable thead tr th').length){
-						for(const col in value){
-							$('table#podstable thead tr').append("						<th class='column-display'>"+
-							"\n							<div class='display sort columntitle' data-sort='public'>"+
-							"\n								<span>"+t('user_pods', col)+"</span>"+
-							"\n							</div>"+
-							"\n						</th>");
-						}
-						$('table#podstable thead tr').append("n						<th class='column-display'></th>");
-					}
-				}
+			var expanded_views = [];
+			$('#podstable #fileList tr.simple td a.icon-up-open').closest('tr').each(function() {
+				expanded_views.push($(this).attr('pod_name'));
+			});
+			$('#podstable #fileList tr').remove();
+			jsondata.data.forEach(function(value, index, array) {
 				$('tbody#fileList').append(getRow(value));
 			});
-			if(!podNames){
-				$('table#podstable tfoot.summary tr td span.info').remove();
-				$('table#podstable tfoot.summary tr td').append("<span class='info' containers='"+jsondata.data.length+"'>"+
-						jsondata.data.length+" "+(jsondata.data.length==1?t("user_pods", "container"):t("user_pods", "containers"))+
-						"</span");
-			}
+			updateContainerCount();
 			$('#loading').hide();
-			if(callback){
+			$('table#podstable #fileList tr.simple').each(function() {
+				if ($.inArray($(this).attr("pod_name"), expanded_views) !== -1) {
+					toggleExpanded($(this).find('td a.expand-view'));
+				}
+			});
+			if (callback) {
 				callback();
 			}
 		},
-	error: function(){
+		error: function() {
 			$('#loading').hide();
 			//OC.dialogs.alert(t("user_pods", "get_containers: Something went wrong..."), t("user_pods", "Error"));
 		}
@@ -111,32 +125,16 @@ function runPod(yaml_file, ssh_key, storage_path, file) {
 				}
 			} else {
 				if (jsondata.data.podName) {
-					let podName = jsondata.data.podName;
 					$('#loading').show();
-					getContainers([podName]);
-					var containers_now;
-					$.when(containers_now = parseInt($('table#podstable tfoot.summary tr td span.info').attr('containers'), 10) + 1).then(
-						function() {
-							containers_now = Math.max(0, containers_now);
-							$('table#podstable tfoot.summary tr td span.info').remove();
-							$('table#podstable tfoot.summary tr td').append("<span class='info' containers='" + containers_now + "'>" +
-								containers_now + " " + (containers_now == 1 ? t("user_pods", "container") : t("user_pods", "containers")) +
-								"</span");
-						});
+					getContainers();
 					setTimeout(function() {
-						getContainers([podName], function() {
-							$('tr[pod_name="' + podName + '"]').first().remove();
-						});
+						getContainers();
 					}, 10000)
 					setTimeout(function() {
-						getContainers([podName], function() {
-							$('tr[pod_name="' + podName + '"]').first().remove();
-						});
+						getContainers();
 					}, 30000)
 					setTimeout(function() {
-						getContainers([podName], function() {
-							$('tr[pod_name="' + podName + '"]').first().remove();
-						});
+						getContainers();
 					}, 60000)
 				} else {
 					OC.dialogs.alert(t("user_pods", "run_pod: Something went wrong..."), t("user_pods", "Error"));
@@ -278,14 +276,8 @@ $(document).ready(function() {
 	});
 
 	$("#podstable td .expand-view").live('click', function() {
-		if ($(this).attr("class").search("icon-up-open") === -1) {
-			$(this).closest('tr').next().show();
-			$(this).removeClass("icon-down-open").addClass("icon-up-open");
-		} else {
-			$(this).closest('tr').next().hide();
-			$(this).removeClass("icon-up-open").addClass("icon-down-open");
-		}
-	});
+      toggleExpanded($(this));
+  });
 
 	$("#podstable td .delete-pod").live('click', function() {
 		var podSelected = $(this).closest('tr').find('td div[column="pod_name"] span').text().trim();
@@ -391,7 +383,7 @@ $(document).ready(function() {
 		getContainers();
 	})
 	
-	getContainers([], function(){
+	getContainers(function(){
 		if(typeof getGetParam !== 'undefined' && getGetParam('file') && getGetParam('yaml_file')){
 			var yaml_file = decodeURIComponent(getGetParam('yaml_file'));
 			var file = decodeURIComponent(getGetParam('file'));
