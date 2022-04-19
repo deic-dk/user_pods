@@ -7,17 +7,41 @@ function parseUrl( url ) {
   return a;
 }
 
-function getRow(container){
-	var str = "";
-	for(const col in container){
-		str += "	<td>"+
-		"\n	<div column="+col+">"+
-		"\n		<span>"+(col=="url"||col=="ssh_url"?"<a href='"+container[col]+"'>"+container[col]+"</a>":container[col])+"</span>"+
-		"\n	</div>"+
-		"\n</td>"	};
-	str +="\n<td><a href='#' title="+t('user_pods', 'Delete pod')+" class='delete-pod action icon icon-trash-empty'></a></td>";
-	str ="	<tr pod_name='"+container['pod_name']+"' container_name='"+container['container_name']+"'>"+str+"\n</tr>";
+function getRowElementPlain(name, value){
+    return "\n <td>\n  <div column='"+name+"'>\n   <span>"+value+"</span>\n  </div>\n </td>";
+}
+
+function getRowElementLink(name, url, value){
+    return "\n <td>\n  <div column='"+name+"'>\n   <span><a href='"+url+"'>"+value+"</a></span>\n  </div>\n </td>";
+}
+
+function getExpandedTable(container) {
+	var str = "\n <tr hidden class='expanded' pod_name='" + container['pod_name'] + "'> <td colspan='5'>" +
+		"\n<table id='expanded-" + container['pod_name'] + "' class='panel'>" +
+		"\n <tr><td>container name</td> <td>" + container['container_name'] + "</td></tr>" +
+		"\n <tr><td>image name</td> <td>" + container['image_name'] + "</td></tr>" +
+		"\n <tr><td>pod IP</td> <td>" + container['pod_ip'] + "</td></tr>" +
+		"\n <tr><td>node IP</td> <td>" + container['node_ip'] + "</td></tr>" +
+		"\n <tr><td>owner</td> <td>" + container['owner'] + "</td></tr>" +
+		"\n <tr><td>age</td> <td>" + container['age'] + "</td></tr>" +
+		"\n <tr><td>ssh url</td> <td>" + (container['ssh_url'].length === 0 ? "none" : "<a href='" + container['ssh_url'] + "'>copy</a>") + "</td></tr>" +
+		"\n</table>" +
+		"\n </td> </tr>";
 	return str;
+}
+
+function getRow(container){
+	//visible part
+    var str = "  <tr pod_name='"+container['pod_name']+"'>"+
+        getRowElementPlain('pod_name', container['pod_name'])+
+        getRowElementPlain('status', container['status'])+
+        getRowElementLink('view', container['url'], 'view')+
+	"\n<td><a href='#' title="+t('user_pods', 'Expand')+" class='expand-view permanent action icon icon-down-open'></a></td>"+
+	"\n<td><a href='#' title="+t('user_pods', 'Delete pod')+" class='delete-pod permanent action icon icon-trash-empty'></a></td>"+
+        "\n</tr>";
+	//expanded information
+	str += getExpandedTable(container);
+    return str;
 }
 
 function getContainers(podNames, callback){
@@ -251,6 +275,16 @@ $(document).ready(function() {
 				return false;
 			 }
 		 });
+	});
+
+	$("#podstable td .expand-view").live('click', function() {
+		if ($(this).attr("class").search("icon-up-open") === -1) {
+			$(this).closest('tr').next().show();
+			$(this).removeClass("icon-down-open").addClass("icon-up-open");
+		} else {
+			$(this).closest('tr').next().hide();
+			$(this).removeClass("icon-up-open").addClass("icon-down-open");
+		}
 	});
 
 	$("#podstable td .delete-pod").live('click', function() {

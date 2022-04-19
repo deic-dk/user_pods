@@ -65,10 +65,35 @@
 	<table id="podstable" class="panel">
 		<thead class="panel-heading" >
 			<tr>
+				<th id="headerPodName" class="column-display">
+					<div class="display sort columntitle" data-sort="public">
+						<span>pod_name</span>
+					</div>
+				</th>
+				<th id="headerPodStatus" class="column-display">
+					<div class="display sort columntitle" data-sort="public">
+						<span>status</span>
+					</div>
+				</th>
+				<th id="headerPodView" class="column-display">
+					<div class="display sort columntitle" data-sort="public">
+						<span>view</span>
+					</div>
+				</th>
+				<th id="headerPodMore" class="column-display">
+					<div class="display sort columntitle" data-sort="public">
+						<span>more</span>
+					</div>
+				</th>
+				<th id="headerPodDelete" class="column-display">
+					<div class="display sort columntitle" data-sort="public">
+						<span>delete</span>
+					</div>
+				</th>
 			</tr>
 		</thead>
 		<tbody id='fileList'>
-		</tbody> 
+		</tbody>
 		<tfoot
 			<tr class="summary text-sm">
 				<td>
