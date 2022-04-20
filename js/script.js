@@ -16,7 +16,7 @@ function getRowElementLink(name, url, value){
 }
 
 function getExpandedTable(container) {
-	var str = "\n <tr hidden class='expanded' pod_name='" + container['pod_name'] + "'> <td colspan='5'>" +
+	var str = "\n <tr hidden class='expanded-row' pod_name='" + container['pod_name'] + "'> <td colspan='5'>" +
 		"\n<table id='expanded-" + container['pod_name'] + "' class='panel'>" +
 		"\n <tr><td>container name</td> <td>" + container['container_name'] + "</td></tr>" +
 		"\n <tr><td>image name</td> <td>" + container['image_name'] + "</td></tr>" +
@@ -32,7 +32,7 @@ function getExpandedTable(container) {
 
 function getRow(container){
 	//visible part
-    var str = "  <tr class='simple' pod_name='"+container['pod_name']+"'>"+
+    var str = "  <tr class='simple-row' pod_name='"+container['pod_name']+"'>"+
         getRowElementPlain('pod_name', container['pod_name'])+
         getRowElementPlain('status', container['status'])+
         getRowElementLink('view', container['url'], 'view')+
@@ -45,7 +45,7 @@ function getRow(container){
 }
 
 function updateContainerCount(){
-    var count_shown = $('table#podstable tbody#fileList').children('tr.simple').length;
+    var count_shown = $('table#podstable tbody#fileList').children('tr.simple-row').length;
 		$('table#podstable tfoot.summary tr td span.info').remove();
 		$('table#podstable tfoot.summary tr td').append("<span class='info' containers='"+count_shown+"'>"+
 						                                        count_shown+" "+(count_shown===1?t("user_pods", "container"):t("user_pods", "containers"))+
@@ -78,7 +78,7 @@ function getContainers(callback) {
 				}
 			}
 			var expanded_views = [];
-			$('#podstable #fileList tr.simple td a.icon-up-open').closest('tr').each(function() {
+			$('#podstable #fileList tr.simple-row td a.icon-up-open').closest('tr').each(function() {
 				expanded_views.push($(this).attr('pod_name'));
 			});
 			$('#podstable #fileList tr').remove();
@@ -87,7 +87,7 @@ function getContainers(callback) {
 			});
 			updateContainerCount();
 			$('#loading').hide();
-			$('table#podstable #fileList tr.simple').each(function() {
+			$('table#podstable #fileList tr.simple-row').each(function() {
 				if ($.inArray($(this).attr("pod_name"), expanded_views) !== -1) {
 					toggleExpanded($(this).find('td a.expand-view'));
 				}
