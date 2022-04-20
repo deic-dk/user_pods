@@ -65,27 +65,27 @@
 	<table id="podstable" class="panel">
 		<thead class="panel-heading" >
 			<tr>
-				<th id="headerPodName" class="column-display">
+				<th id="headerPodName">
 					<div class="display sort columntitle" data-sort="public">
 						<span>pod_name</span>
 					</div>
 				</th>
-				<th id="headerPodStatus" class="column-display">
+				<th id="headerPodStatus">
 					<div class="display sort columntitle" data-sort="public">
 						<span>status</span>
 					</div>
 				</th>
-				<th id="headerPodView" class="column-display">
+				<th id="headerPodView">
 					<div class="display sort columntitle" data-sort="public">
 						<span>view</span>
 					</div>
 				</th>
-				<th id="headerPodMore" class="column-display">
+				<th id="headerPodMore" class="th-button">
 					<div class="display sort columntitle" data-sort="public">
 						<span>more</span>
 					</div>
 				</th>
-				<th id="headerPodDelete" class="column-display">
+				<th id="headerPodDelete" class="th-button">
 					<div class="display sort columntitle" data-sort="public">
 						<span>delete</span>
 					</div>

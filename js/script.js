@@ -17,14 +17,14 @@ function getRowElementLink(name, url, value){
 
 function getExpandedTable(container) {
 	var str = "\n <tr hidden class='expanded-row' pod_name='" + container['pod_name'] + "'> <td colspan='5'>" +
-		"\n<table id='expanded-" + container['pod_name'] + "' class='panel'>" +
-		"\n <tr><td>container name</td> <td>" + container['container_name'] + "</td></tr>" +
-		"\n <tr><td>image name</td> <td>" + container['image_name'] + "</td></tr>" +
-		"\n <tr><td>pod IP</td> <td>" + container['pod_ip'] + "</td></tr>" +
-		"\n <tr><td>node IP</td> <td>" + container['node_ip'] + "</td></tr>" +
-		"\n <tr><td>owner</td> <td>" + container['owner'] + "</td></tr>" +
-		"\n <tr><td>age</td> <td>" + container['age'] + "</td></tr>" +
-		"\n <tr><td>ssh url</td> <td>" + (container['ssh_url'].length === 0 ? "none" : "<a href='" + container['ssh_url'] + "'>copy</a>") + "</td></tr>" +
+		"\n<table id='expanded-" + container['pod_name'] + "' class='panel expanded-table'>" +
+		"\n <tr><td class='expanded-column-name'>container name:</td> <td>" + container['container_name'] + "</td class='expanded-column-value'></tr>" +
+		"\n <tr><td class='expanded-column-name'>image name:</td> <td>" + container['image_name'] + "</td class='expanded-column-value'></tr>" +
+		"\n <tr><td class='expanded-column-name'>pod IP:</td> <td>" + container['pod_ip'] + "</td class='expanded-column-value'></tr>" +
+		"\n <tr><td class='expanded-column-name'>node IP:</td> <td>" + container['node_ip'] + "</td class='expanded-column-value'></tr>" +
+		"\n <tr><td class='expanded-column-name'>owner:</td> <td>" + container['owner'] + "</td class='expanded-column-value'></tr>" +
+		"\n <tr><td class='expanded-column-name'>age:</td> <td>" + container['age'] + "</td class='expanded-column-value'></tr>" +
+		"\n <tr><td class='expanded-column-name'>ssh url:</td> <td>" + (container['ssh_url'].length === 0 ? "none" : "<a href='" + container['ssh_url'] + "'>copy</a>") + "</td class='expanded-column-value'></tr>" +
 		"\n</table>" +
 		"\n </td> </tr>";
 	return str;
@@ -36,8 +36,8 @@ function getRow(container){
         getRowElementPlain('pod_name', container['pod_name'])+
         getRowElementPlain('status', container['status'])+
         getRowElementLink('view', container['url'], 'view')+
-	"\n<td><a href='#' title="+t('user_pods', 'Expand')+" class='expand-view permanent action icon icon-down-open'></a></td>"+
-	"\n<td><a href='#' title="+t('user_pods', 'Delete pod')+" class='delete-pod permanent action icon icon-trash-empty'></a></td>"+
+	"\n<td class='td-button'><a href='#' title="+t('user_pods', 'Expand')+" class='expand-view permanent action icon icon-down-open'></a></td>"+
+	"\n<td class='td-button'><a href='#' title="+t('user_pods', 'Delete pod')+" class='delete-pod permanent action icon icon-trash-empty'></a></td>"+
         "\n</tr>";
 	//expanded information
 	str += getExpandedTable(container);

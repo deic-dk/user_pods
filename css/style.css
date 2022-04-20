@@ -119,11 +119,6 @@ li {
 	white-space: normal;
 }
 
-.column-display {
-	padding-right: 3%;
-	width: 1%;
-}
-
 .text-right {
 	margin-right: 19px;
 }
@@ -160,10 +155,6 @@ li {
 	padding-bottom: 6px;
 }
 
-.app-user_pods div#running_pods {
-	overflow-x: scroll;
-}
-
 #podstable .summary .info {
 	margin-left: 0;
 }
@@ -178,7 +169,7 @@ li {
 	color: #c5c5c5;
 	font-size: 16px;
 	background-image: none;
-	padding: 3px 24px 5px 0;
+	padding: 0 5px;
 }
 
 .app-user_pods .icon-loading-dark {
@@ -235,4 +226,22 @@ fieldset#userPodsSettings table tbody tr td {
 
 #podstable .expanded-row {
 	background: #ffffff;
+}
+
+#podstable .expanded-column-name {
+	text-align: right;
+	min-width: 200px;
+	max-width: 200px;
+}
+
+#podstable .expanded-table {
+	width: 100%;
+}
+
+#podstable td.td-button {
+	text-align: center;
+}
+
+#podstable th.th-button {
+	width: 0;
 }
