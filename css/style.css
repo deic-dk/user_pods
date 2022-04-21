@@ -230,8 +230,7 @@ fieldset#userPodsSettings table tbody tr td {
 
 #podstable .expanded-column-name {
 	text-align: right;
-	min-width: 200px;
-	max-width: 200px;
+  width: 0;
 }
 
 #podstable .expanded-table {

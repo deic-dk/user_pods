@@ -7,6 +7,7 @@ function parseUrl( url ) {
   return a;
 }
 
+//////////// begin getContainer helper functions /////////////
 function getRowElementPlain(name, value){
     return "\n <td>\n  <div column='"+name+"'>\n   <span>"+value+"</span>\n  </div>\n </td>";
 }
@@ -52,16 +53,7 @@ function updateContainerCount(){
 						                                        "</span");
 }
 
-function toggleExpanded(expander) {
-	if (expander.attr("class").search("icon-up-open") === -1) {
-		expander.closest('tr').next().show();
-		expander.removeClass("icon-down-open").addClass("icon-up-open");
-	} else {
-		expander.closest('tr').next().hide();
-		expander.removeClass("icon-up-open").addClass("icon-down-open");
-	}
-}
-
+//////////// begin core api functions /////////////
 function getContainers(callback) {
 	$("#loading-text").text(t("user_pods", "Working..."));
 	$('#loading').show();
@@ -143,6 +135,44 @@ function runPod(yaml_file, ssh_key, storage_path, file) {
 			$('#loading').hide();
 		}
 	});
+}
+
+function deletePod(podName) {
+	$.ajax({
+		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
+		data: {
+			action: "delete_pod",
+			pod_name: podName
+		},
+		method: 'post',
+		beforeSend: function() {
+			$("#loading-text").text(t("user_pods", "Deleting your pod..."));
+			$('#loading').show();
+		},
+		complete: function() {},
+		success: function(data) {
+			if (data.status == 'success') {
+				$('tr[pod_name="' + data.pod + '"]').remove();
+				updateContainerCount();
+				$('#loading').hide();
+			} else if (data.status == 'error') {
+				if (data.data && data.data.error && data.data.error == 'authentication_error') {
+					OC.redirect('/');
+				}
+			}
+		}
+	});
+}
+
+//////////// begin page interaction functions /////////////
+function toggleExpanded(expander) {
+	  if (expander.attr("class").search("icon-up-open") === -1) {
+		    expander.closest('tr').next().show();
+		    expander.removeClass("icon-down-open").addClass("icon-up-open");
+	  } else {
+		    expander.closest('tr').next().hide();
+		    expander.removeClass("icon-up-open").addClass("icon-down-open");
+	  }
 }
 
 function loadYaml(yaml_file){
@@ -281,40 +311,24 @@ $(document).ready(function() {
 
 	$("#podstable td .delete-pod").live('click', function() {
 		var podSelected = $(this).closest('tr').find('td div[column="pod_name"] span').text().trim();
-		$( '#dialogalert' ).html("<div>"+t("user_pods","Are you sure you want to delete the pod")+" "+podSelected+"?</div>");
-		$( '#dialogalert' ).dialog({buttons: [ { id:'test','data-test':'data test', text: 'Delete', click: function(el) {
-			$.ajax({url: OC.filePath('user_pods', 'ajax', 'actions.php'),
-				data: {action: "delete_pod", pod_name: podSelected},
-				method: 'post',
-				beforeSend: function() {
-					$("#loading-text").text(t("user_pods", "Deleting your pod..."));
-					$('#loading').show();
-				},
-				complete: function() {
-				},
-				success: function(data) {
-					if(data.status == 'success'){
-						var containers_now;
-						$.when(containers_now = parseInt($('table#podstable tfoot.summary tr td span.info').attr('containers'), 10) -1).then(function(){
-								containers_now = Math.max(0, containers_now);
-								$('tr[pod_name="'+data.pod+'"]').remove();
-								$('table#podstable tfoot.summary tr td span.info').remove();
-								$('table#podstable tfoot.summary tr td').append("<span class='info' containers='"+containers_now+"'>"+
-										containers_now+" "+(containers_now==1?t("user_pods", "container"):t("user_pods", "containers"))+
-										"</span");
-								$('#loading').hide();
-							});
+		$('#dialogalert').html("<div>" + t("user_pods", "Are you sure you want to delete the pod") + " " +
+			podSelected + "?</div>");
+		$('#dialogalert').dialog({
+			buttons: [{
+					text: 'Delete',
+					click: function() {
+						deletePod(podSelected);
+						$(this).dialog('close');
 					}
-					else if(data.status == 'error'){
-						if(data.data.error && data.data && data.data.error == 'authentication_error'){
-							OC.redirect('/');
-						}
+				},
+				{
+					text: 'Cancel',
+					click: function() {
+						$(this).dialog('close');
 					}
 				}
-			});
-			$(this).dialog( 'close' ); } },
-			{ id:'test2','data-test':'data test', text: 'Cancel', click: function() {
-				$(this).dialog( 'close' ); } } ] });
+			]
+		});
 	});
 
 	$("#podstable > tbody > tr").each(function() {
@@ -327,62 +341,17 @@ $(document).ready(function() {
 		}
 	});
 
+// Removed old unused function, need to reimplement a call somewhere that does:
+//		$("#download-logs").live('click', function() {
+//			OC.redirect(OC.linkTo('user_pods', 'ajax/getLogs.php') + '?file=' + pod);
+//		});
 
-	$("#podstable .name").live('click', function() {
-		var pod = $(this).closest('td').attr('id') ;
-		var https_port = $(this).closest('tr').find("span#https_port").html();
-		var url = $(this).closest('tr').find('span#url').html();
-		var complete_url = kube_public_url+':' + https_port + '/' + url;
-		var image = $(this).closest('tr').find('span#image').html();
-		var image_url = dockerhub_url + image;
-		var html = '<div><span><h3 class="oc-dialog-title" style="padding-left:25px;"><span>'+ pod+'</span></h3></span><a class="oc-dialog-close close svg"></a>\
-			<div id="meta_data_container" class=\''+ pod +'\'>\
-			<div style="position:absolute; left:40px; top:80px;">Original image on Docker Hub:\
-			<div><a href=\''+image_url+'\'target="_blank">'+ image_url + '</a></div></div>\
-			<div style="position:absolute; left:40px; top:140px;">\
-			<div id="url">Access web service:</div>\
-			<div><a href=\''+complete_url+'\'target="_blank">'+ complete_url +'</a></div></div>\
-			<div style="position:absolute; bottom:40px; left:40px;" >\
-			<div>Download the logs of your container:</div><p></p>\
-			<button id="download-logs" class="download btn btn-primary btn-flat">Download</button>&nbsp\
-			</div>\
-</div>';
-
-		$(html).dialog({
-			  dialogClass: "oc-dialog",
-			  resizeable: false,
-			  draggable: false,
-			  height: 400,
-			  width: 600
-			});
-
-		$('body').append('<div class="modalOverlay">');
-
-		$('.oc-dialog-close').live('click', function() {
-			$(".oc-dialog").hide();
-			$('.modalOverlay').remove();
-		});
-
-		$('.ui-helper-clearfix').css("display", "none");
-
-		$("#download-logs").live('click', function() {
-			OC.redirect(OC.linkTo('user_pods', 'ajax/getLogs.php') + '?file=' + pod);
-		});
-	});
-
-	$(document).click(function(e){
-		if (!$(e.target).parents().filter('.oc-dialog').length && !$(e.target).parents().filter('.name').length ) {
-			$(".oc-dialog").hide();
-			$('.modalOverlay').remove();
-			}
-		});
-	
 	$('#pods_refresh').click(function(e){
 		$('#podstable #fileList tr').remove();
 		$('table#podstable tfoot.summary tr td span.info').remove();
 		getContainers();
 	})
-	
+
 	getContainers(function(){
 		if(typeof getGetParam !== 'undefined' && getGetParam('file') && getGetParam('yaml_file')){
 			var yaml_file = decodeURIComponent(getGetParam('yaml_file'));
