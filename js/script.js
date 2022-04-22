@@ -69,31 +69,31 @@ function getContainers(callback) {
 			ajaxBefore(xhr, "Retrieving table data...");
 		},
 		success: function(jsondata) {
-			if (jsondata.status == 'error') {
+			if (jsondata.status == 'success') {
+				var expanded_views = [];
+				$('#podstable #fileList tr.simple-row td a.icon-up-open').closest('tr').each(function() {
+					expanded_views.push($(this).attr('pod_name'));
+				});
+				$('#podstable #fileList tr').remove();
+				jsondata.data.forEach(function(value, index, array) {
+					$('tbody#fileList').append(getRow(value));
+				});
+				updateContainerCount();
+				$('table#podstable #fileList tr.simple-row').each(function() {
+					if ($.inArray($(this).attr("pod_name"), expanded_views) !== -1) {
+						toggleExpanded($(this).find('td a.expand-view'));
+					}
+				});
+				if (callback) {
+					callback();
+				}
+			} else if (jsondata.status == 'error') {
 				if (jsondata.data && jsondata.data.error && jsondata.data.error == 'authentication_error') {
 					OC.redirect('/');
+				} else {
+					OC.dialogs.alert(t("user_pods", "get_containers: Something went wrong..."), t("user_pods", "Error"));
 				}
 			}
-			var expanded_views = [];
-			$('#podstable #fileList tr.simple-row td a.icon-up-open').closest('tr').each(function() {
-				expanded_views.push($(this).attr('pod_name'));
-			});
-			$('#podstable #fileList tr').remove();
-			jsondata.data.forEach(function(value, index, array) {
-				$('tbody#fileList').append(getRow(value));
-			});
-			updateContainerCount();
-			$('table#podstable #fileList tr.simple-row').each(function() {
-				if ($.inArray($(this).attr("pod_name"), expanded_views) !== -1) {
-					toggleExpanded($(this).find('td a.expand-view'));
-				}
-			});
-			if (callback) {
-				callback();
-			}
-		},
-		error: function() {
-			OC.dialogs.alert(t("user_pods", "get_containers: Something went wrong..."), t("user_pods", "Error"));
 		},
 		complete: function(xhr) {
 			ajaxCompleted(xhr);
@@ -116,13 +116,7 @@ function runPod(yaml_file, ssh_key, storage_path, file) {
 			ajaxBefore(xhr, "Creating pod...");
 		},
 		success: function(jsondata) {
-			if (jsondata.status == 'error') {
-				if (jsondata.data && jsondata.data.error && jsondata.data.error == 'authentication_error') {
-					OC.redirect('/');
-				} else if (jsondata.data.message) {
-					OC.dialogs.alert(t("user_pods", "run_pod: " + jsondata.data.message), t("user_pods", "Error"));
-				}
-			} else {
+			if (jsondata.status == 'success') {
 				if (jsondata.data.podName) {
 					getContainers();
 					setTimeout(function() {
@@ -136,6 +130,12 @@ function runPod(yaml_file, ssh_key, storage_path, file) {
 					}, 60000)
 				} else {
 					OC.dialogs.alert(t("user_pods", "run_pod: Something went wrong..."), t("user_pods", "Error"));
+				}
+			} else if (jsondata.status == 'error') {
+				if (jsondata.data && jsondata.data.error && jsondata.data.error == 'authentication_error') {
+					OC.redirect('/');
+				} else if (jsondata.data.message) {
+					OC.dialogs.alert(t("user_pods", "run_pod: " + jsondata.data.message), t("user_pods", "Error"));
 				}
 			}
 		},
@@ -166,6 +166,8 @@ function deletePod(podName) {
 			} else if (data.status == 'error') {
 				if (data.data && data.data.error && data.data.error == 'authentication_error') {
 					OC.redirect('/');
+				} else {
+					OC.dialogs.alert(t("user_pods", "delete_pod: Something went wrong..."), t("user_pods", "Error"));
 				}
 			}
 		}

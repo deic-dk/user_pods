@@ -24,7 +24,12 @@ if($_REQUEST['action']=='create_pod') {
 }
 elseif($_REQUEST['action']=='delete_pod') {
 	$message = $util->deletePod($_REQUEST['pod_name'], OCP\User::getUser());
-	OCP\JSON::success(array('message'=>$message, 'pod'=>$_REQUEST['pod_name']));
+    if ($message === '<h1>OK</h1>') {
+        OCP\JSON::success(array('message'=>$message, 'pod'=>$_REQUEST['pod_name']));
+    }
+    else {
+        OCP\JSON::error(array('message' => $message, 'pod' => $_REQUEST['pod_name']));
+    }
 }
 elseif($_REQUEST['action']=='check_manifest') {
 	$data = $util->checkManifest($_REQUEST['yaml_file']);
