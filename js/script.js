@@ -248,20 +248,24 @@ function loadYaml(yaml_file) {
 	});
 }
 
+function toggleNewpod() {
+	$('#newpod').slideToggle();
+	$('#pod-create').toggleClass('btn-primary');
+	$('#pod-create').toggleClass('btn-default');
+	$('#newpod #ok a').toggleClass('btn-default');
+	$('#newpod #ok a').toggleClass('btn-primary');
+}
+
 $(document).ready(function() {
 
 	var hostname = $(location).attr('host');
 
 	$('a#pod-create').click(function() {
-		$('#newpod').slideToggle();
-		$('#pod-create').toggleClass('btn-primary');
-		$('#pod-create').toggleClass('btn-default');
-		$('#newpod #ok a').toggleClass('btn-default');
-		$('#newpod #ok a').toggleClass('btn-primary');
+		toggleNewpod()
 	});
 
 	$('#newpod #cancel').click(function() {
-		$('#newpod').slideToggle();
+		toggleNewpod()
 	});
 
 	$("#yaml_file").prop("selectedIndex", -1);
