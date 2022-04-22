@@ -3,8 +3,12 @@ function getRowElementPlain(name, value) {
 	return "\n <td>\n  <div column='" + name + "'>\n   <span>" + value + "</span>\n  </div>\n </td>";
 }
 
-function getRowElementLink(name, url, value) {
-	return "\n <td>\n  <div column='" + name + "'>\n   <span><a href='" + url + "'>" + value + "</a></span>\n  </div>\n </td>";
+function getRowElementView(name, container) {
+	if (~container['status'].indexOf("Running")) {
+		return "\n <td>\n  <div column='" + name + "'>\n   <span><a href='" + container['url'] +
+			"'>link</a></span>\n  </div>\n </td>";
+	}
+	return getRowElementPlain(name, "wait");
 }
 
 function getExpandedTable(container) {
@@ -36,7 +40,7 @@ function getRow(container) {
 	var str = "  <tr class='simple-row' pod_name='" + container['pod_name'] + "'>" +
 		getRowElementPlain('pod_name', container['pod_name']) +
 		getRowElementPlain('status', formatStatusRunning(container['status'])) +
-		getRowElementLink('view', container['url'], 'view') +
+		getRowElementView('view', container) +
 		"\n<td class='td-button'><a href='#' title=" + t('user_pods', 'Expand') + " class='expand-view permanent action icon icon-down-open'></a></td>" +
 		"\n<td class='td-button'><a href='#' title=" + t('user_pods', 'Delete pod') + " class='delete-pod permanent action icon icon-trash-empty'></a></td>" +
 		"\n</tr>";
