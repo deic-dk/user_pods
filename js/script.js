@@ -22,11 +22,20 @@ function getExpandedTable(container) {
 	return str;
 }
 
+function formatStatusRunning(status) {
+	if (~status.indexOf("Running")) {
+		var date = status.substr(status.indexOf(':') + 1);
+		var time = new Date(date).toString().slice(0, 25);
+		return "Running: ".concat(time);
+	}
+	return status;
+}
+
 function getRow(container) {
 	//visible part
 	var str = "  <tr class='simple-row' pod_name='" + container['pod_name'] + "'>" +
 		getRowElementPlain('pod_name', container['pod_name']) +
-		getRowElementPlain('status', container['status']) +
+		getRowElementPlain('status', formatStatusRunning(container['status'])) +
 		getRowElementLink('view', container['url'], 'view') +
 		"\n<td class='td-button'><a href='#' title=" + t('user_pods', 'Expand') + " class='expand-view permanent action icon icon-down-open'></a></td>" +
 		"\n<td class='td-button'><a href='#' title=" + t('user_pods', 'Delete pod') + " class='delete-pod permanent action icon icon-trash-empty'></a></td>" +
@@ -325,16 +334,6 @@ $(document).ready(function() {
 				}
 			]
 		});
-	});
-
-	$("#podstable > tbody > tr").each(function() {
-		var value = $(this).find("td span#status").text();
-		if (~value.indexOf("Running")) {
-			var date = value.substr(value.indexOf(':') + 1);
-			var time = new Date(date).toString().slice(0, 25);
-			var finalDate = "Running: ".concat(time);
-			$(this).find("td span#status").text(finalDate);
-		}
 	});
 
 	// Removed old unused function, need to reimplement a call somewhere that does:
