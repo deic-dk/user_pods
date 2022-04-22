@@ -119,15 +119,20 @@ function runPod(yaml_file, ssh_key, storage_path, file) {
 			if (jsondata.status == 'success') {
 				if (jsondata.data.podName) {
 					getContainers();
-					setTimeout(function() {
+          // if a previous run_pod call has outstanding timeouts, clear them
+					$.runPodTimeouts.forEach(function(timeout) {
+						clearTimeout(timeout);
+					});
+					$.runPodTimeouts = [];
+					$.runPodTimeouts.push(setTimeout(function() {
 						getContainers();
-					}, 10000)
-					setTimeout(function() {
+					}, 10000));
+					$.runPodTimeouts.push(setTimeout(function() {
 						getContainers();
-					}, 30000)
-					setTimeout(function() {
+					}, 30000));
+					$.runPodTimeouts.push(setTimeout(function() {
 						getContainers();
-					}, 60000)
+					}, 60000));
 				} else {
 					OC.dialogs.alert(t("user_pods", "run_pod: Something went wrong..."), t("user_pods", "Error"));
 				}
@@ -304,6 +309,7 @@ $(document).ready(function() {
 
 	var hostname = $(location).attr('host');
 
+	$.runPodTimeouts = [];
 	$.xhrPool = [];
 
 	$('a#pod-create').click(function() {
