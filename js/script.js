@@ -119,7 +119,7 @@ function runPod(yaml_file, ssh_key, storage_path, file) {
 			if (jsondata.status == 'success') {
 				if (jsondata.data.podName) {
 					getContainers();
-          // if a previous run_pod call has outstanding timeouts, clear them
+					// if a previous run_pod call has outstanding timeouts, clear them
 					$.runPodTimeouts.forEach(function(timeout) {
 						clearTimeout(timeout);
 					});
@@ -160,6 +160,12 @@ function deletePod(podName) {
 		method: 'post',
 		beforeSend: function(xhr) {
 			ajaxBefore(xhr, "Deleting your pod...");
+			$('#podstable tr[pod_name="' + podName + '"] td a.delete-pod').hide();
+			$('#podstable tr[pod_name="' + podName + '"] td div[column=status] span').text('Deleting');
+		},
+		error: function(xhr) {
+			$('#podstable tr[pod_name="' + podName + '"] td a.delete-pod').show();
+			$('#podstable tr[pod_name="' + podName + '"] td div[column=status] span').text('Delete failed');
 		},
 		complete: function(xhr) {
 			ajaxCompleted(xhr);
@@ -167,6 +173,8 @@ function deletePod(podName) {
 		success: function(data) {
 			if (data.status == 'success') {
 				$('tr[pod_name="' + data.pod + '"]').remove();
+				// if a tooltip is shown when the element is removed, then there is no mouseover event to get rid of it.
+				$('body > div.tipsy').remove();
 				updateContainerCount();
 			} else if (data.status == 'error') {
 				if (data.data && data.data.error && data.data.error == 'authentication_error') {
