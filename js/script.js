@@ -163,10 +163,6 @@ function deletePod(podName) {
 			$('#podstable tr[pod_name="' + podName + '"] td a.delete-pod').hide();
 			$('#podstable tr[pod_name="' + podName + '"] td div[column=status] span').text('Deleting');
 		},
-		error: function(xhr) {
-			$('#podstable tr[pod_name="' + podName + '"] td a.delete-pod').show();
-			$('#podstable tr[pod_name="' + podName + '"] td div[column=status] span').text('Delete failed');
-		},
 		complete: function(xhr) {
 			ajaxCompleted(xhr);
 		},
@@ -181,6 +177,8 @@ function deletePod(podName) {
 					OC.redirect('/');
 				} else {
 					OC.dialogs.alert(t("user_pods", "delete_pod: Something went wrong..."), t("user_pods", "Error"));
+					$('#podstable tr[pod_name="' + podName + '"] td a.delete-pod').show();
+					$('#podstable tr[pod_name="' + podName + '"] td div[column=status] span').text('Delete failed');
 				}
 			}
 		}
