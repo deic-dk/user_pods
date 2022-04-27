@@ -75,10 +75,13 @@ function getContainers(callback) {
 		success: function(jsondata) {
 			if (jsondata.status == 'success') {
 				var expanded_views = [];
+        // make an array of the podnames whose views are expanded
 				$('#podstable #fileList tr.simple-row td a.icon-up-open').closest('tr').each(function() {
 					expanded_views.push($(this).attr('pod_name'));
 				});
 				$('#podstable #fileList tr').remove();
+        // remove all of the table rows, and clear any remaining tooltips
+				$('body > div.tipsy').remove();
 				jsondata.data.forEach(function(value, index, array) {
 					$('tbody#fileList').append(getRow(value));
 				});
