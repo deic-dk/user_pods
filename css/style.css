@@ -230,7 +230,7 @@ fieldset#userPodsSettings table tbody tr td {
 
 #podstable .expanded-column-name {
 	text-align: right;
-  width: 0;
+	width: 0;
 }
 
 #podstable .expanded-table {
@@ -243,4 +243,10 @@ fieldset#userPodsSettings table tbody tr td {
 
 #podstable th.th-button {
 	width: 0;
+}
+
+#podstable tbody tr.simple-row td div[column="status"] span,
+#podstable tbody tr.expanded-row table td.expanded-column-value span {
+	white-space: normal;
+	word-wrap: break-word;
 }
