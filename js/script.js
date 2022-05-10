@@ -5,8 +5,12 @@ function getRowElementPlain(name, value) {
 
 function getRowElementView(name, container) {
 	if (~container['status'].indexOf("Running")) {
-		return "\n <td>\n  <div column='" + name + "'>\n   <span><a href='" + container['url'] +
-			"'>link</a></span>\n  </div>\n </td>";
+		if (container['url'].length) {
+			return "\n <td>\n  <div column='" + name + "'>\n   <span><a href='" + container['url'] +
+				"'>link</a></span>\n  </div>\n </td>";
+		} else {
+			return getRowElementPlain(name, "none");
+		}
 	}
 	return getRowElementPlain(name, "wait");
 }
@@ -14,13 +18,13 @@ function getRowElementView(name, container) {
 function getExpandedTable(container) {
 	var str = "\n <tr hidden class='expanded-row' pod_name='" + container['pod_name'] + "'> <td colspan='5'>" +
 		"\n<table id='expanded-" + container['pod_name'] + "' class='panel expanded-table'>" +
-		"\n <tr><td class='expanded-column-name'>container name:</td> <td>" + container['container_name'] + "</td class='expanded-column-value'></tr>" +
-		"\n <tr><td class='expanded-column-name'>image name:</td> <td>" + container['image_name'] + "</td class='expanded-column-value'></tr>" +
-		"\n <tr><td class='expanded-column-name'>pod IP:</td> <td>" + container['pod_ip'] + "</td class='expanded-column-value'></tr>" +
-		"\n <tr><td class='expanded-column-name'>node IP:</td> <td>" + container['node_ip'] + "</td class='expanded-column-value'></tr>" +
-		"\n <tr><td class='expanded-column-name'>owner:</td> <td>" + container['owner'] + "</td class='expanded-column-value'></tr>" +
-		"\n <tr><td class='expanded-column-name'>age:</td> <td>" + container['age'] + "</td class='expanded-column-value'></tr>" +
-		"\n <tr><td class='expanded-column-name'>ssh url:</td> <td>" + (container['ssh_url'].length === 0 ? "none" : "<a href='" + container['ssh_url'] + "'>copy</a>") + "</td class='expanded-column-value'></tr>" +
+		"\n <tr><td class='expanded-column-name'>container name:</td> <td class='expanded-column-value'><span>" + container['container_name'] + "</span></td></tr>" +
+		"\n <tr><td class='expanded-column-name'>image name:</td> <td class='expanded-column-value'><span>" + container['image_name'] + "</span></td></tr>" +
+		"\n <tr><td class='expanded-column-name'>pod IP:</td> <td class='expanded-column-value'><span>" + container['pod_ip'] + "</span></td></tr>" +
+		"\n <tr><td class='expanded-column-name'>node IP:</td> <td class='expanded-column-value'><span>" + container['node_ip'] + "</span></td></tr>" +
+		"\n <tr><td class='expanded-column-name'>owner:</td> <td class='expanded-column-value'><span>" + container['owner'] + "</span></td></tr>" +
+		"\n <tr><td class='expanded-column-name'>age:</td> <td class='expanded-column-value'><span>" + container['age'] + "</span></td></tr>" +
+		"\n <tr><td class='expanded-column-name'>ssh url:</td> <td class='expanded-column-value'><span>" + (container['ssh_url'].length === 0 ? "none" : "<a href='" + container['ssh_url'] + "'>copy</a>") + "</span></td></tr>" +
 		"\n</table>" +
 		"\n </td> </tr>";
 	return str;
@@ -71,10 +75,13 @@ function getContainers(callback) {
 		success: function(jsondata) {
 			if (jsondata.status == 'success') {
 				var expanded_views = [];
+        // make an array of the podnames whose views are expanded
 				$('#podstable #fileList tr.simple-row td a.icon-up-open').closest('tr').each(function() {
 					expanded_views.push($(this).attr('pod_name'));
 				});
 				$('#podstable #fileList tr').remove();
+        // remove all of the table rows, and clear any remaining tooltips
+				$('body > div.tipsy').remove();
 				jsondata.data.forEach(function(value, index, array) {
 					$('tbody#fileList').append(getRow(value));
 				});
