@@ -15,6 +15,20 @@ function getRowElementView(name, container) {
 	return getRowElementPlain(name, "wait");
 }
 
+function getSshRows(container) {
+	var str = ""
+	if (container['ssh_port'].length) {
+		str += "\n <tr><td class='expanded-column-name'>ssh access:</td> <td class='expanded-column-value'><span> ssh -p " + container['ssh_port'] + (container['ssh_username'].length === 0 ? "" : " -u " + container['ssh_username']) + " kube.sciencedata.dk" + "</span></td></tr>"
+		if (container['ed25519_hostkey'].length) {
+			str += "\n <tr><td class='expanded-column-name'>ed25519 hostkey:</td> <td class='expanded-column-value'><span> SHA256: " + container['ed25519_hostkey'] + "</span></td></tr>"
+		}
+		if (container['rsa_hostkey'].length) {
+			str += "\n <tr><td class='expanded-column-name'>rsa hostkey:</td> <td class='expanded-column-value'><span> SHA256: " + container['rsa_hostkey'] + "</span></td></tr>"
+		}
+	}
+	return str
+}
+
 function getExpandedTable(container) {
 	var str = "\n <tr hidden class='expanded-row' pod_name='" + container['pod_name'] + "'> <td colspan='5'>" +
 		"\n<table id='expanded-" + container['pod_name'] + "' class='panel expanded-table'>" +
@@ -24,7 +38,7 @@ function getExpandedTable(container) {
 		"\n <tr><td class='expanded-column-name'>node IP:</td> <td class='expanded-column-value'><span>" + container['node_ip'] + "</span></td></tr>" +
 		"\n <tr><td class='expanded-column-name'>owner:</td> <td class='expanded-column-value'><span>" + container['owner'] + "</span></td></tr>" +
 		"\n <tr><td class='expanded-column-name'>age:</td> <td class='expanded-column-value'><span>" + container['age'] + "</span></td></tr>" +
-		"\n <tr><td class='expanded-column-name'>ssh url:</td> <td class='expanded-column-value'><span>" + (container['ssh_url'].length === 0 ? "none" : "<a href='" + container['ssh_url'] + "'>copy</a>") + "</span></td></tr>" +
+		getSshRows(container) +
 		"\n</table>" +
 		"\n </td> </tr>";
 	return str;
@@ -75,12 +89,12 @@ function getContainers(callback) {
 		success: function(jsondata) {
 			if (jsondata.status == 'success') {
 				var expanded_views = [];
-        // make an array of the podnames whose views are expanded
+				// make an array of the podnames whose views are expanded
 				$('#podstable #fileList tr.simple-row td a.icon-up-open').closest('tr').each(function() {
 					expanded_views.push($(this).attr('pod_name'));
 				});
 				$('#podstable #fileList tr').remove();
-        // remove all of the table rows, and clear any remaining tooltips
+				// remove all of the table rows, and clear any remaining tooltips
 				$('body > div.tipsy').remove();
 				jsondata.data.forEach(function(value, index, array) {
 					$('tbody#fileList').append(getRow(value));

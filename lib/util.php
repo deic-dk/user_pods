@@ -66,16 +66,6 @@ class OC_Kubernetes_Util {
 			}
 			unset($container['uri']);
 			unset($container['https_port']);
-			if(!empty($container['ssh_port'])){
-				$container['ssh_url'] = 'ssh://'.
-					(empty($container['ssh_username'])?'':$container['ssh_username'].'@').
-					$this->publicIP.':'.$container['ssh_port'];
-			}
-			else{
-				$container['ssh_url'] = '';
-			}
-			unset($container['ssh_port']);
-			unset($container['ssh_username']);
 			if(!empty($container['age'])){
 				$container['age'] = floor($container['age'] / 3600) . gmdate(":i:s", $container['age'] % 3600);
 			}
