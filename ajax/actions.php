@@ -14,7 +14,7 @@ if($_REQUEST['action']=='create_pod') {
 	$yaml_url = $util->rawManifestsURL.trim($_POST['yaml_file']);
 	$message = $util->createPod(OCP\User::getUser(), $yaml_url, trim($_POST['public_key']),
 			trim($_POST['storage_path']), trim($_POST['file']));
-	$matchstr = $util::$testing ? '{[\s\S]*<pre>(.*)</pre>[\s\S]*}' : '{[\s\S]+\npod\/(.*) created\n[\s\S]+}';
+	$matchstr = '{[\s\S]*<pre>(.*)</pre>[\s\S]*}';
 	if (preg_match($matchstr, $message, $matches)) {
 		OCP\JSON::success(array('data' => array('podName' => $matches[1])));
 	}
