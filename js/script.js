@@ -17,8 +17,8 @@ function getRowElementView(name, container) {
 
 function getSshRows(container) {
 	var str = ""
-	if (container['ssh_port'].length) {
-		str += "\n <tr><td class='expanded-column-name'>ssh access:</td> <td class='expanded-column-value'><span> ssh -p " + container['ssh_port'] + (container['ssh_username'].length === 0 ? "" : " -u " + container['ssh_username']) + " kube.sciencedata.dk" + "</span></td></tr>"
+	if (container['ssh_url'].length) {
+		str +=  "\n <tr><td class='expanded-column-name'>ssh access:</td> <td class='expanded-column-value'><span>" + container['ssh_url'] + "</span></td></tr>"
 		if (container['ed25519_hostkey'].length) {
 			str += "\n <tr><td class='expanded-column-name'>ed25519 hostkey:</td> <td class='expanded-column-value'><span> SHA256: " + container['ed25519_hostkey'] + "</span></td></tr>"
 		}
