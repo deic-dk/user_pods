@@ -18,7 +18,7 @@ function getRowElementView(name, container) {
 function getSshRows(container) {
 	var str = ""
 	if (container['ssh_url'].length) {
-		str +=  "\n <tr><td class='expanded-column-name'>ssh access:</td> <td class='expanded-column-value'><span>" + container['ssh_url'] + "</span></td></tr>"
+		str +=  "\n <tr><td class='expanded-column-name'>ssh access:</td> <td class='expanded-column-value'><span class='expanded-row-ssh-url'>" + container['ssh_url'] + "</span></td></tr>"
 		if (container['ed25519_hostkey'].length) {
 			str += "\n <tr><td class='expanded-column-name'>ed25519 hostkey:</td> <td class='expanded-column-value'><span> SHA256: " + container['ed25519_hostkey'] + "</span></td></tr>"
 		}
@@ -412,7 +412,6 @@ $(document).ready(function() {
 	//		});
 
 	$('#pods_refresh').click(function(e) {
-		$('#podstable #fileList tr').remove();
 		$('table#podstable tfoot.summary tr td span.info').remove();
 		getContainers();
 	})
