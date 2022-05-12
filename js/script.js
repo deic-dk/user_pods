@@ -358,11 +358,12 @@ $(document).ready(function() {
 		var ssh_key = $('#public_key').val();
 		var file = $('#file_input').val();
 		var storage_path = "";
-		if (!$('#storage input').length) {
-			runPod(yaml_file, ssh_key, storage_path, file);
+		if (!$('#storage:visible').length) {
 			if ($('#public_key:visible').length && (!ssh_key || ssh_key == "")) {
 				OC.dialogs.alert(t("user_pods", "Please fill in a public SSH key"), t("user_pods", "Missing SSH key"));
-			}
+			} else {
+			  runPod(yaml_file, ssh_key, storage_path, file);
+      }
 			return false;
 		}
 		$('#storage input').each(function(el) {
