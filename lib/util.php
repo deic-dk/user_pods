@@ -152,53 +152,37 @@ class OC_Kubernetes_Util {
 		$containerInfos = [];
 		if(!empty($arr['spec']['containers'])){
 			foreach($arr['spec']['containers'] as $container){
+				$container_name = "";
 				$accepts_public_key = false;
-				$mountPaths = [];
-				$image_name = "";
-				if(!empty($container['image'])){
-					$image_name = $container['image'];
+				$accepts_file = false;
+				$accepts_storage_path = false;
+				if(!empty($container['name'])){
+					$container_name = $container['name']
 				}
 				if(!empty($container['env'])){
 					foreach($container['env'] as $env){
-						if(!empty($env['name']) && $env['name']=="SSH_PUBLIC_KEY"){
-							$accepts_public_key = true;
-							$pod_accepts_public_key = true;
-						}
-						if(!empty($env['name']) && $env['name']=="USERNAME" && !empty($env['value'])){
-							$username = $env['value'];
-							$pod_username = $env['value'];
-						}
-						if(!empty($env['name']) && $env['name']=="MOUNT_SRC" && !empty($env['value'])){
-							$pod_mount_src = $env['value'];
-						}
-						if(!empty($env['name']) && $env['name']=="FILE"){
-							$pod_accepts_file = true;
-							if(!empty($env['value'])){
-								$pod_file = $env['value'];
+						if(!empty($env['name'])){
+							switch($env['name']){
+							case "SSH_PUBLIC_KEY":
+								$accepts_public_key = true;
+							case "FILE":
+								$accepts_file = true;
+							case "STORAGE_PATH":
+								$accepts_storage_path = true;
 							}
 						}
 					}
 				}
-				if(!empty($container['volumeMounts'])){
-					$pod_mount_path[$container['volumeMounts'][0]['name']]= $container['volumeMounts'][0]['mountPath'];
-					foreach($container['volumeMounts'] as $volumeMount){
-						$mountPaths[$volumeMount['name']] = $volumeMount['mountPath'];
-					}
-				}
 				$containerInfos[] = [
-					'image_name'=>$image_name,
-					//'image_description'=>$image_description,
+					'name'=>$container_name,
 					'accepts_public_key'=>$accepts_public_key,
-						'username'=>$username,
-					'mount_paths'=>$mountPaths
+					'accepts_file'=>$accepts_file,
+					'accepts_storage_path'=>$accepts_storage_path,
 				];
 			}
 		}
-		return ['manifest_url'=>$github_url, 'manifest_info'=>$manifest_info,
-				'pod_accepts_public_key'=>$pod_accepts_public_key,
-				'pod_accepts_file'=>$pod_accepts_file, 'pod_file'=>$pod_file,
-				'pod_username'=>$pod_username,
-				'pod_mount_path'=>$pod_mount_path, 'pod_mount_src'=>$pod_mount_src,
+		return ['manifest_url'=>$github_url,
+				'manifest_info'=>$manifest_info,
 				'container_infos'=>$containerInfos];
 	}
 
