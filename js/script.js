@@ -217,6 +217,22 @@ function toggleExpanded(expander) {
 		expander.removeClass("icon-up-open").addClass("icon-down-open");
 	}
 }
+function addContainerSettings(container_info) {
+	var main_id = 'container_' + container_info.name;
+	$('#container_settings').append('<div id="' + main_id + '" class="container_header"></div>');
+	$('#container_settings #' + main_id).append('<span><strong>' + container_info.name + '</strong></span>');
+	if (container_info.accepts_public_key) {
+		$('#container_settings #' + main_id).append('<div style="display: block;" class="container_setting">\n' +
+			'<textarea id="public_key" type="text" placeholder="Public SSH key"\n' +
+			'title="Paste your public SSH key here"></textarea></div>');
+	}
+	if (container_info.accepts_file) {
+		$('#container_settings #' + main_id).append('<div id="file" style="display: block;" class="container_setting">\n' +
+			'<span class="container_setting_text">File:</span>\n' +
+			'<textarea id="' + main_id + '_file" type="text" placeholder="File to open"\n' +
+			'title="Enter the path to your file within pod storage"></textarea></div>');
+	}
+}
 
 function loadYaml(yaml_file) {
 	$('#public_key').val('');
@@ -251,53 +267,20 @@ function loadYaml(yaml_file) {
 				$('#links').append(link);
 				$('#description').empty();
 				$('#description').append(marked(jsondata.data['manifest_info']));
-				if (jsondata.data['pod_accepts_public_key'] == true) {
-					$('div#ssh').show();
-				} else {
-					$('div#ssh').hide();
-				}
-				if (jsondata.data['pod_accepts_file'] == true) {
-					$('div#file').show();
-				} else {
-					$('div#file').hide();
-				}
-				if (jsondata.data['pod_mount_path'] && (jsondata.data['pod_mount_path']['sciencedata'] || jsondata.data['pod_mount_path']['local'])) {
-					var mount_src = jsondata.data['pod_mount_src'];
-					var storage_input = "";
-					for (var containerIndex in jsondata.data['container_infos']) {
-						var container = jsondata.data['container_infos'][containerIndex];
-						for (var name in container['mount_paths']) {
-							// Notice that local mounts are specified in the yaml - to avoid rogue mounting
-							if (name == 'sciencedata') {
-								var mountPath = container['mount_paths'][name];
-								var mountName = new String(mountPath).substring(mountPath.lastIndexOf('/') + 1);
-								if (mountPath && mountName) {
-									storage_input = storage_input +
-										'<input image_name="' + container['image_name'] + '" type="text" placeholder="' +
-										t('user_pods', 'Storage path') + '" image="' + container['image_name'] + '" mountPath="' + mountPath + '" title="' +
-										t('user_pods', 'Directory under') + ' ' +
-										'<a href=\'https://' + encodeURIComponent($('head').attr('data-user')) + '@' +
-										location.hostname + '/storage/\' target=\'_blank\'>/storage/</a> ' + t('user_pods', 'to mount on') +
-										' <b>' + mountPath + '</b> ' + t('user_pods', 'inside') + ' ' + container['image_name'] + ', ' + t('user_pods', 'and serve via https.') +
-										'"></input>' +
-										"\n";
-									// Although they yaml can, in principle have different containers with different mounts, or multiple mounts in one container,
-									// run_pod only supports one nfs_storage_path
-									break;
-								}
+				$('#container_settings').empty();
+				$('#container_settings').hide();
+				jsondata.data['container_infos'].forEach(info => {
+					if (Object.entries(info).filter(function(elem) { //if there are any info.x such that x === true
+							if (elem[1] === true) {
+								return true
+							} else {
+								return false
 							}
-						}
+						}).length) {
+						$('#container_settings').show();
+						addContainerSettings(info);
 					}
-					$('div#storage').show();
-					$('#storage').empty();
-					$('#storage').append(storage_input);
-					$('#storage input').tipsy({
-						html: true,
-						hoverable: true
-					});
-				} else {
-					$('div#storage').hide();
-				}
+				});
 			} else if (jsondata.status == 'error') {
 				if (jsondata.data && jsondata.data.error && jsondata.data.error == 'authentication_error') {
 					OC.redirect('/');
@@ -305,9 +288,7 @@ function loadYaml(yaml_file) {
 			}
 		}
 	});
-}
-
-function toggleNewpod() {
+}function toggleNewpod() {
 	$('#newpod').slideToggle();
 	$('#pod-create').toggleClass('btn-primary');
 	$('#pod-create').toggleClass('btn-default');

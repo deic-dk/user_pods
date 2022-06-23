@@ -157,7 +157,7 @@ class OC_Kubernetes_Util {
 				$accepts_file = false;
 				$accepts_storage_path = false;
 				if(!empty($container['name'])){
-					$container_name = $container['name']
+					$container_name = $container['name'];
 				}
 				if(!empty($container['env'])){
 					foreach($container['env'] as $env){
@@ -165,10 +165,13 @@ class OC_Kubernetes_Util {
 							switch($env['name']){
 							case "SSH_PUBLIC_KEY":
 								$accepts_public_key = true;
+								break;
 							case "FILE":
 								$accepts_file = true;
+								break;
 							case "STORAGE_PATH":
 								$accepts_storage_path = true;
+								break;
 							}
 						}
 					}

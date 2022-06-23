@@ -47,15 +47,7 @@
 					</div>
 				</span>
 				<div id="description"></div>
-				<div id="ssh"><textarea id="public_key" type="text" placeholder="<?php p($l->t("Public SSH key")); ?>"
-					title="<?php p($l->t("Paste your public SSH key here")); ?>"></textarea></div>
-				<div id="storage">
-				</div>
-				<div id="file"><span id="file_text"><?php p($l->t("File")); ?>:</span>
-					<input id="file_input" type="text" placeholder="<?php p($l->t("Optional file to open")); ?>"
-					title="<?php p($l->t("Path of file for to open in your pod")); ?>"
-					value="<?php echo(empty($_REQUEST['file'])?$_REQUEST['file']:''); ?>">
-				</div>
+				<div id="container_settings"></div>
 			</div>
 		</div> 
 	</div>
