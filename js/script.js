@@ -217,20 +217,29 @@ function toggleExpanded(expander) {
 		expander.removeClass("icon-up-open").addClass("icon-down-open");
 	}
 }
+
 function addContainerSettings(container_info) {
 	var main_id = 'container_' + container_info.name;
 	$('#container_settings').append('<div id="' + main_id + '" class="container_header"></div>');
-	$('#container_settings #' + main_id).append('<span><strong>' + container_info.name + '</strong></span>');
+	$('#container_settings #' + main_id).append('<span><strong>' + container_info.name + '</strong> container settings:</span>');
 	if (container_info.accepts_public_key) {
-		$('#container_settings #' + main_id).append('<div style="display: block;" class="container_setting">\n' +
-			'<textarea id="public_key" type="text" placeholder="Public SSH key"\n' +
-			'title="Paste your public SSH key here"></textarea></div>');
+		$('#container_settings #' + main_id).append('<div class="container_setting">\n' +
+			'<span>SSH key:</span>\n' +
+			'<input id="' + main_id + '_public_key" type="text" placeholder="Public SSH key"\n' +
+			'title="Paste your public SSH key here"></input></div>');
 	}
 	if (container_info.accepts_file) {
-		$('#container_settings #' + main_id).append('<div id="file" style="display: block;" class="container_setting">\n' +
+		$('#container_settings #' + main_id).append('<div class="container_setting">\n' +
 			'<span class="container_setting_text">File:</span>\n' +
-			'<textarea id="' + main_id + '_file" type="text" placeholder="File to open"\n' +
-			'title="Enter the path to your file within pod storage"></textarea></div>');
+			'<input id="' + main_id + '_file" type="text" placeholder="File to open"\n' +
+			'title="Enter the path to your file within pod storage"></input></div>');
+	}
+	if (container_info.accepts_storage_path) {
+		$('#container_settings #' + main_id).append('<div class="container_setting">\n' +
+			'<span class="container_setting_text">Working directory:</span>\n' +
+			'<input id="' + main_id + '_storage_path" type="text" placeholder="Directory to open"\n' +
+			'title="Enter the path to your directory within pod storage"\n' +
+			'value="' + container_info.name + '"></input></div>');
 	}
 }
 

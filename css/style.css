@@ -36,44 +36,31 @@ li {
 	user-select: text;
 }
 
-#ssh {
+#container_settings .container_header .container_setting span {
 	padding-left: 1.5%;
 	padding-top: 1%;
 }
 
-#file {
+#container_settings .container_header .container_setting input {
+	width: auto;
+	margin: 3px 10px 3px 10px;
+}
+
+#container_settings .container_header span {
 	padding-left: 1.5%;
 	padding-top: 1%;
+	padding-bottom: 1%;
 }
 
-#file_input {
-	width: 240px;
-}
-
-#file_text {
-	margin-right: 12px;
+#container_settings {
+	padding-top: 20px;
+	display: block;
 }
 
 .newpod-span {
 	float: right;
 	margin-right: 10px;
 	margin-top: 12px;
-}
-
-#public_key {
-	width: 60% !important;
-}
-
-#storage_path {
-	width: 35% !important;
-}
-
-#storage {
-	padding-left: 1.5%;
-}
-
-#storage input {
-	width: 240px;
 }
 
 #description {
@@ -121,14 +108,6 @@ li {
 
 .text-right {
 	margin-right: 19px;
-}
-
-#ssh,
-#storage,
-#loading,
-#dialogalert,
-#file {
-	display: none;
 }
 
 #loading-text {
