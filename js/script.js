@@ -218,28 +218,19 @@ function toggleExpanded(expander) {
 	}
 }
 
+function formatEnvVarName(name) {
+	return name[0].toUpperCase() + name.slice(1).toLowerCase().replace('_', ' ');
+}
+
 function addContainerSettings(container_info) {
 	var main_id = 'container_' + container_info.name;
 	$('#container_settings').append('<div id="' + main_id + '" class="container_header"></div>');
 	$('#container_settings #' + main_id).append('<span><strong>' + container_info.name + '</strong> container settings:</span>');
-	if (container_info.accepts_public_key) {
+	for (var env_var in container_info.env) {
 		$('#container_settings #' + main_id).append('<div class="container_setting">\n' +
-			'<span>SSH key:</span>\n' +
-			'<input id="' + main_id + '_public_key" type="text" placeholder="Public SSH key"\n' +
-			'title="Paste your public SSH key here"></input></div>');
-	}
-	if (container_info.accepts_file) {
-		$('#container_settings #' + main_id).append('<div class="container_setting">\n' +
-			'<span class="container_setting_text">File:</span>\n' +
-			'<input id="' + main_id + '_file" type="text" placeholder="File to open"\n' +
-			'title="Enter the path to your file within pod storage"></input></div>');
-	}
-	if (container_info.accepts_storage_path) {
-		$('#container_settings #' + main_id).append('<div class="container_setting">\n' +
-			'<span class="container_setting_text">Working directory:</span>\n' +
-			'<input id="' + main_id + '_storage_path" type="text" placeholder="Directory to open"\n' +
-			'title="Enter the path to your directory within pod storage"\n' +
-			'value="' + container_info.name + '"></input></div>');
+			'<span>' + formatEnvVarName(env_var) + ':</span>\n' +
+			'<input type="text" value="' + container_info.env[env_var][0] + '"' +
+			(container_info.env[env_var][1] ? ' required' : '') + '></input></div>');
 	}
 }
 
@@ -278,16 +269,10 @@ function loadYaml(yaml_file) {
 				$('#description').append(marked(jsondata.data['manifest_info']));
 				$('#container_settings').empty();
 				$('#container_settings').hide();
-				jsondata.data['container_infos'].forEach(info => {
-					if (Object.entries(info).filter(function(elem) { //if there are any info.x such that x === true
-							if (elem[1] === true) {
-								return true
-							} else {
-								return false
-							}
-						}).length) {
+				jsondata.data.container_infos.forEach(container => {
+					if (container.env) {
 						$('#container_settings').show();
-						addContainerSettings(info);
+						addContainerSettings(container);
 					}
 				});
 			} else if (jsondata.status == 'error') {

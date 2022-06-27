@@ -7,7 +7,7 @@ class OC_Kubernetes_Util {
 	private $storageDir;
 	private $manifestsURL;
 	public $rawManifestsURL;
-    public static $testing = false;
+	public static $testing = false;
 	
 	function __construct(){
 		$this->publicIP  = OC_Appconfig::getValue('user_pods', 'publicIP');
@@ -150,37 +150,27 @@ class OC_Kubernetes_Util {
 		$pod_mount_path = [];
 		$pod_mount_src = "";
 		$containerInfos = [];
+		file_put_contents('exampleyaml', $yaml);
 		if(!empty($arr['spec']['containers'])){
 			foreach($arr['spec']['containers'] as $container){
 				$container_name = "";
-				$accepts_public_key = false;
-				$accepts_file = false;
-				$accepts_storage_path = false;
 				if(!empty($container['name'])){
 					$container_name = $container['name'];
 				}
+				$ask_environment_vars = [];
 				if(!empty($container['env'])){
 					foreach($container['env'] as $env){
 						if(!empty($env['name'])){
-							switch($env['name']){
-							case "SSH_PUBLIC_KEY":
-								$accepts_public_key = true;
-								break;
-							case "FILE":
-								$accepts_file = true;
-								break;
-							case "STORAGE_PATH":
-								$accepts_storage_path = true;
-								break;
+							if(preg_match('/.*\s- name: ' . $env['name'] . ' # ask/', $yaml)){
+								$required = preg_match('/.*\s- name: ' . $env['name'] . ' # ask require/', $yaml);
+								$ask_environment_vars[$env['name']] = [$env['value'], $required];
 							}
 						}
 					}
 				}
 				$containerInfos[] = [
 					'name'=>$container_name,
-					'accepts_public_key'=>$accepts_public_key,
-					'accepts_file'=>$accepts_file,
-					'accepts_storage_path'=>$accepts_storage_path,
+					'env'=>$ask_environment_vars,
 				];
 			}
 		}
