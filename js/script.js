@@ -76,6 +76,54 @@ function updateContainerCount() {
 		"</span");
 }
 
+//////////// begin other helper functions /////////////
+function formatEnvVarName(name) {
+	return name[0].toUpperCase() + name.slice(1).toLowerCase().replace('_', ' ');
+}
+
+function addContainerSettings(container_info) {
+	var main_id = 'container_' + container_info.name;
+	$('#container_settings').append('<div id="' + main_id + '" container_name="' + container_info.name +
+																	'" class="container_header"></div>');
+	$('#container_settings #' + main_id).append('<span><strong>' + container_info.name +
+																							'</strong> container settings:</span>');
+	for (var env_var in container_info.env) {
+		var req = container_info.env[env_var][1];
+		$('#container_settings #' + main_id).append('<div class="container_setting">\n' +
+																								'<span>' + formatEnvVarName(env_var) + (req ? '*' : '') + ':</span>\n' +
+																								'<input type="text" value="' + container_info.env[env_var][0] + '" ' +
+																								'placeholder="' + container_info.env[env_var][0] + '" ' +
+																								(req ? 'required' : '') +
+																								' env_name="' + env_var + '"></input></div>');
+	}
+}
+
+function getContainerSettingsInput() {
+	var input = {};
+	if ($('#container_settings').children().length) {// if there are any containers with settings
+		$('#container_settings').children('div').each(function(index) {// then for each container,
+			var container_settings = {};
+			$(this).children('div.container_setting').each(function(index) {// make an object of settings,
+				if (!container_settings === false) {// if there haven't been any missing required settings,
+					var value = $(this).children('input').val();
+					if (value === "" && $(this).children('input').prop('required')){// if a required setting is missing,
+						container_settings = false;
+						return false;
+					}
+					container_settings[$(this).children('input').attr('env_name')] = value;
+				}
+			});
+			if (!container_settings === false) {// if no required settings were missing
+				input[$(this).attr('container_name')] = container_settings;
+			} else {
+				input = false;
+				return input;
+			}
+		});
+	}
+	return input;
+}
+
 //////////// begin core api functions /////////////
 function getContainers(callback) {
 	$.ajax({
@@ -123,15 +171,12 @@ function getContainers(callback) {
 	});
 }
 
-function runPod(yaml_file, ssh_key, storage_path, file) {
+function runPod(settings_input) {
 	$.ajax({
 		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
 		data: {
 			action: 'create_pod',
-			yaml_file: yaml_file,
-			public_key: ssh_key,
-			storage_path: storage_path,
-			file: file
+			input: settings_input
 		},
 		method: 'post',
 		beforeSend: function(xhr) {
@@ -218,22 +263,6 @@ function toggleExpanded(expander) {
 	}
 }
 
-function formatEnvVarName(name) {
-	return name[0].toUpperCase() + name.slice(1).toLowerCase().replace('_', ' ');
-}
-
-function addContainerSettings(container_info) {
-	var main_id = 'container_' + container_info.name;
-	$('#container_settings').append('<div id="' + main_id + '" class="container_header"></div>');
-	$('#container_settings #' + main_id).append('<span><strong>' + container_info.name + '</strong> container settings:</span>');
-	for (var env_var in container_info.env) {
-		$('#container_settings #' + main_id).append('<div class="container_setting">\n' +
-			'<span>' + formatEnvVarName(env_var) + ':</span>\n' +
-			'<input type="text" value="' + container_info.env[env_var][0] + '"' +
-			(container_info.env[env_var][1] ? ' required' : '') + '></input></div>');
-	}
-}
-
 function loadYaml(yaml_file) {
 	$('#public_key').val('');
 	var select_value = yaml_file || $('#yaml_file').val();
@@ -270,7 +299,7 @@ function loadYaml(yaml_file) {
 				$('#container_settings').empty();
 				$('#container_settings').hide();
 				jsondata.data.container_infos.forEach(container => {
-					if (container.env) {
+					if (Object.entries(container.env).length) {
 						$('#container_settings').show();
 						addContainerSettings(container);
 					}
@@ -330,31 +359,20 @@ $(document).ready(function() {
 	});
 
 	$('#newpod #ok').on('click', function() {
-		var yaml_file = $('#yaml_file').val();
-		var ssh_key = $('#public_key').val();
-		var file = $('#file_input').val();
-		var storage_path = "";
-		if (!$('#storage input:visible').length) {
-			if ($('#public_key:visible').length && (!ssh_key || ssh_key == "")) {
-				OC.dialogs.alert(t("user_pods", "Please fill in a public SSH key"), t("user_pods", "Missing SSH key"));
-			} else {
-			  runPod(yaml_file, ssh_key, storage_path, file);
-      }
-			return false;
-		}
-		$('#storage input').each(function(el) {
-			if ($(this).attr('image_name')) {
-				storage_path = $(this).val();
-				// Although the yaml can, in principle have different containers with different mounts, or multiple mounts in one container,
-				// run_pod only supports one storage_path
-				if (!storage_path || storage_path == "") {
-					OC.dialogs.alert(t("user_pods", "Please fill in the directory to mount from your home server"), t("user_pods", "Missing storage path"));
-				} else {
-					runPod(yaml_file, ssh_key, storage_path, file);
+		var settings_input = getContainerSettingsInput();
+		if (settings_input) {
+			$('#container_settings').children('div').children('div.container_setting').children('input').each(function(index) {
+				$(this).removeClass("alert");
+			});
+			runPod(settings_input);
+		} else {
+			OC.dialogs.alert("Please fill in missing settings", "Apply");
+			$('#container_settings').children('div').children('div.container_setting').children('input').each(function(index) {
+				if ($(this).prop('required') && $(this).val() === "") {
+					$(this).addClass("alert");
 				}
-				return false;
-			}
-		});
+			});
+		}
 	});
 
 	$("#podstable td .expand-view").live('click', function() {
