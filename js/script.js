@@ -171,11 +171,12 @@ function getContainers(callback) {
 	});
 }
 
-function runPod(settings_input) {
+function runPod(yaml_file, settings_input) {
 	$.ajax({
 		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
 		data: {
 			action: 'create_pod',
+			yaml_file: yaml_file,
 			input: settings_input
 		},
 		method: 'post',
@@ -359,12 +360,13 @@ $(document).ready(function() {
 	});
 
 	$('#newpod #ok').on('click', function() {
+		var yaml_file = $('#yaml_file').val();
 		var settings_input = getContainerSettingsInput();
 		if (settings_input) {
 			$('#container_settings').children('div').children('div.container_setting').children('input').each(function(index) {
 				$(this).removeClass("alert");
 			});
-			runPod(settings_input);
+			runPod(yaml_file, settings_input);
 		} else {
 			OC.dialogs.alert("Please fill in missing settings", "Apply");
 			$('#container_settings').children('div').children('div.container_setting').children('input').each(function(index) {
