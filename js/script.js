@@ -1,4 +1,4 @@
-//////////// begin getContainer helper functions /////////////
+//////////// begin getPods helper functions /////////////
 function getRowElementPlain(name, value) {
 	return "\n <td>\n  <div column='" + name + "'>\n   <span>" + value + "</span>\n  </div>\n </td>";
 }
@@ -125,11 +125,11 @@ function getContainerSettingsInput() {
 }
 
 //////////// begin core api functions /////////////
-function getContainers(callback) {
+function getPods(callback) {
 	$.ajax({
 		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
 		data: {
-			action: 'get_containers',
+			action: 'get_pods',
 			pod_names: ''
 		},
 		beforeSend: function(xhr) {
@@ -161,7 +161,7 @@ function getContainers(callback) {
 				if (jsondata.data && jsondata.data.error && jsondata.data.error == 'authentication_error') {
 					OC.redirect('/');
 				} else {
-					OC.dialogs.alert(t("user_pods", "get_containers: Something went wrong..."), t("user_pods", "Error"));
+					OC.dialogs.alert(t("user_pods", "get_pods: Something went wrong..."), t("user_pods", "Error"));
 				}
 			}
 		},
@@ -186,20 +186,20 @@ function runPod(yaml_file, settings_input) {
 		success: function(jsondata) {
 			if (jsondata.status == 'success') {
 				if (jsondata.data.podName) {
-					getContainers();
+					getPods();
 					// if a previous run_pod call has outstanding timeouts, clear them
 					$.runPodTimeouts.forEach(function(timeout) {
 						clearTimeout(timeout);
 					});
 					$.runPodTimeouts = [];
 					$.runPodTimeouts.push(setTimeout(function() {
-						getContainers();
+						getPods();
 					}, 10000));
 					$.runPodTimeouts.push(setTimeout(function() {
-						getContainers();
+						getPods();
 					}, 30000));
 					$.runPodTimeouts.push(setTimeout(function() {
-						getContainers();
+						getPods();
 					}, 60000));
 				} else {
 					OC.dialogs.alert(t("user_pods", "run_pod: Something went wrong..."), t("user_pods", "Error"));
@@ -410,10 +410,10 @@ $(document).ready(function() {
 
 	$('#pods_refresh').click(function(e) {
 		$('table#podstable tfoot.summary tr td span.info').remove();
-		getContainers();
+		getPods();
 	})
 
-	getContainers(function() {
+	getPods(function() {
 		if (typeof getGetParam !== 'undefined' && getGetParam('file') && getGetParam('yaml_file')) {
 			var yaml_file = decodeURIComponent(getGetParam('yaml_file'));
 			var file = decodeURIComponent(getGetParam('file'));

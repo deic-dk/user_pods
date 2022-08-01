@@ -13,10 +13,16 @@ class OC_Kubernetes_Util
 	function __construct()
 	{
 		$this->publicIP  = OC_Appconfig::getValue('user_pods', 'publicIP');
-		$this->privateIP = OC_Appconfig::getValue('user_pods', 'privateIP');
+		//$this->privateIP = OC_Appconfig::getValue('user_pods', 'privateIP');
+		// Set manually for now, configure correctly after ingress is set up
+		$this->privateIP = "10.0.0.12:22080";
 		$this->storageDir = OC_Appconfig::getValue('user_pods', 'storageDir');
 		$this->manifestsURL = OC_Appconfig::getValue('user_pods', 'manifestsURL');
 		$this->rawManifestsURL = OC_Appconfig::getValue('user_pods', 'rawManifestsURL');
+		// Set manually for now.
+		if (self::$testing) {
+		} else {
+		}
 	}
 
 	/**
@@ -26,67 +32,32 @@ class OC_Kubernetes_Util
 	 */
 	public function createStorageDir($uid)
 	{
-		$folder_path = $this->storageDir . $uid;
+		$folder_path = $this->storageDir . '/' . $uid;
 		if (!is_dir($folder_path)) {
+			\OC_Log::write('user_pods', 'Try to make dir: ' . $folder_path, \OC_Log::WARN);
 			mkdir($folder_path, 0755, true);
 		}
 	}
 
-	public function getContainers($uid, $podNames = null)
+	public function getPods($uid)
 	{
-		$containers = array();
-		// pod_name|container_name|image_name|pod_ip|node_ip|owner|age(s)|status|ssh_port|https_port|uri
-		$url = 'http://' . $this->privateIP . "/get_containers.php?fields=include&user_id=" . $uid;
-		if (self::$testing) {
-			$url = str_replace(".php", "_testing.php", $url);
+		$url = 'http://' . $this->privateIP . "/get_pods";
+		$post_arr = ['user_id' => $uid];
+		$crl = curl_init($url);
+		curl_setopt_array($crl, array(
+			CURLOPT_POST => true,
+			CURLOPT_POSTFIELDS => json_encode($post_arr),
+			CURLOPT_HTTPHEADER => array('Content-Type: application/json'),
+			CURLOPT_RETURNTRANSFER => true,
+		));
+		\OC_Log::write('user_pods', 'Getting pods: ' . $url . ", " . json_encode($post_arr), \OC_Log::WARN);
+		$response = curl_exec($crl);
+		$code = curl_getinfo($crl, CURLINFO_HTTP_CODE);
+		\OC_Log::write('user_pods', "getPods status: " . $code . ", response: " . $response, \OC_Log::WARN);
+		if ($response == "null\n") {
+			$response = [];
 		}
-		\OCP\Util::writeLog('user_pods', 'GETting: ' . $url, \OC_Log::WARN);
-		$response = file_get_contents($url);
-		$rows = explode("\n", trim($response));
-		$fields = explode("|", array_shift($rows));
-		foreach ($rows as $row) {
-			if (empty($row)) {
-				continue;
-			}
-			$values = explode("|", $row);
-			$container = [];
-			$i = 0;
-			foreach ($values as $value) {
-				$container[$fields[$i]] = empty($value) ? "" : $value;
-				++$i;
-			}
-			//double check we don't show pod info to someone who isn't the owner
-			if ($container['owner'] !== $uid) {
-				\OCP\Util::writeLog('user_pods', 'kube backend returned pods not owned by user! uid: ' . $uid .
-					'owner: ' . $container['owner'], \OC_Log::ERROR);
-				continue;
-			}
-			if (!empty($container['uri']) || !empty($container['https_port'])) {
-				$container['url'] = 'https://' . $this->publicIP . (empty($container['https_port']) ? '' : ':' . $container['https_port']) .
-					'/' . (empty($container['uri']) ? '' : $container['uri']);
-			} else {
-				$container['url'] = '';
-			}
-			unset($container['uri']);
-			unset($container['https_port']);
-			if (!empty($container['ssh_port'])) {
-				$container['ssh_url'] = 'ssh://' .
-					(empty($container['ssh_username']) ? '' : $container['ssh_username'] . '@') .
-					$this->publicIP . ':' . $container['ssh_port'];
-			} else {
-				$container['ssh_url'] = '';
-			}
-			unset($container['ssh_port']);
-			unset($container['ssh_username']);
-			if (!empty($container['age'])) {
-				$container['age'] = floor($container['age'] / 3600) . gmdate(":i:s", $container['age'] % 3600);
-			}
-			if (empty($podNames) || in_array($container['pod_name'], $podNames)) {
-				array_push($containers, $container);
-			}
-		}
-		\OC_Log::write('user_pods', "Got containers from " . $url . ": " . serialize($containers), \OC_Log::WARN);
-		return $containers;
+		return ['data' => $response, 'code' => $code];
 	}
 
 	private static function getContent($uri)
@@ -226,7 +197,7 @@ class OC_Kubernetes_Util
 			[
 				'http' => [
 					'method' => 'POST',
-					'header' => 'Content-type: application/x-www-form-urlencoded',
+					'header' => 'Content-type: application/json',
 					'content' => http_build_query($post_arr)
 				]
 			]

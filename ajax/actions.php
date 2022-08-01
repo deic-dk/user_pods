@@ -34,10 +34,13 @@ elseif($_REQUEST['action']=='check_manifest') {
 	$data = $util->checkManifest($_REQUEST['yaml_file']);
 	OCP\JSON::success(array('data' => $data));
 }
-elseif($_REQUEST['action']=='get_containers') {
-	$data = $util->getContainers(OCP\User::getUser(),
-			empty($_REQUEST['pod_names'])?null:$_REQUEST['pod_names']);
-	OCP\JSON::success(array('data' => $data));
+elseif($_REQUEST['action']=='get_pods') {
+	list('data' => $data, 'code' => $code) = $util->getPods(OCP\User::getUser());
+	if ($code == 200) {
+		OCP\JSON::success(array('data' => $data));
+	} else {
+		OCP\JSON::error(array('data' => []));
+	}
 }
 else{
 	OCP\JSON::error(array('message'=>'No action specified'));
