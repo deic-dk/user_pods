@@ -51,12 +51,10 @@ class OC_Kubernetes_Util
 			CURLOPT_RETURNTRANSFER => true,
 		));
 		\OC_Log::write('user_pods', 'Getting pods: ' . $url . ", " . json_encode($post_arr), \OC_Log::WARN);
-		$response = curl_exec($crl);
+		$response_str = curl_exec($crl);
+		$response = json_decode($response_str);
 		$code = curl_getinfo($crl, CURLINFO_HTTP_CODE);
 		\OC_Log::write('user_pods', "getPods status: " . $code . ", response: " . $response, \OC_Log::WARN);
-		if ($response == "null\n") {
-			$response = [];
-		}
 		return ['data' => $response, 'code' => $code];
 	}
 

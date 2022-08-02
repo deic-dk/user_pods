@@ -145,9 +145,11 @@ function getPods(callback) {
 				$('#podstable #fileList tr').remove();
 				// remove all of the table rows, and clear any remaining tooltips
 				$('body > div.tipsy').remove();
-				jsondata.data.forEach(function(value, index, array) {
-					$('tbody#fileList').append(getRow(value));
-				});
+				if (jsondata.data) {
+					jsondata.data.forEach(function(value, index, array) {
+						$('tbody#fileList').append(getRow(value));
+					});
+				}
 				updateContainerCount();
 				$('table#podstable #fileList tr.simple-row').each(function() {
 					if ($.inArray($(this).attr("pod_name"), expanded_views) !== -1) {
