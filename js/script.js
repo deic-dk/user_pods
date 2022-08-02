@@ -71,8 +71,8 @@ function getRow(container) {
 function updateContainerCount() {
 	var count_shown = $('table#podstable tbody#fileList').children('tr.simple-row').length;
 	$('table#podstable tfoot.summary tr td span.info').remove();
-	$('table#podstable tfoot.summary tr td').append("<span class='info' containers='" + count_shown + "'>" +
-		count_shown + " " + (count_shown === 1 ? t("user_pods", "container") : t("user_pods", "containers")) +
+	$('table#podstable tfoot.summary tr td').append("<span class='info' pods='" + count_shown + "'>" +
+		count_shown + " " + (count_shown === 1 ? t("user_pods", "pod") : t("user_pods", "pods")) +
 		"</span");
 }
 
@@ -171,7 +171,7 @@ function getPods(callback) {
 	});
 }
 
-function runPod(yaml_file, settings_input) {
+function createPod(yaml_file, settings_input) {
 	$.ajax({
 		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
 		data: {
@@ -185,30 +185,30 @@ function runPod(yaml_file, settings_input) {
 		},
 		success: function(jsondata) {
 			if (jsondata.status == 'success') {
-				if (jsondata.data.podName) {
+				if (jsondata.pod_name) {
 					getPods();
 					// if a previous run_pod call has outstanding timeouts, clear them
-					$.runPodTimeouts.forEach(function(timeout) {
+					$.createPodTimeouts.forEach(function(timeout) {
 						clearTimeout(timeout);
 					});
-					$.runPodTimeouts = [];
-					$.runPodTimeouts.push(setTimeout(function() {
+					$.createPodTimeouts = [];
+					$.createPodTimeouts.push(setTimeout(function() {
 						getPods();
 					}, 10000));
-					$.runPodTimeouts.push(setTimeout(function() {
+					$.createPodTimeouts.push(setTimeout(function() {
 						getPods();
 					}, 30000));
-					$.runPodTimeouts.push(setTimeout(function() {
+					$.createPodTimeouts.push(setTimeout(function() {
 						getPods();
 					}, 60000));
 				} else {
-					OC.dialogs.alert(t("user_pods", "run_pod: Something went wrong..."), t("user_pods", "Error"));
+					OC.dialogs.alert(t("user_pods", "create_pod: Something went wrong..."), t("user_pods", "Error"));
 				}
 			} else if (jsondata.status == 'error') {
 				if (jsondata.data && jsondata.data.error && jsondata.data.error == 'authentication_error') {
 					OC.redirect('/');
-				} else if (jsondata.data.message) {
-					OC.dialogs.alert(t("user_pods", "run_pod: " + jsondata.data.message), t("user_pods", "Error"));
+				} else if (jsondata.message) {
+					OC.dialogs.alert(t("user_pods", "run_pod: " + jsondata.message), t("user_pods", "Error"));
 				}
 			}
 		},
@@ -342,7 +342,7 @@ $(document).ready(function() {
 
 	var hostname = $(location).attr('host');
 
-	$.runPodTimeouts = [];
+	$.createPodTimeouts = [];
 	$.xhrPool = [];
 
 	$('a#pod-create').click(function() {
@@ -366,7 +366,7 @@ $(document).ready(function() {
 			$('#container_settings').children('div').children('div.container_setting').children('input').each(function(index) {
 				$(this).removeClass("alert");
 			});
-			runPod(yaml_file, settings_input);
+			createPod(yaml_file, settings_input);
 		} else {
 			OC.dialogs.alert("Please fill in missing settings", "Apply");
 			$('#container_settings').children('div').children('div.container_setting').children('input').each(function(index) {

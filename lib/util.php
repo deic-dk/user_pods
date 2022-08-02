@@ -182,7 +182,7 @@ class OC_Kubernetes_Util
 	public function createPod($uid, $yaml_url, $settings_input)
 	{
 		if (!self::okayCreatePodInput($settings_input)) {
-			return "Settings Error";
+			return ['error' => "Settings Error"];
 		}
 		$url = 'http://' . $this->privateIP . "/create_pod";
 		$post_arr = [
@@ -190,20 +190,22 @@ class OC_Kubernetes_Util
 			"yaml_url" => $yaml_url,
 			"user_id" => $uid,
 		];
-		if (self::$testing) {
-			$url = str_replace(".php", "_testing.php", $url);
+		$crl = curl_init($url);
+		curl_setopt_array($crl, array(
+			CURLOPT_POST => true,
+			CURLOPT_POSTFIELDS => json_encode($post_arr),
+			CURLOPT_HTTPHEADER => array('Content-Type: application/json'),
+			CURLOPT_RETURNTRANSFER => true,
+		));
+		\OC_Log::write('user_pods', "Calling createPod " . $url . ", POST: " . json_encode($post_arr), \OC_Log::WARN);
+		$response = curl_exec($crl);
+		$code = curl_getinfo($crl, CURLINFO_HTTP_CODE);
+		// If the response code is HTTP OK, return the pod name
+		if ($code == 200) {
+			// The successful response should be json {'pod_name': $podname}
+			return json_decode($response, true);
 		}
-		$context = stream_context_create(
-			[
-				'http' => [
-					'method' => 'POST',
-					'header' => 'Content-type: application/json',
-					'content' => http_build_query($post_arr)
-				]
-			]
-		);
-		\OC_Log::write('user_pods', "Calling " . $url . ", POST: " . json_encode($post_arr), \OC_Log::WARN);
-		return file_get_contents($url, false, $context);
+		return ['error' => "Failed Request"];
 	}
 
 	private static function getAppDir($user)

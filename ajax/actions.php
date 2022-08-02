@@ -8,17 +8,17 @@ $util = new OC_Kubernetes_Util();
 
 if($_REQUEST['action']=='create_pod') {
 	if(empty($_POST['yaml_file'])){
-		OCP\JSON::error(array('data' => array('message'=>'No YAML file specified')));
+		OCP\JSON::error(array('message'=>'No YAML file specified'));
         exit;
 	}
 	$yaml_url = $util->rawManifestsURL.trim($_POST['yaml_file']);
-	$message = $util->createPod(OCP\User::getUser(), $yaml_url, $_POST['input']);
-	$matchstr = '{[\s\S]*<pre>(.*)</pre>[\s\S]*}';
-	if (preg_match($matchstr, $message, $matches)) {
-		OCP\JSON::success(array('data' => array('podName' => $matches[1])));
+	list('error' => $error, 'pod_name' => $pod_name) = $util->createPod(OCP\User::getUser(), $yaml_url, $_POST['input']);
+	//	file_put_contents("joshualog.txt", "error length: " . strlen($error) . ", podname: $pod_name");
+	if (strlen($error) == 0 && strlen($pod_name) != 0) {
+		OCP\JSON::success(array('pod_name' => $pod_name));
 	}
 	else {
-		OCP\JSON::error(array('data' => array('message'=>'Failed to create pod')));
+		OCP\JSON::error(array('message'=>$error));
 	}
 }
 elseif($_REQUEST['action']=='delete_pod') {
