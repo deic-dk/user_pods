@@ -19,10 +19,6 @@ class OC_Kubernetes_Util
 		$this->storageDir = OC_Appconfig::getValue('user_pods', 'storageDir');
 		$this->manifestsURL = OC_Appconfig::getValue('user_pods', 'manifestsURL');
 		$this->rawManifestsURL = OC_Appconfig::getValue('user_pods', 'rawManifestsURL');
-		// Set manually for now.
-		if (self::$testing) {
-		} else {
-		}
 	}
 
 	/**
@@ -39,10 +35,9 @@ class OC_Kubernetes_Util
 		}
 	}
 
-	public function getPods($uid)
+	public function curlBackend($function, $post_arr)
 	{
-		$url = 'http://' . $this->privateIP . "/get_pods";
-		$post_arr = ['user_id' => $uid];
+		$url = 'http://' . $this->privateIP . "/" . $function;
 		$crl = curl_init($url);
 		curl_setopt_array($crl, array(
 			CURLOPT_POST => true,
@@ -50,12 +45,21 @@ class OC_Kubernetes_Util
 			CURLOPT_HTTPHEADER => array('Content-Type: application/json'),
 			CURLOPT_RETURNTRANSFER => true,
 		));
-		\OC_Log::write('user_pods', 'Getting pods: ' . $url . ", " . json_encode($post_arr), \OC_Log::WARN);
+		\OC_Log::write('user_pods', 'Calling backend: ' . $url . ", " . json_encode($post_arr), \OC_Log::DEBUG);
 		$response_str = curl_exec($crl);
-		$response = json_decode($response_str);
+		$response = json_decode($response_str, true);
 		$code = curl_getinfo($crl, CURLINFO_HTTP_CODE);
-		\OC_Log::write('user_pods', "getPods status: " . $code . ", response: " . $response, \OC_Log::WARN);
-		return ['data' => $response, 'code' => $code];
+		\OC_Log::write('user_pods', "Backend $function: " . $code . ", response: " . json_encode($response), \OC_Log::DEBUG);
+		if ($code == 200) {
+			return $response;
+		}
+		return false;
+	}
+
+	public function getPods($uid)
+	{
+		$post_arr = ['user_id' => $uid];
+		return $this->curlBackend("get_pods", $post_arr);
 	}
 
 	private static function getContent($uri)
@@ -117,12 +121,6 @@ class OC_Kubernetes_Util
 		$md_file = preg_replace('/\.yaml$/', '.md', $yaml_file);
 		$github_md_url = $this->rawManifestsURL . $md_file;
 		$manifest_info = file_get_contents($github_md_url);
-		$pod_accepts_public_key = false;
-		$pod_accepts_file = false;
-		$pod_file = "";
-		$pod_username = "";
-		$pod_mount_path = [];
-		$pod_mount_src = "";
 		$containerInfos = [];
 		if (!empty($arr['spec']['containers'])) {
 			foreach ($arr['spec']['containers'] as $container) {
@@ -160,7 +158,6 @@ class OC_Kubernetes_Util
 			'SSH_PUBLIC_KEY' => '/^ssh-(rsa|dsa|ecdsa|ed25519) [a-zA-Z0-9\/+=]+( [a-zA-Z0-9]+(@[a-zA-Z0-9.]+)?)?$/',
 			'path' => '/^([a-zA-Z0-9-_.][a-zA-Z0-9-_.\/ ]+[a-zA-Z0-9-_. ]+)?$/'
 		];
-		$keys = array_keys($input);
 		foreach ($input as $container => $settings) {
 			foreach ($settings as $env => $value) {
 				if (array_key_exists($env, $matchers)) {
@@ -179,31 +176,12 @@ class OC_Kubernetes_Util
 
 	public function createPod($uid, $yaml_url, $settings_input)
 	{
-		if (!self::okayCreatePodInput($settings_input)) {
-			return ['error' => "Settings Error"];
-		}
-		$url = 'http://' . $this->privateIP . "/create_pod";
 		$post_arr = [
 			"settings" => $settings_input,
 			"yaml_url" => $yaml_url,
 			"user_id" => $uid,
 		];
-		$crl = curl_init($url);
-		curl_setopt_array($crl, array(
-			CURLOPT_POST => true,
-			CURLOPT_POSTFIELDS => json_encode($post_arr),
-			CURLOPT_HTTPHEADER => array('Content-Type: application/json'),
-			CURLOPT_RETURNTRANSFER => true,
-		));
-		\OC_Log::write('user_pods', "Calling createPod " . $url . ", POST: " . json_encode($post_arr), \OC_Log::WARN);
-		$response = curl_exec($crl);
-		$code = curl_getinfo($crl, CURLINFO_HTTP_CODE);
-		// If the response code is HTTP OK, return the pod name
-		if ($code == 200) {
-			// The successful response should be json {'pod_name': $podname}
-			return json_decode($response, true);
-		}
-		return ['error' => "Failed Request"];
+		return $this->curlBackend("create_pod", $post_arr);
 	}
 
 	private static function getAppDir($user)
@@ -220,12 +198,11 @@ class OC_Kubernetes_Util
 
 	public function deletePod($pod_name, $uid)
 	{
-		$complete_uri = 'http://' . $this->privateIP . "/delete_pod.php?user_id=" . $uid . "&pod=" . $pod_name;
-		if (self::$testing) {
-			$complete_uri = str_replace(".php", "_testing.php", $complete_uri);
-		}
-		$response = file_get_contents($complete_uri);
-		return $response;
+		$post_arr = [
+			'user_id' => $uid,
+			'pod_name' => $pod_name,
+		];
+		return $this->curlBackend("delete_pod", $post_arr);
 	}
 
 	public function getLogs($pod_name, $uid)
