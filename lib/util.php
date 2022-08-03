@@ -35,6 +35,12 @@ class OC_Kubernetes_Util
 		}
 	}
 
+	/**
+		Make a POST request to the backend
+		@param $function string function part of url e.g. http://backendIP:port/$function
+		@param $post_arr array data to encode in the POST fields
+		@return $response array with backend response if http status code is OK, or false otherwise
+	 */
 	public function curlBackend($function, $post_arr)
 	{
 		$url = 'http://' . $this->privateIP . "/" . $function;

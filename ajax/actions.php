@@ -17,14 +17,14 @@ if ($_REQUEST['action'] == 'create_pod') {
 		exit;
 	}
 	$response = $util->createPod(OCP\User::getUser(), $yaml_url, $_POST['input']);
-	if (!$response === false) {
+	if ($response !== false) {
 		OCP\JSON::success($response);
 	} else {
 		OCP\JSON::error(array('message' => "Failed to create pod"));
 	}
 } elseif ($_REQUEST['action'] == 'delete_pod') {
 	$response = $util->deletePod($_REQUEST['pod_name'], OCP\User::getUser());
-	if (!$response === false) {
+	if ($response !== false) {
 		OCP\JSON::success($response);
 	} else {
 		OCP\JSON::error(array('message' => "Failed to delete pod."));
@@ -34,7 +34,7 @@ if ($_REQUEST['action'] == 'create_pod') {
 	OCP\JSON::success(array('data' => $data));
 } elseif ($_REQUEST['action'] == 'get_pods') {
 	$response = $util->getPods(OCP\User::getUser());
-	if (!$response === false) {
+	if ($response !== false) {
 		OCP\JSON::success(array('data' => $response));
 	} else {
 		OCP\JSON::error(array('data' => []));
