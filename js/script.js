@@ -3,11 +3,11 @@ function getRowElementPlain(name, value) {
 	return "\n <td>\n  <div column='" + name + "'>\n   <span>" + value + "</span>\n  </div>\n </td>";
 }
 
-function getRowElementView(name, container) {
-	if (~container['status'].indexOf("Running")) {
-		if (container['url'].length) {
-			return "\n <td>\n  <div column='" + name + "'>\n   <span><a href='" + container['url'] +
-				"'>"+ container['url']+"</a></span>\n  </div>\n </td>";
+function getRowElementView(name, pod_data) {
+	if (~pod_data['status'].indexOf("Running")) {
+		if (pod_data['url'].length) {
+			return "\n <td>\n  <div column='" + name + "'>\n   <span><a href='" + pod_data['url'] +
+				"'>"+ pod_data['url']+"</a></span>\n  </div>\n </td>";
 		} else {
 			return getRowElementPlain(name, "none");
 		}
@@ -15,31 +15,41 @@ function getRowElementView(name, container) {
 	return getRowElementPlain(name, "wait");
 }
 
-function getSshRows(container) {
+function getSshRows(pod_data) {
 	var str = ""
-	if (container['ssh_url'].length) {
-		str +=  "\n <tr><td class='expanded-column-name'>ssh access:</td> <td class='expanded-column-value'><span class='expanded-row-ssh-url'><a href='" +
-		container['ssh_url'] + "'>"+ container['ssh_url'] + "</a></span></td></tr>"
-		if (container['ed25519_hostkey'].length) {
-			str += "\n <tr><td class='expanded-column-name'>ed25519 hostkey:</td> <td class='expanded-column-value'><span> SHA256: " + container['ed25519_hostkey'] + "</span></td></tr>"
+	if (pod_data['ssh_url'].length) {
+		str += "\n <tr><td class='expanded-column-name'>ssh access:</td> <td class='expanded-column-value'><span class='expanded-row-ssh-url'><a href='" + pod_data['ssh_url'] + "'>"+ pod_data['ssh_url'] + "</a></span></td></tr>"
+		if (pod_data['ed25519_hostkey'].length) {
+			str += "\n <tr><td class='expanded-column-name'>ed25519 hostkey:</td> <td class='expanded-column-value'><span> SHA256: " + pod_data['ed25519_hostkey'] + "</span></td></tr>"
 		}
-		if (container['rsa_hostkey'].length) {
-			str += "\n <tr><td class='expanded-column-name'>rsa hostkey:</td> <td class='expanded-column-value'><span> SHA256: " + container['rsa_hostkey'] + "</span></td></tr>"
+		if (pod_data['rsa_hostkey'].length) {
+			str += "\n <tr><td class='expanded-column-name'>rsa hostkey:</td> <td class='expanded-column-value'><span> SHA256: " + pod_data['rsa_hostkey'] + "</span></td></tr>"
 		}
 	}
 	return str
 }
 
-function getExpandedTable(container) {
-	var str = "\n <tr hidden class='expanded-row' pod_name='" + container['pod_name'] + "'> <td colspan='5'>" +
-		"\n<table id='expanded-" + container['pod_name'] + "' class='panel expanded-table'>" +
-		"\n <tr><td class='expanded-column-name'>container name:</td> <td class='expanded-column-value'><span>" + container['container_name'] + "</span></td></tr>" +
-		"\n <tr><td class='expanded-column-name'>image name:</td> <td class='expanded-column-value'><span>" + container['image_name'] + "</span></td></tr>" +
-		"\n <tr><td class='expanded-column-name'>pod IP:</td> <td class='expanded-column-value'><span>" + container['pod_ip'] + "</span></td></tr>" +
-		"\n <tr><td class='expanded-column-name'>node IP:</td> <td class='expanded-column-value'><span>" + container['node_ip'] + "</span></td></tr>" +
-		"\n <tr><td class='expanded-column-name'>owner:</td> <td class='expanded-column-value'><span>" + container['owner'] + "</span></td></tr>" +
-		"\n <tr><td class='expanded-column-name'>age:</td> <td class='expanded-column-value'><span>" + container['age'] + "</span></td></tr>" +
-		getSshRows(container) +
+function getTokenRows(pod_data) {
+	var str = "";
+	if (pod_data['tokens']) {
+		tokens = Object.keys(pod_data['tokens'])
+		for (token of tokens) {
+			str += "\n <tr><td class='expanded-column-name'>" + token + ":</td> <td class='expanded-column-value'><span>" + pod_data['tokens'][token] + "</span></td></tr>";
+		}
+	}
+	return str;
+}
+
+function getExpandedTable(pod_data) {
+	var str = "\n <tr hidden class='expanded-row' pod_name='" + pod_data['pod_name'] + "'> <td colspan='5'>" +
+		"\n<table id='expanded-" + pod_data['pod_name'] + "' class='panel expanded-table'>" +
+		"\n <tr><td class='expanded-column-name'>container name:</td> <td class='expanded-column-value'><span>" + pod_data['container_name'] + "</span></td></tr>" +
+		"\n <tr><td class='expanded-column-name'>image name:</td> <td class='expanded-column-value'><span>" + pod_data['image_name'] + "</span></td></tr>" +
+		"\n <tr><td class='expanded-column-name'>pod IP:</td> <td class='expanded-column-value'><span>" + pod_data['pod_ip'] + "</span></td></tr>" +
+		"\n <tr><td class='expanded-column-name'>node IP:</td> <td class='expanded-column-value'><span>" + pod_data['node_ip'] + "</span></td></tr>" +
+		"\n <tr><td class='expanded-column-name'>owner:</td> <td class='expanded-column-value'><span>" + pod_data['owner'] + "</span></td></tr>" +
+		"\n <tr><td class='expanded-column-name'>age:</td> <td class='expanded-column-value'><span>" + pod_data['age'] + "</span></td></tr>" +
+		getTokenRows(pod_data) +
 		"\n</table>" +
 		"\n </td> </tr>";
 	return str;
@@ -54,17 +64,17 @@ function formatStatusRunning(status) {
 	return status;
 }
 
-function getRow(container) {
+function getRow(pod_data) {
 	//visible part
-	var str = "  <tr class='simple-row' pod_name='" + container['pod_name'] + "'>" +
-		getRowElementPlain('pod_name', container['pod_name']) +
-		getRowElementPlain('status', formatStatusRunning(container['status'])) +
-		getRowElementView('view', container) +
+	var str = "  <tr class='simple-row' pod_name='" + pod_data['pod_name'] + "'>" +
+		getRowElementPlain('pod_name', pod_data['pod_name']) +
+		getRowElementPlain('status', formatStatusRunning(pod_data['status'])) +
+		getRowElementView('view', pod_data) +
 		"\n<td class='td-button'><a href='#' title=" + t('user_pods', 'Expand') + " class='expand-view permanent action icon icon-down-open'></a></td>" +
 		"\n<td class='td-button'><a href='#' title=" + t('user_pods', 'Delete pod') + " class='delete-pod permanent action icon icon-trash-empty'></a></td>" +
 		"\n</tr>";
 	//expanded information
-	str += getExpandedTable(container);
+	str += getExpandedTable(pod_data);
 	return str;
 }
 
@@ -73,7 +83,7 @@ function updateContainerCount() {
 	$('table#podstable tfoot.summary tr td span.info').remove();
 	$('table#podstable tfoot.summary tr td').append("<span class='info' pods='" + count_shown + "'>" +
 		count_shown + " " + (count_shown === 1 ? t("user_pods", "pod") : t("user_pods", "pods")) +
-		"</span");
+		"</span>");
 }
 
 //////////// begin other helper functions /////////////
@@ -84,36 +94,36 @@ function formatEnvVarName(name) {
 function addContainerSettings(container_info) {
 	var main_id = 'container_' + container_info.name;
 	$('#container_settings').append('<div id="' + main_id + '" container_name="' + container_info.name +
-																	'" class="container_header"></div>');
+		'" class="container_header"></div>');
 	$('#container_settings #' + main_id).append('<span><strong>' + container_info.name +
-																							'</strong> container settings:</span>');
+		'</strong> container settings:</span>');
 	for (var env_var in container_info.env) {
 		var req = container_info.env[env_var][1];
 		$('#container_settings #' + main_id).append('<div class="container_setting">\n' +
-																								'<span>' + formatEnvVarName(env_var) + (req ? '*' : '') + ':</span>\n' +
-																								'<input type="text" value="' + container_info.env[env_var][0] + '" ' +
-																								'placeholder="' + container_info.env[env_var][0] + '" ' +
-																								(req ? 'required' : '') +
-																								' env_name="' + env_var + '"></input></div>');
+			'<span>' + formatEnvVarName(env_var) + (req ? '*' : '') + ':</span>\n' +
+			'<input type="text" value="' + container_info.env[env_var][0] + '" ' +
+			'placeholder="' + container_info.env[env_var][0] + '" ' +
+			(req ? 'required' : '') +
+			' env_name="' + env_var + '"></input></div>');
 	}
 }
 
 function getContainerSettingsInput() {
 	var input = {};
-	if ($('#container_settings').children().length) {// if there are any containers with settings
-		$('#container_settings').children('div').each(function(index) {// then for each container,
+	if ($('#container_settings').children().length) { // if there are any containers with settings
+		$('#container_settings').children('div').each(function(index) { // then for each container,
 			var container_settings = {};
-			$(this).children('div.container_setting').each(function(index) {// make an object of settings,
-				if (!container_settings === false) {// if there haven't been any missing required settings,
+			$(this).children('div.container_setting').each(function(index) { // make an object of settings,
+				if (!container_settings === false) { // if there haven't been any missing required settings,
 					var value = $(this).children('input').val();
-					if (value === "" && $(this).children('input').prop('required')){// if a required setting is missing,
+					if (value === "" && $(this).children('input').prop('required')) { // if a required setting is missing,
 						container_settings = false;
 						return false;
 					}
 					container_settings[$(this).children('input').attr('env_name')] = value;
 				}
 			});
-			if (!container_settings === false) {// if no required settings were missing
+			if (!container_settings === false) { // if no required settings were missing
 				input[$(this).attr('container_name')] = container_settings;
 			} else {
 				input = false;
@@ -238,7 +248,7 @@ function deletePod(podName) {
 		},
 		success: function(data) {
 			if (data.status == 'success') {
-				$('tr[pod_name="' + data.pod + '"]').remove();
+				$('tr[pod_name="' + data.pod_name + '"]').remove();
 				// if a tooltip is shown when the element is removed, then there is no mouseover event to get rid of it.
 				$('body > div.tipsy').remove();
 				updateContainerCount();
@@ -314,7 +324,9 @@ function loadYaml(yaml_file) {
 			}
 		}
 	});
-}function toggleNewpod() {
+}
+
+function toggleNewpod() {
 	$('#newpod').slideToggle();
 	$('#pod-create').toggleClass('btn-primary');
 	$('#pod-create').toggleClass('btn-default');
