@@ -51,7 +51,7 @@
 			</div>
 		</div> 
 	</div>
-	<h2 class="running_pods"><?php p($l->t("Running pods/containers")); ?>
+	<h2 class="running_pods"><?php p($l->t("Running pods")); ?>
 	<a id="pods_refresh" class="btn btn-default" title="<?php p($l->t("Refresh")); ?>">&#8634;</a></h2>
 	<div id="running_pods">
 	<table id="podstable" class="panel">
@@ -59,7 +59,7 @@
 			<tr>
 				<th id="headerPodName">
 					<div class="display sort columntitle" data-sort="public">
-						<span>pod_name</span>
+						<span>name</span>
 					</div>
 				</th>
 				<th id="headerPodStatus">

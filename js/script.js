@@ -183,6 +183,32 @@ function getPods(callback) {
 	});
 }
 
+// watch for pod to be created
+// if the request fails or the pod doesn't reach ready state, alert the user
+// after pod reaches ready state or the request times out, call getPods to refresh the running pods view
+function watchCreatePod(podName) {
+	$.ajax({
+		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
+		data: {
+			action: 'watch_create_pod',
+			pod_name: podName
+		},
+		method: 'post',
+		success: function(jsondata) {
+			if (jsondata.status == 'success') {
+				if (jsondata.ready == false) {
+					OC.dialogs.alert(t("user_pods", "create_pod: pod " + podName + " didn't reach ready state"), t("user_pods", "Error"));
+				}
+			} else {
+				if (jsondata.message) {
+					OC.dialogs.alert(t("user_pods", "run_pod: " + jsondata.message), t("user_pods", "Error"));
+				}
+			}
+			getPods();
+		}
+	});
+}
+
 function createPod(yaml_file, settings_input) {
 	$.ajax({
 		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
@@ -197,22 +223,11 @@ function createPod(yaml_file, settings_input) {
 		},
 		success: function(jsondata) {
 			if (jsondata.status == 'success') {
-				if (jsondata.pod_name) {
+				if (jsondata.pod_name) { // if the createPod call was executed successfully
+					// get the pod list to show the pending pod
 					getPods();
-					// if a previous run_pod call has outstanding timeouts, clear them
-					$.createPodTimeouts.forEach(function(timeout) {
-						clearTimeout(timeout);
-					});
-					$.createPodTimeouts = [];
-					$.createPodTimeouts.push(setTimeout(function() {
-						getPods();
-					}, 10000));
-					$.createPodTimeouts.push(setTimeout(function() {
-						getPods();
-					}, 30000));
-					$.createPodTimeouts.push(setTimeout(function() {
-						getPods();
-					}, 60000));
+					// Then watch for pod to finish being created or to fail to reach the ready state
+					watchCreatePod(jsondata.pod_name)
 				} else {
 					OC.dialogs.alert(t("user_pods", "create_pod: Something went wrong..."), t("user_pods", "Error"));
 				}

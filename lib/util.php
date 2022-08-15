@@ -161,7 +161,7 @@ class OC_Kubernetes_Util
 	public static function okayCreatePodInput($input)
 	{
 		$matchers = [
-			'SSH_PUBLIC_KEY' => '/^ssh-(rsa|dsa|ecdsa|ed25519) [a-zA-Z0-9\/+=]+( [a-zA-Z0-9]+(@[a-zA-Z0-9.]+)?)?$/',
+			'SSH_PUBLIC_KEY' => '/^ssh-(rsa|dsa|ecdsa|ed25519) [a-zA-Z0-9\/+=]+( [a-zA-Z0-9]+(@[a-zA-Z0-9.\-]+)?)?$/',
 			'path' => '/^([a-zA-Z0-9-_.][a-zA-Z0-9-_.\/ ]+[a-zA-Z0-9-_. ]+)?$/'
 		];
 		foreach ($input as $container => $settings) {
@@ -188,6 +188,15 @@ class OC_Kubernetes_Util
 			"user_id" => $uid,
 		];
 		return $this->curlBackend("create_pod", $post_arr);
+	}
+
+	public function watchCreatePod($uid, $pod_name)
+	{
+		$post_arr = [
+			"user_id" => $uid,
+			"pod_name" => $pod_name,
+		];
+		return $this->curlBackend("watch_create_pod", $post_arr);
 	}
 
 	private static function getAppDir($user)

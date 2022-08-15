@@ -22,6 +22,13 @@ if ($_REQUEST['action'] == 'create_pod') {
 	} else {
 		OCP\JSON::error(array('message' => "Failed to create pod"));
 	}
+} elseif ($_REQUEST['action'] == 'watch_create_pod') {
+	$response = $util->watchCreatePod(OCP\User::getUser(), $_POST['pod_name']);
+	if ($response !== false) {
+		OCP\JSON::success($response);
+	} else {
+		OCP\JSON::error(array('message' => "Couldn't check for pod ready state"));
+	}
 } elseif ($_REQUEST['action'] == 'delete_pod') {
 	$response = $util->deletePod($_REQUEST['pod_name'], OCP\User::getUser());
 	if ($response !== false) {
