@@ -7,6 +7,7 @@ class OC_Kubernetes_Util {
 	private $storageDir;
 	private $manifestsURL;
 	public $rawManifestsURL;
+    public static $testing = false;
 	
 	function __construct(){
 		$this->publicIP  = OC_Appconfig::getValue('user_pods', 'publicIP');
@@ -32,6 +33,9 @@ class OC_Kubernetes_Util {
 		$containers = array();
 		// pod_name|container_name|image_name|pod_ip|node_ip|owner|age(s)|status|ssh_port|https_port|uri
 		$url = 'http://'.$this->privateIP."/get_containers.php?fields=include&user_id=".$uid;
+        if (self::$testing) {
+            $url = str_replace(".php", "_testing.php", $url);
+        }
 		\OCP\Util::writeLog('user_pods', 'GETting: '.$url, \OC_Log::WARN);
 		$response = file_get_contents($url);
 		$rows = explode("\n", trim($response));
@@ -47,6 +51,12 @@ class OC_Kubernetes_Util {
 				$container[$fields[$i]] = empty($value)?"":$value;
 				++$i;
 			}
+//double check we don't show pod info to someone who isn't the owner
+			if ($container['owner'] !== $uid) {
+				\OCP\Util::writeLog('user_pods', 'kube backend returned pods not owned by user! uid: ' . $uid .
+					'owner: ' . $container['owner'], \OC_Log::ERROR);
+				continue;
+			}
 			if(!empty($container['uri'])||!empty($container['https_port'])){
 				$container['url'] = 'https://'.$this->publicIP.(empty($container['https_port'])?'':':'.$container['https_port']).
 					'/'.(empty($container['uri'])?'':$container['uri']);
@@ -56,16 +66,15 @@ class OC_Kubernetes_Util {
 			}
 			unset($container['uri']);
 			unset($container['https_port']);
-			if(!empty($container['ssh_port'])){
-				$container['ssh_url'] = 'ssh://'.
-					(empty($container['ssh_username'])?'':$container['ssh_username'].'@').
-					$this->publicIP.':'.$container['ssh_port'];
-			}
-			else{
-				$container['ssh_url'] = '';
-			}
-			unset($container['ssh_port']);
-			unset($container['ssh_username']);
+            if (!empty($container['ssh_port'])) {
+                $container['ssh_url'] = 'ssh://' .
+                    (empty($container['ssh_username']) ? '' : $container['ssh_username'] . '@') .
+                    $this->publicIP . ':' . $container['ssh_port'];
+            } else {
+                $container['ssh_url'] = '';
+            }
+            unset($container['ssh_port']);
+            unset($container['ssh_username']);
 			if(!empty($container['age'])){
 				$container['age'] = floor($container['age'] / 3600) . gmdate(":i:s", $container['age'] % 3600);
 			}
@@ -196,6 +205,9 @@ class OC_Kubernetes_Util {
 	public function createPod($uid, $yaml_url, $public_key, $storage_path, $file) {
 		$url = 'http://'.$this->privateIP . "/run_pod.php?user_id=" . $uid .
 		"&yaml_url=" . $yaml_url;
+        if (self::$testing) {
+            $url = str_replace(".php", "_testing.php", $url);
+        }
 		if (!empty($public_key)) {
 			$encoded_key = rawurlencode($public_key);
 			$url = $url . "&public_key=" . $encoded_key;
@@ -223,6 +235,9 @@ class OC_Kubernetes_Util {
 
 	public function deletePod($pod_name, $uid) {
 		$complete_uri = 'http://'.$this->privateIP . "/delete_pod.php?user_id=" . $uid . "&pod=" . $pod_name;
+        if (self::$testing) {
+            $complete_uri = str_replace(".php", "_testing.php", $complete_uri);
+        }
 		$response = file_get_contents($complete_uri);
 		return $response;
 	}

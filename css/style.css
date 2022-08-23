@@ -1,22 +1,22 @@
 table th .columntitle {
-		display: inline-block !important;
+	display: inline-block !important;
 }
 
-li
-{
-  list-style-type: none;
+li {
+	list-style-type: none;
 }
 
 .normaltext {
-	font-size:80%
-} 
+	font-size: 80%
+}
 
 .spanpanel {
 	margin-left: 1.5%;
 	margin-right: 16px;
 }
+
 .podname {
-	font-weight:bold;
+	font-weight: bold;
 }
 
 #pod-create {
@@ -24,11 +24,11 @@ li
 }
 
 .apanel {
-	width:100%;
-	border:solid 1px #e4e4e4;
-	margin-bottom:20px;
-/*	height:15em; */
-	display:none;
+	width: 100%;
+	border: solid 1px #e4e4e4;
+	margin-bottom: 20px;
+	/*	height:15em; */
+	display: none;
 	user-select: text;
 }
 
@@ -81,47 +81,53 @@ li
 	padding-right: 30%;
 	padding-top: 1%;
 }
+
 #yaml_file {
 	line-height: 1.5;
 	padding: 2px 0px 4px 5px;
-	margin-top:10px;
-	margin-left:15px;
+	margin-top: 10px;
+	margin-left: 15px;
 	position: relative;
 	width: 255px;
 }
 
 .newpodform {
-	margin-left:20px; 
-	margin-bottom:20px; 
-	position:absolute
+	margin-left: 20px;
+	margin-bottom: 20px;
+	position: absolute
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
 }
 
-.btn-pod, .btn-pod-vertical {
-    position: relative;
-    display: inline-block;
-    vertical-align: middle;
+.btn-pod,
+.btn-pod-vertical {
+	position: relative;
+	display: inline-block;
+	vertical-align: middle;
 }
 
 #dialogalert {
-    font-size: 12px;
-    white-space: normal;
-}
-
-.column-display {
-	padding-right:3%;
-	width:1%;
+	font-size: 12px;
+	white-space: normal;
 }
 
 .text-right {
 	margin-right: 19px;
 }
 
-#ssh, #storage, #loading, #dialogalert, #file {
+#ssh,
+#storage,
+#loading,
+#dialogalert,
+#file {
 	display: none;
 }
 
@@ -149,10 +155,6 @@ li
 	padding-bottom: 6px;
 }
 
-.app-user_pods div#running_pods {
-	overflow-x: scroll;
-}
-
 #podstable .summary .info {
 	margin-left: 0;
 }
@@ -161,12 +163,13 @@ li
 	height: 58px;
 }
 
-#podstable .delete-pod {
-	text-decoration:none;
-	color:#c5c5c5;
-	font-size:16px;
-	background-image:none';
-	padding: 3px 24px 5px 0
+#podstable .delete-pod,
+#podstable .expand-view {
+	text-decoration: none;
+	color: #c5c5c5;
+	font-size: 16px;
+	background-image: none;
+	padding: 0 5px;
 }
 
 .app-user_pods .icon-loading-dark {
@@ -221,4 +224,29 @@ fieldset#userPodsSettings table tbody tr td {
 	text-decoration: underline;
 }
 
+#podstable .expanded-row {
+	background: #ffffff;
+}
 
+#podstable .expanded-column-name {
+	text-align: right;
+	width: 0;
+}
+
+#podstable .expanded-table {
+	width: 100%;
+}
+
+#podstable td.td-button {
+	text-align: center;
+}
+
+#podstable th.th-button {
+	width: 0;
+}
+
+#podstable tbody tr.simple-row td div[column="status"] span,
+#podstable tbody tr.expanded-row table td.expanded-column-value span {
+	white-space: normal;
+	word-wrap: break-word;
+}
