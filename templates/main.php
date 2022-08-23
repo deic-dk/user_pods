@@ -2,7 +2,7 @@
 	<div id="app-content-kubernetes" class="viewcontainer">
 	<div class="info">
 	Notice: Currently, pods are in beta testing. Use at your own risk - pods may be terminated or restarted.
-	We appreciate <a href="mailto:cloud@deic.dk">feedback.</a></div>
+	We appreciate <a href="mailto:<?php echo(\OCP\Config::getSystemValue('fromemail', ''));?>">feedback.</a></div>
 		<div id="controls">
 			<div class="row">
 				<div class="text-right">
@@ -65,10 +65,35 @@
 	<table id="podstable" class="panel">
 		<thead class="panel-heading" >
 			<tr>
+				<th id="headerPodName">
+					<div class="display sort columntitle" data-sort="public">
+						<span>pod_name</span>
+					</div>
+				</th>
+				<th id="headerPodStatus">
+					<div class="display sort columntitle" data-sort="public">
+						<span>status</span>
+					</div>
+				</th>
+				<th id="headerPodView">
+					<div class="display sort columntitle" data-sort="public">
+						<span>view</span>
+					</div>
+				</th>
+				<th id="headerPodMore" class="th-button">
+					<div class="display sort columntitle" data-sort="public">
+						<span>more</span>
+					</div>
+				</th>
+				<th id="headerPodDelete" class="th-button">
+					<div class="display sort columntitle" data-sort="public">
+						<span>delete</span>
+					</div>
+				</th>
 			</tr>
 		</thead>
 		<tbody id='fileList'>
-		</tbody> 
+		</tbody>
 		<tfoot
 			<tr class="summary text-sm">
 				<td>
