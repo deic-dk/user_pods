@@ -15,6 +15,11 @@ function getRowElementView(name, pod_data) {
 	return getRowElementPlain(name, "wait");
 }
 
+function getRowElementDelete(status) {
+	delete_button = "<a href='#' title=" + t('user_pods', 'Delete pod') + " class='delete-pod permanent action icon icon-trash-empty'></a>";
+	return "\n<td class='td-button'>" + (status !== "Deleting" ? delete_button : "") + "</td>";
+}
+
 function getSshRows(pod_data) {
 	var str = ""
 	if (pod_data['ssh_url'].length) {
@@ -71,7 +76,7 @@ function getRow(pod_data) {
 		getRowElementPlain('status', formatStatusRunning(pod_data['status'])) +
 		getRowElementView('view', pod_data) +
 		"\n<td class='td-button'><a href='#' title=" + t('user_pods', 'Expand') + " class='expand-view permanent action icon icon-down-open'></a></td>" +
-		"\n<td class='td-button'><a href='#' title=" + t('user_pods', 'Delete pod') + " class='delete-pod permanent action icon icon-trash-empty'></a></td>" +
+		getRowElementDelete(pod_data['status']) +
 		"\n</tr>";
 	//expanded information
 	str += getExpandedTable(pod_data);
@@ -201,7 +206,7 @@ function watchCreatePod(podName) {
 				}
 			} else {
 				if (jsondata.message) {
-					OC.dialogs.alert(t("user_pods", "run_pod: " + jsondata.message), t("user_pods", "Error"));
+					OC.dialogs.alert(t("user_pods", "create_pod: " + jsondata.message), t("user_pods", "Error"));
 				}
 			}
 			getPods();
@@ -235,12 +240,38 @@ function createPod(yaml_file, settings_input) {
 				if (jsondata.data && jsondata.data.error && jsondata.data.error == 'authentication_error') {
 					OC.redirect('/');
 				} else if (jsondata.message) {
-					OC.dialogs.alert(t("user_pods", "run_pod: " + jsondata.message), t("user_pods", "Error"));
+					OC.dialogs.alert(t("user_pods", "create_pod: " + jsondata.message), t("user_pods", "Error"));
 				}
 			}
 		},
 		complete: function(xhr) {
 			ajaxCompleted(xhr);
+		}
+	});
+}
+
+// watch for pod to be deleted
+// if the request fails or the pod doesn't reach deleted state, alert the user
+// call getPods one more time to clear the deleted pod from the view
+function watchDeletePod(podName) {
+	$.ajax({
+		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
+		data: {
+			action: 'watch_delete_pod',
+			pod_name: podName
+		},
+		method: 'post',
+		success: function(jsondata) {
+			if (jsondata.status == 'success') {
+				if (jsondata.deleted == false) {
+					OC.dialogs.alert(t("user_pods", "delete_pod: pod " + podName + " didn't reach deleted state"), t("user_pods", "Error"));
+				}
+			} else {
+				if (jsondata.message) {
+					OC.dialogs.alert(t("user_pods", "delete_pod: " + jsondata.message), t("user_pods", "Error"));
+				}
+			}
+			getPods();
 		}
 	});
 }
@@ -255,18 +286,16 @@ function deletePod(podName) {
 		method: 'post',
 		beforeSend: function(xhr) {
 			ajaxBefore(xhr, "Deleting your pod...");
-			$('#podstable tr[pod_name="' + podName + '"] td a.delete-pod').hide();
-			$('#podstable tr[pod_name="' + podName + '"] td div[column=status] span').text('Deleting');
 		},
 		complete: function(xhr) {
 			ajaxCompleted(xhr);
 		},
 		success: function(data) {
 			if (data.status == 'success') {
-				$('tr[pod_name="' + data.pod_name + '"]').remove();
-				// if a tooltip is shown when the element is removed, then there is no mouseover event to get rid of it.
-				$('body > div.tipsy').remove();
-				updateContainerCount();
+				// get the pod list to show the new status of the pod awaiting deletion
+				getPods();
+				// then watch for the pod to finish being deleted
+				watchDeletePod(podName)
 			} else if (data.status == 'error') {
 				if (data.data && data.data.error && data.data.error == 'authentication_error') {
 					OC.redirect('/');

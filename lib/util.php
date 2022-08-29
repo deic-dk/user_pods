@@ -199,6 +199,15 @@ class OC_Kubernetes_Util
 		return $this->curlBackend("watch_create_pod", $post_arr);
 	}
 
+	public function watchDeletePod($uid, $pod_name)
+	{
+		$post_arr = [
+			"user_id" => $uid,
+			"pod_name" => $pod_name,
+		];
+		return $this->curlBackend("watch_delete_pod", $post_arr);
+	}
+
 	private static function getAppDir($user)
 	{
 		\OC_User::setUserId($user);
