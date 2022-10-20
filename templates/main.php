@@ -25,14 +25,14 @@
 			</div>
 			</div>
 			<div id="newpod" class="apanel">
-				<span class="spanpanel" ><?php p($l->t("Manifest")); ?>:
+				<span class="spanpanel" >
 					<select id="yaml_file" title=<?php p($l->t("YAML file")); ?>>
 						<?php
 						echo "<option value=''></option>";
 						foreach ($_['manifests'] as $manifest) {
 							echo "<option value='".$manifest."'".
 								(!empty($_REQUEST['yaml_file'])&&$_REQUEST['yaml_file']==$manifest?" selected='selected'":"").
-								">".$manifest."</option>";
+								">".preg_replace('|\.yaml$|', '', $manifest)."</option>";
 						}
 						?>
 					</select>
@@ -40,7 +40,7 @@
 				<span id="links"></span>
 				<span class="newpod-span">	
 					<div id="ok" class="btn-pod" original-title="">
-						<a class="btn btn-default btn-flat" href="#"><?php p($l->t("Apply")); ?></a>
+						<a class="btn btn-default btn-flat" href="#"><?php p($l->t("Launch")); ?></a>
 					</div>
 					<div id="cancel" class="btn-pod" original-title="">
 						<a class="btn btn-default btn-flat" href="#"><?php p($l->t("Cancel")); ?></a>

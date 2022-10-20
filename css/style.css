@@ -239,6 +239,7 @@ fieldset#userPodsSettings table tbody tr td {
 
 #podstable td.td-button {
 	text-align: center;
+	padding-top: 3px;
 }
 
 #podstable th.th-button {

@@ -7,7 +7,7 @@ function getRowElementView(name, container) {
 	if (~container['status'].indexOf("Running")) {
 		if (container['url'].length) {
 			return "\n <td>\n  <div column='" + name + "'>\n   <span><a href='" + container['url'] +
-				"'>link</a></span>\n  </div>\n </td>";
+				"'>"+ container['url']+"</a></span>\n  </div>\n </td>";
 		} else {
 			return getRowElementPlain(name, "none");
 		}
@@ -18,7 +18,8 @@ function getRowElementView(name, container) {
 function getSshRows(container) {
 	var str = ""
 	if (container['ssh_url'].length) {
-		str +=  "\n <tr><td class='expanded-column-name'>ssh access:</td> <td class='expanded-column-value'><span class='expanded-row-ssh-url'>" + container['ssh_url'] + "</span></td></tr>"
+		str +=  "\n <tr><td class='expanded-column-name'>ssh access:</td> <td class='expanded-column-value'><span class='expanded-row-ssh-url'><a href='" +
+		container['ssh_url'] + "'>"+ container['ssh_url'] + "</a></span></td></tr>"
 		if (container['ed25519_hostkey'].length) {
 			str += "\n <tr><td class='expanded-column-name'>ed25519 hostkey:</td> <td class='expanded-column-value'><span> SHA256: " + container['ed25519_hostkey'] + "</span></td></tr>"
 		}
