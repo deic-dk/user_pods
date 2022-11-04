@@ -6,8 +6,12 @@ function getRowElementPlain(name, value) {
 function getRowElementView(name, pod_data) {
 	if (~pod_data['status'].indexOf("Running")) {
 		if (pod_data['url'].length) {
+			append = "";
+			if (pod_data['tokens']['appendURL']) {
+				append = "/" + pod_data['tokens']['appendURL'];
+			}
 			return "\n <td>\n  <div column='" + name + "'>\n   <span><a href='" + pod_data['url'] +
-				"'>"+ pod_data['url']+"</a></span>\n  </div>\n </td>";
+				append + "'>"+ pod_data['url'] +"</a></span>\n  </div>\n </td>";
 		} else {
 			return getRowElementPlain(name, "none");
 		}
@@ -145,7 +149,6 @@ function getPods(callback) {
 		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
 		data: {
 			action: 'get_pods',
-			pod_names: ''
 		},
 		beforeSend: function(xhr) {
 			ajaxBefore(xhr, "Retrieving table data...");
