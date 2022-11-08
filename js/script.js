@@ -24,16 +24,10 @@ function getRowElementDelete(status) {
 	return "\n<td class='td-button'>" + (status !== "Deleting" ? delete_button : "") + "</td>";
 }
 
-function getSshRows(pod_data) {
-	var str = ""
+function getSshRow(pod_data) {
+	var str = "";
 	if (pod_data['ssh_url'].length) {
 		str += "\n <tr><td class='expanded-column-name'>ssh access:</td> <td class='expanded-column-value'><span class='expanded-row-ssh-url'><a href='" + pod_data['ssh_url'] + "'>" + pod_data['ssh_url'] + "</a></span></td></tr>"
-		if (pod_data['ed25519_hostkey'].length) {
-			str += "\n <tr><td class='expanded-column-name'>ed25519 hostkey:</td> <td class='expanded-column-value'><span> SHA256: " + pod_data['ed25519_hostkey'] + "</span></td></tr>"
-		}
-		if (pod_data['rsa_hostkey'].length) {
-			str += "\n <tr><td class='expanded-column-name'>rsa hostkey:</td> <td class='expanded-column-value'><span> SHA256: " + pod_data['rsa_hostkey'] + "</span></td></tr>"
-		}
 	}
 	return str
 }
@@ -58,6 +52,7 @@ function getExpandedTable(pod_data) {
 		"\n <tr><td class='expanded-column-name'>node IP:</td> <td class='expanded-column-value'><span>" + pod_data['node_ip'] + "</span></td></tr>" +
 		"\n <tr><td class='expanded-column-name'>owner:</td> <td class='expanded-column-value'><span>" + pod_data['owner'] + "</span></td></tr>" +
 		"\n <tr><td class='expanded-column-name'>age:</td> <td class='expanded-column-value'><span>" + pod_data['age'] + "</span></td></tr>" +
+		getSshRow(pod_data) +
 		getTokenRows(pod_data) +
 		"\n</table>" +
 		"\n </td> </tr>";
