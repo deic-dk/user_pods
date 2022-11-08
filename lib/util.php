@@ -13,9 +13,7 @@ class OC_Kubernetes_Util
 	function __construct()
 	{
 		$this->publicIP  = OC_Appconfig::getValue('user_pods', 'publicIP');
-		//$this->privateIP = OC_Appconfig::getValue('user_pods', 'privateIP');
-		// Set manually for now, configure correctly after ingress is set up
-		$this->privateIP = "10.0.0.12:22080";
+		$this->privateIP = OC_Appconfig::getValue('user_pods', 'privateIP');
 		$this->storageDir = OC_Appconfig::getValue('user_pods', 'storageDir');
 		$this->manifestsURL = OC_Appconfig::getValue('user_pods', 'manifestsURL');
 		$this->rawManifestsURL = OC_Appconfig::getValue('user_pods', 'rawManifestsURL');
