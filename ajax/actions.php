@@ -6,32 +6,37 @@ OCP\JSON::callCheck();
 
 $util = new OC_Kubernetes_Util();
 
-if($_REQUEST['action']=='create_pod') {
+if($_REQUEST['action']=='create_pod'){
 	if(empty($_POST['yaml_file'])){
 		OCP\JSON::error(array('data' => array('message'=>'No YAML file specified')));
-        exit;
+		exit;
 	}
 	$yaml_url = $util->rawManifestsURL.trim($_POST['yaml_file']);
-	$message = $util->createPod(OCP\User::getUser(), $yaml_url, trim($_POST['public_key']),
-			trim($_POST['storage_path']), trim($_POST['file']));
-	$matchstr = '{[\s\S]*<pre>(.*)</pre>[\s\S]*}';
-	if (preg_match($matchstr, $message, $matches)) {
-		OCP\JSON::success(array('data' => array('podName' => $matches[1])));
+	$json = $util->createPod(OCP\User::getUser(), $yaml_url, trim($_POST['public_key']),
+		trim($_POST['storage_path']), trim($_POST['file']));
+	$status = $json['status'];
+	$message = $json['data']['message'];
+	$name = $json['data']['name'];
+	if($status=='success'){
+		OCP\JSON::success(array('data' => array('podName' => $name)));
 	}
-	else {
-		OCP\JSON::error(array('data' => array('message'=>'Failed to create pod')));
+	else{
+		OCP\JSON::error(array('data' => array('message'=>'Problem creating pod. '.$name.': '.$message)));
 	}
 }
 elseif($_REQUEST['action']=='delete_pod') {
-	$message = $util->deletePod($_REQUEST['pod_name'], OCP\User::getUser());
-    if ($message === '<h1>OK</h1>') {
-        OCP\JSON::success(array('message'=>$message, 'pod'=>$_REQUEST['pod_name']));
-    }
-    else {
-        OCP\JSON::error(array('message' => $message, 'pod' => $_REQUEST['pod_name']));
-    }
+	$json = $util->deletePod($_REQUEST['pod_name'], OCP\User::getUser());
+	$status = $json['status'];
+	$message = $json['data']['message'];
+	if($status=='success'){
+		OCP\JSON::success(array('message'=>$message, 'pod'=>$_REQUEST['pod_name']));
+	}
+	else{
+		\OC_Log::write('user_pods', "Failed deleting pod. " . serialize($json), \OC_Log::ERROR);
+		OCP\JSON::error(array('message' => $message, 'pod' => $_REQUEST['pod_name']));
+	}
 }
-elseif($_REQUEST['action']=='check_manifest') {
+elseif($_REQUEST['action']=='check_manifest'){
 	$data = $util->checkManifest($_REQUEST['yaml_file']);
 	OCP\JSON::success(array('data' => $data));
 }
