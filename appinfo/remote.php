@@ -21,7 +21,7 @@ $sectionsArray = array_map(function($section) use ($groupPublicFileInfos){
 						// Load cover.png via web interface, not webdav as the latter messes up session
 						$coverUrl = str_replace('/public/', '/shared/', $row['url']);
 						$coverUrl = preg_replace('|/$|', '', $coverUrl);
-						$coverUrl = $coverUrl.'?files=cover.png&download';
+						$coverUrl = $coverUrl.'?files=cover.png&download&direct';
 						return ["text"=>$row['filename'], "target"=>$row['target'], "url"=>$row['url'], "img"=>$coverUrl, "type"=>$row['item_type']];
 					}
 					else{
