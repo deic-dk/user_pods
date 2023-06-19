@@ -21,12 +21,6 @@ function getSshRows(container){
 		if(container['ssh_url'].length){
 		str +=  "\n <tr><td class='expanded-column-name'>ssh access:</td> <td class='expanded-column-value'><span class='expanded-row-ssh-url'><a href='" +
 		container['ssh_url'] + "'>"+ container['ssh_url'] + "</a></span></td></tr>"
-		if(container['ed25519_hostkey'].length){
-			str += "\n <tr><td class='expanded-column-name'>ed25519 hostkey:</td> <td class='expanded-column-value'><span> SHA256: " + container['ed25519_hostkey'] + "</span></td></tr>"
-		}
-		if(container['rsa_hostkey'].length){
-			str += "\n <tr><td class='expanded-column-name'>rsa hostkey:</td> <td class='expanded-column-value'><span> SHA256: " + container['rsa_hostkey'] + "</span></td></tr>"
-		}
 	}
 	return str
 }
@@ -48,9 +42,14 @@ function getExpandedTable(container){
 
 function formatStatusRunning(status){
 	if(status.includes("Running")){
-		var date = status.substr(status.indexOf(':') + 1);
-		var time = new Date(date).toString().slice(0, 25);
-		return "Running: ".concat(time);
+		try{
+			var date = status.substr(status.indexOf(':') + 1);
+			var time = new Date(date).toString().slice(0, 25);
+			return "Running: ".concat(time);
+		}
+		catch(error){
+			console.log(error);
+		}
 	}
 	return status;
 }

@@ -8,6 +8,7 @@ $rawManifestsURL = OC_Appconfig::getValue('user_pods', 'rawManifestsURL');
 $nbViewerPrivateURL = OC_Appconfig::getValue('user_pods', 'nbViewerPrivateURL');
 $nbViewerPublicURL = OC_Appconfig::getValue('user_pods', 'nbViewerPublicURL');
 $jupyterYamlFile = OC_Appconfig::getValue('user_pods', 'jupyterYamlFile');
+$getContainersPassword = OC_Appconfig::getValue('user_pods', 'getContainersPassword');
 
 OCP\JSON::success(array(
 		'publicIP' => $publicIP,
@@ -17,5 +18,6 @@ OCP\JSON::success(array(
 		'rawManifestsURL' => $rawManifestsURL,
 		'nbViewerPrivateURL' => $nbViewerPrivateURL,
 		'nbViewerPublicURL' => $nbViewerPublicURL,
-		'jupyterYamlFile' => $jupyterYamlFile
+		'jupyterYamlFile' => $jupyterYamlFile,
+		'getContainersPassword' => $getContainersPassword
 ));

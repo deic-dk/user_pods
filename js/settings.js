@@ -10,6 +10,7 @@ $(document).ready(function() {
 		var nbViewerPrivateURL = $('#nbViewerPrivateURL').val();
 		var nbViewerPublicURL = $('#nbViewerPublicURL').val();
 		var jupyterYamlFile = $('#jupyterYamlFile').val();
+		var getContainersPassword = $('#getContainersPassword').val();
 		$.ajax(OC.linkTo('user_pods', 'ajax/set_settings.php'), {
 			type: "POST",
 			data: {
@@ -20,7 +21,8 @@ $(document).ready(function() {
 				rawManifestsURL: rawManifestsURL,
 				nbViewerPrivateURL: nbViewerPrivateURL,
 				nbViewerPublicURL: nbViewerPublicURL,
-				jupyterYamlFile: jupyterYamlFile
+				jupyterYamlFile: jupyterYamlFile,
+				getContainersPassword: getContainersPassword
 			},
 			dataType: 'json',
 			success: function(s) {
@@ -43,6 +45,7 @@ $(document).ready(function() {
 			$('#nbViewerPrivateURL').val( s['nbViewerPrivateURL']);
 			$('#nbViewerPublicURL').val( s['nbViewerPublicURL']);
 			$('#jupyterYamlFile').val( s['jupyterYamlFile']);
+			$('#getContainersPassword').val( s['getContainersPassword']);
 		}
 	});
 

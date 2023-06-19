@@ -76,6 +76,14 @@ $l = OC_L10N::get('user_pods');
 				<input type='text' id='jupyterYamlFile' title='jupyterYamlFile' IP' style='width:475px' />
 			</td>
 		</tr>
+		<tr>
+			<td>
+				<label for='getContainersPassword'><?php p($l->t('Password for getting the status of containers of all users'));?></label>
+			</td>
+			<td>
+				<input type='text' id='getContainersPassword' title='getContainersPassword' IP' style='width:475px' />
+			</td>
+		</tr>
 	</table>
 	<br>
 	<input type='submit' value='Save' id='podssettingssubmit' title='Store user_pods settings' />

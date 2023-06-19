@@ -9,6 +9,7 @@ $nbViewerPrivateURL = $_POST['nbViewerPrivateURL'];
 $nbViewerPublicURL = $_POST['nbViewerPublicURL'];
 $nbViewerPublicURL = $_POST['nbViewerPublicURL'];
 $jupyterYamlFile = $_POST['jupyterYamlFile'];
+$getContainersPassword = $_POST['getContainersPassword'];
 
 OC_Appconfig::setValue('user_pods', 'publicIP', $publicIP);
 OC_Appconfig::setValue('user_pods', 'privateIP', $privateIP);
@@ -18,5 +19,6 @@ OC_Appconfig::setValue('user_pods', 'rawManifestsURL', $rawManifestsURL);
 OC_Appconfig::setValue('user_pods', 'nbViewerPrivateURL', $nbViewerPrivateURL);
 OC_Appconfig::setValue('user_pods', 'nbViewerPublicURL', $nbViewerPublicURL);
 OC_Appconfig::setValue('user_pods', 'jupyterYamlFile', $jupyterYamlFile);
+OC_Appconfig::setValue('user_pods', 'getContainersPassword', $getContainersPassword);
 
 OCP\JSON::success();
