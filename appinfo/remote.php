@@ -37,9 +37,8 @@ $sectionsArray = array_map(function($section) use ($groupPublicFileInfos){
 $ret = [
 	"title" => "ScienceNotebooks | Share your calculations",
 	"image" => "<img src='/static/img/science_notebooks.png' width='192px'/>",
-	"subtitle" => "Jupyter Notebooks on <a href='https://sciencedata.dk'>ScienceData</a>",
-	"text" => "A growing collection of data-oriented Jupyter notebooks. ScienceData users can contribute
-	by following a few simple <a href='https://sciencedata.dk/sites/developer/Notebooks/index#publishing_notebooks'>instructions</a>.",
+	"subtitle" => "Jupyter Notebooks from <a href='https://sciencedata.dk/'>ScienceData</a>",
+	"text" => "",
 	"show_input" => true, // the input field is nice to have - we'll hide it with css/js
 	"sections" => $sectionsArray
 ];
