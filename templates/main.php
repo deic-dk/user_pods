@@ -1,7 +1,7 @@
 <div id="app-content">
 	<div id="app-content-kubernetes" class="viewcontainer">
 	<div class="info">
-	Notice: Currently, pods are in beta testing. Use at your own risk - pods may be terminated or restarted.
+	Notice: Currently, Pods are in beta testing. Use at your own risk - pods may be deleted, terminated or restarted.
 	We appreciate <a href="mailto:<?php echo(\OCP\Config::getSystemValue('fromemail', ''));?>">feedback.</a></div>
 		<div id="controls">
 			<div class="row">
