@@ -226,6 +226,28 @@ function toggleExpanded(expander){
 	}
 }
 
+/**
+ * Save the public SSH key to browser memory
+ */
+function saveSshPublicKey(){
+	localStorage.public_ssh_key = $('#public_key').val();
+}
+
+/**
+ * Load the public SSH key from browser memory
+ */
+function loadSshPublicKey(){
+	$('#public_key').val(localStorage.public_ssh_key);
+}
+
+/**
+ * Clear the public SSH key from browser memory
+ */
+function clearSshPublicKey(){
+	localStorage.public_ssh_key = "";
+	$('#public_key').val('');
+}
+
 function loadYaml(yaml_file){
 	$('#public_key').val('');
 	var select_value = yaml_file || $('#yaml_file').val();
@@ -430,7 +452,17 @@ $(document).ready(function(){
 	$('#pods_refresh').click(function(e){
 		$('table#podstable tfoot.summary tr td span.info').remove();
 		getContainers();
-	})
+	});
+
+	$('#save_ssh_public_key').click(function(e){
+		saveSshPublicKey();
+	});
+	$('#load_ssh_public_key').click(function(e){
+		loadSshPublicKey();
+	});
+	$('#clear_ssh_public_key').click(function(e){
+		clearSshPublicKey();
+	});
 
 	getContainers(function(){
 		if(typeof getGetParam !== 'undefined' && getGetParam('file') && getGetParam('yaml_file')){

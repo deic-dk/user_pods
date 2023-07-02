@@ -61,7 +61,8 @@ li {
 }
 
 #public_key {
-	width: 60% !important;
+	min-width: 60% !important;
+	min-height: 82px !important;
 }
 
 #storage_path {
@@ -250,4 +251,10 @@ fieldset#userPodsSettings table tbody tr td {
 #podstable tbody tr.expanded-row table td.expanded-column-value span {
 	white-space: normal;
 	word-wrap: break-word;
+}
+
+.key_buttons {
+	display: inline-block;
+	vertical-align: bottom;
+	
 }

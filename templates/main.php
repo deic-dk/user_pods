@@ -47,8 +47,17 @@
 					</div>
 				</span>
 				<div id="description"></div>
-				<div id="ssh"><textarea id="public_key" type="text" placeholder="<?php p($l->t("Public SSH key")); ?>"
-					title="<?php p($l->t("Paste your public SSH key here")); ?>"></textarea></div>
+				<div id="ssh">
+					<textarea id="public_key" type="text" placeholder="<?php p($l->t("Public SSH key")); ?>"
+					title="<?php p($l->t("Paste your public SSH key here")); ?>"></textarea>
+						<div class="key_buttons">
+							<a id="save_ssh_public_key" class="btn btn-default btn-flat btn-sg" href="#" title="<?php p($l->t("Save stored SSH key to browser storage")); ?>"><?php p($l->t("Save")); ?></a>
+							<br />
+							<a id="load_ssh_public_key" class="btn btn-default btn-flat btn-sg" href="#" title="<?php p($l->t("Load stored SSH key from browser storage")); ?>"><?php p($l->t("Load")); ?></a>
+							<br />
+							<a id="clear_ssh_public_key" class="btn btn-default btn-flat btn-sg" href="#" title="<?php p($l->t("Clear stored SSH key from browser storage")); ?>"><?php p($l->t("Clear")); ?></a>
+					</div>
+				</div>
 				<div id="storage">
 				</div>
 				<div id="file"><span id="file_text"><?php p($l->t("File")); ?>:</span>
