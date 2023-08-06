@@ -78,10 +78,26 @@ $l = OC_L10N::get('user_pods');
 		</tr>
 		<tr>
 			<td>
+				<label for='getContainersURL'><?php p($l->t('URL for getting the status of containers of all users'));?></label>
+			</td>
+			<td>
+				<input type='text' id='getContainersURL' title='getContainersURL' IP' style='width:475px' />
+			</td>
+		</tr>
+		<tr>
+			<td>
 				<label for='getContainersPassword'><?php p($l->t('Password for getting the status of containers of all users'));?></label>
 			</td>
 			<td>
 				<input type='text' id='getContainersPassword' title='getContainersPassword' IP' style='width:475px' />
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<label for='trustedUser'><?php p($l->t('User allowed to login from her pods with any username set in auth header honored.'));?></label>
+			</td>
+			<td>
+				<input type='text' id='trustedUser' title='trustedUser' IP' style='width:475px' />
 			</td>
 		</tr>
 	</table>
