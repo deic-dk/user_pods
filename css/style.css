@@ -148,6 +148,10 @@ li {
 	padding-left: 1%;
 }
 
+#running_pods {
+	overflow-x: auto;
+}
+
 #podstable {
 	width: 100%;
 }
