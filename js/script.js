@@ -256,6 +256,8 @@ function loadYaml(yaml_file){
 	if(!select_value){
 		$('div#storage').hide();
 		$('div#cvmfs').hide();
+		$('div#setup input').empty();
+		$('div#setup').hide();
 		$('div#ssh').hide();
 		$('#webdav').empty();
 	}
@@ -298,6 +300,8 @@ function loadYaml(yaml_file){
 				}
 				$('div#storage').hide();
 				$('div#cvmfs').hide();
+				$('div#setup input').empty();
+				$('div#setup').hide();
 				if(jsondata.data['pod_mount_path'] && jsondata.data['pod_mount_path']['sciencedata'] ||
 						jsondata.data['pod_mount_src'] || jsondata.data['cvmfs_repos'] || jsondata.data['setup_script']){
 					var storage_input = "";
