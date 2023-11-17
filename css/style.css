@@ -41,13 +41,13 @@ li {
 	padding-top: 1%;
 }
 
-#file {
+#file, #cvmfs, #setup {
 	padding-left: 1.5%;
 	padding-top: 1%;
 }
 
-#file_input {
-	width: 240px;
+#file input, #cvmfs input, #setup input {
+	width: 480px;
 }
 
 #file_text {
@@ -79,7 +79,7 @@ li {
 
 #description {
 	padding-left: 1.5%;
-	padding-right: 30%;
+	padding-right: 1.5%;
 	padding-top: 1%;
 }
 
@@ -223,6 +223,8 @@ fieldset#userPodsSettings table tbody tr td {
 	border: 1px solid #395058;
 	border-radius: 4px;
 	padding: 4px;
+	margin-left: auto;
+  margin-right: auto;
 }
 
 #app-content-kubernetes .info a {

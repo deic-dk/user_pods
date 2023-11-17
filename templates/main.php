@@ -60,9 +60,13 @@
 				</div>
 				<div id="storage">
 				</div>
+				<div id="cvmfs">
+				</div>
+				<div id="setup">
+				</div>
 				<div id="file"><span id="file_text"><?php p($l->t("File")); ?>:</span>
-					<input id="file_input" type="text" placeholder="<?php p($l->t("Optional file to open")); ?>"
-					title="<?php p($l->t("Path of file for to open in your pod")); ?>"
+					<input id="file_input" type="text" placeholder="<?php p($l->t("Optional file to open in your pod")); ?>"
+					title="<?php p($l->t("Path of file in your ScienceData Home")); ?>"
 					value="<?php echo(empty($_REQUEST['file'])?$_REQUEST['file']:''); ?>">
 				</div>
 			</div>

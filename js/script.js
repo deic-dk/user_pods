@@ -125,7 +125,7 @@ function getContainers(callback){
 	});
 }
 
-function runPod(yaml_file, ssh_key, storage_path, file){
+function runPod(yaml_file, ssh_key, storage_path, cvmfs_repos,  file, setup_script){
 	$.ajax({
 		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
 		data: {
@@ -133,7 +133,9 @@ function runPod(yaml_file, ssh_key, storage_path, file){
 			yaml_file: yaml_file,
 			public_key: ssh_key,
 			storage_path: storage_path,
-			file: file
+			cvmfs_repos: cvmfs_repos,
+			file: file,
+			setup_script: setup_script
 		},
 		method: 'post',
 		beforeSend: function(xhr){
@@ -253,6 +255,7 @@ function loadYaml(yaml_file){
 	var select_value = yaml_file || $('#yaml_file').val();
 	if(!select_value){
 		$('div#storage').hide();
+		$('div#cvmfs').hide();
 		$('div#ssh').hide();
 		$('#webdav').empty();
 	}
@@ -293,8 +296,10 @@ function loadYaml(yaml_file){
 				else{
 					$('div#file').hide();
 				}
-				if(jsondata.data['pod_mount_path'] && (jsondata.data['pod_mount_path']['sciencedata'] || jsondata.data['pod_mount_path']['local'])){
-					var mount_src = jsondata.data['pod_mount_src'];
+				$('div#storage').hide();
+				$('div#cvmfs').hide();
+				if(jsondata.data['pod_mount_path'] && jsondata.data['pod_mount_path']['sciencedata'] ||
+						jsondata.data['pod_mount_src'] || jsondata.data['cvmfs_repos'] || jsondata.data['setup_script']){
 					var storage_input = "";
 					for (var containerIndex in jsondata.data['container_infos']){
 						var container = jsondata.data['container_infos'][containerIndex];
@@ -315,21 +320,48 @@ function loadYaml(yaml_file){
 										"\n";
 									// Although they yaml can, in principle have different containers with different mounts, or multiple mounts in one container,
 									// run_pod only supports one nfs_storage_path
-									break;
 								}
 							}
+							$('#storage').show();
+							$('#storage').empty();
+							$('#storage').append(storage_input);
+							$('#storage input').tipsy({
+								html: true,
+								hoverable: true
+							});
+						}
+						if(jsondata.data['cvmfs_repos']){
+							var cvmfs_input = 
+							'<span>'+t('user_pods', 'CVMFS Repositories')+':</span> &nbsp: <input image_name="' + container['image_name'] + '" type="text"' +
+							 ' image="' + container['image_name'] +
+							'" placeholder="' +
+							jsondata.data['cvmfs_repos'] +
+							'" title="' +
+							t('user_pods', 'Comma-separated list of CVMFS repositories to mount inside the pod/container. Leave blank to use pod default.')+'" />'+
+							"\n";
+							$('#cvmfs').show();
+							$('#cvmfs').empty();
+							$('#cvmfs').append(cvmfs_input);
+							$('#cvmfs input').tipsy({
+								html: true,
+								hoverable: true
+							});
+						}
+						if(jsondata.data['setup_script']){
+							var cvmfs_input = 
+							'<span>'+t('user_pods', 'Setup script')+':</span> &nbsp: <input image_name="' + container['image_name'] + '" type="text"' +
+							 ' image="' + container['image_name'] +'" value="' +jsondata.data['setup_script'] +'" title="' +
+							t('user_pods', 'Optional path to setup script to run in your pod.')+'" />'+
+							"\n";
+							$('#setup').show();
+							$('#setup').empty();
+							$('#setup').append(cvmfs_input);
+							$('#setup input').tipsy({
+								html: true,
+								hoverable: true
+							});
 						}
 					}
-					$('div#storage').show();
-					$('#storage').empty();
-					$('#storage').append(storage_input);
-					$('#storage input').tipsy({
-						html: true,
-						hoverable: true
-					});
-				}
-				else{
-					$('div#storage').hide();
 				}
 			}
 			else if(jsondata.status == 'error'){
@@ -392,30 +424,34 @@ $(document).ready(function(){
 		var yaml_file = $('#yaml_file').val();
 		var ssh_key = $('#public_key').val();
 		var file = $('#file_input').val();
+		var setup_script = $('#setup input').val() || '';
 		var storage_path = "";
-		if(!$('#storage input:visible').length){
+		var cvmfs_repos = $('#vcmfs input').val() || '';
+		if($('#storage input:visible').length){
+			$('#storage input').each(function(el){
+				if($(this).attr('image_name')){
+					storage_path = $(this).val();
+					// Although the yaml can, in principle have different containers with different mounts, or multiple mounts in one container,
+					// run_pod only supports one storage_path
+					if(!storage_path || storage_path == ""){
+						OC.dialogs.alert(t("user_pods", "Please fill in the directory to mount from your home server"), t("user_pods", "Missing storage path"));
+					}
+					else{
+						runPod(yaml_file, ssh_key, storage_path, cvmfs_repos, file, setup_script);
+					}
+					return false;
+				}
+			});
+		}
+		else{
 			if($('#public_key:visible').length && (!ssh_key || ssh_key == "")){
 				OC.dialogs.alert(t("user_pods", "Please fill in a public SSH key"), t("user_pods", "Missing SSH key"));
 			}
 			else{
-			  runPod(yaml_file, ssh_key, storage_path, file);
-      }
+				runPod(yaml_file, ssh_key, storage_path, cvmfs_repos, file, setup_script);
+			}
 			return false;
 		}
-		$('#storage input').each(function(el){
-			if($(this).attr('image_name')){
-				storage_path = $(this).val();
-				// Although the yaml can, in principle have different containers with different mounts, or multiple mounts in one container,
-				// run_pod only supports one storage_path
-				if(!storage_path || storage_path == ""){
-					OC.dialogs.alert(t("user_pods", "Please fill in the directory to mount from your home server"), t("user_pods", "Missing storage path"));
-				}
-				else{
-					runPod(yaml_file, ssh_key, storage_path, file);
-				}
-				return false;
-			}
-		});
 	});
 
 	$("#podstable td .expand-view").live('click', function(){

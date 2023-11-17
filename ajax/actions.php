@@ -13,7 +13,8 @@ if($_REQUEST['action']=='create_pod'){
 	}
 	$yaml_url = $util->rawManifestsURL.trim($_POST['yaml_file']);
 	$json = $util->createPod(OCP\User::getUser(), $yaml_url, trim($_POST['public_key']),
-		trim($_POST['storage_path']), trim($_POST['file']));
+			trim($_POST['storage_path']), trim($_POST['cvmfs_repos']), trim($_POST['file']),
+			trim($_POST['setup_script']));
 	$status = $json['status'];
 	$message = $json['data']['message'];
 	$name = $json['data']['name'];

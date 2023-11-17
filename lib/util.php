@@ -147,6 +147,7 @@ class OC_Kubernetes_Util {
 		$pod_mount_path = [];
 		$pod_mount_src = "";
 		$containerInfos = [];
+		$cvmfs_repos = "";
 		if(!empty($arr['spec']['containers'])){
 			foreach($arr['spec']['containers'] as $container){
 				$accepts_public_key = false;
@@ -162,11 +163,17 @@ class OC_Kubernetes_Util {
 							$pod_accepts_public_key = true;
 						}
 						if(!empty($env['name']) && $env['name']=="USERNAME" && !empty($env['value'])){
-							$username = $env['value'];
-							$pod_username = $env['value'];
+							$username = empty($env['value'])?"":$env['value'];
+							$pod_username = empty($env['value'])?"":$env['value'];
 						}
 						if(!empty($env['name']) && $env['name']=="MOUNT_SRC" && !empty($env['value'])){
 							$pod_mount_src = $env['value'];
+						}
+						if(!empty($env['name']) && $env['name']=="CVMFS_REPOS" && !empty($env['value'])){
+							$cvmfs_repos = $env['value'];
+						}
+						if(!empty($env['name']) && $env['name']=="SETUP_SCRIPT" && !empty($env['value'])){
+							$setup_script = $env['value'];
 						}
 						if(!empty($env['name']) && $env['name']=="FILE"){
 							$pod_accepts_file = true;
@@ -176,6 +183,8 @@ class OC_Kubernetes_Util {
 						}
 					}
 				}
+				// We support both specifying local volumeMounts and volume explicitly or setting MOUNT_DEST and MOUNT_SRC - in which case volumeMounts and volume will be added to the YAML by run_pod
+				// sciencedata volumenMounts should always be specifyed explicitly - the nfs pv pvc and volume will be added by run_pod using the form input
 				if(!empty($container['volumeMounts'])){
 					$pod_mount_path[$container['volumeMounts'][0]['name']]= $container['volumeMounts'][0]['mountPath'];
 					foreach($container['volumeMounts'] as $volumeMount){
@@ -186,20 +195,27 @@ class OC_Kubernetes_Util {
 					'image_name'=>$image_name,
 					//'image_description'=>$image_description,
 					'accepts_public_key'=>$accepts_public_key,
-						'username'=>$username,
+					'username'=>empty($username)?'':$username,
 					'mount_paths'=>$mountPaths
 				];
 			}
 		}
-		return ['manifest_url'=>$github_url, 'manifest_info'=>$manifest_info,
-				'pod_accepts_public_key'=>$pod_accepts_public_key,
-				'pod_accepts_file'=>$pod_accepts_file, 'pod_file'=>$pod_file,
-				'pod_username'=>$pod_username,
-				'pod_mount_path'=>$pod_mount_path, 'pod_mount_src'=>$pod_mount_src,
-				'container_infos'=>$containerInfos];
+		return ['manifest_url'=>$github_url,
+						'manifest_info'=>$manifest_info,
+						'pod_accepts_public_key'=>$pod_accepts_public_key,
+						'pod_accepts_file'=>$pod_accepts_file,
+						'pod_file'=>$pod_file,
+						'pod_username'=>$pod_username,
+						'pod_mount_path'=>$pod_mount_path,
+						'pod_mount_src'=>$pod_mount_src,
+						'container_infos'=>$containerInfos,
+						'cvmfs_repos'=>$cvmfs_repos,
+						'setup_script'=>$setup_script
+		];
 	}
 
-	public function createPod($uid, $yaml_url, $public_key, $storage_path, $file){
+	public function createPod($uid, $yaml_url, $public_key, $storage_path,
+			$cvmfs_repos='', $file='', $setup_script=''){
 		$url = 'http://'.$this->privateIP . "/run_pod.php?user_id=" . rawurlencode($uid) .
 			"&yaml_url=" . rawurlencode($yaml_url);
 		if(!empty($public_key)){
@@ -209,8 +225,17 @@ class OC_Kubernetes_Util {
 		if(!empty($storage_path)){
 			$url = $url . "&storage_path=" . $storage_path;
 		}
+		if(!empty($cvmfs_repos)){
+			$url = $url . "&cvmfs_repos=" . $cvmfs_repos;
+		}
 		if(!empty($file)){
 			$url = $url . "&file=" . rawurlencode($file);
+		}
+		if(empty($setup_script)){
+			$url = $url . "&setup_script=/dev/null";
+		}
+		else{
+			$url = $url . "&setup_script=" . rawurlencode($setup_script);
 		}
 		\OC_Log::write('user_pods', "Calling " . $url, \OC_Log::WARN);
 		$json =  file_get_contents($url);
