@@ -119,6 +119,9 @@ function getContainers(callback){
 				}
 			}
 		},
+		error:  function(jsondata){
+			OC.dialogs.alert(t("user_pods", "run_pod: Something went wrong. "+jsondata), t("user_pods", "Error"));
+		},
 		complete: function(xhr){
 			ajaxCompleted(xhr);
 		}
@@ -173,6 +176,9 @@ function runPod(yaml_file, ssh_key, storage_path, cvmfs_repos,  file, setup_scri
 				}
 			}
 		},
+		error:  function(jsondata){
+			OC.dialogs.alert(t("user_pods", "run_pod: Something went wrong. "+jsondata), t("user_pods", "Error"));
+		},
 		complete: function(xhr){
 			ajaxCompleted(xhr);
 		}
@@ -212,6 +218,9 @@ function deletePod(podName){
 					$('#podstable tr[pod_name="' + podName + '"] td div[column=status] span').text('Delete failed');
 				}
 			}
+		},
+		error:  function(jsondata){
+			OC.dialogs.alert(t("user_pods", "run_pod: Something went wrong. "+jsondata), t("user_pods", "Error"));
 		}
 	});
 }
@@ -373,6 +382,9 @@ function loadYaml(yaml_file){
 					OC.redirect('/');
 				}
 			}
+		},
+		error:  function(jsondata){
+			OC.dialogs.alert(t("user_pods", "run_pod: Something went wrong. "+jsondata), t("user_pods", "Error"));
 		}
 	});
 }
