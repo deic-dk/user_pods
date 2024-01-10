@@ -95,6 +95,32 @@ class OC_Kubernetes_Util {
 	}
 
 	public function getManifests(){
+		$filenames = array();
+		try {
+			$json = self::getContent($this->manifestsURL);
+			$arr = json_decode($json, true);
+			foreach($arr as $line){
+				if(substr($line['name'], -5)==".yaml"){
+					array_push($filenames, $line['name']);
+				}
+			}
+			return $filenames;
+		}
+		catch(\Exception $e){
+			\OCP\Util::logException('Pods', $e);
+			OCP\JSON::error(array(
+					'data' => array(
+							'exception' => get_class($e),
+							'message' =>  $e->getMessage()
+					)
+			));
+		}
+	}
+		
+	// Too fragile to rely on layout of web page.
+	// In fact, the contents is no longer in the html, but loaded via xhr
+	// Leaving it here as DomXPath usage reference
+	/*public function getManifests(){
 		try {
 			$res = self::getContent($this->manifestsURL);
 			$type = '.yaml';
@@ -102,10 +128,11 @@ class OC_Kubernetes_Util {
 			$dom = new DomDocument();
 			$dom->loadHTML($res, LIBXML_NOERROR);
 			$finder = new DomXPath($dom);
-			$classname = "js-navigation-open Link--primary";
-			$nodes = $finder->query("//*[contains(@class, '$classname')]");
+			$classname = "Link--primary";
+			$nodes = $finder->query("//a[contains(@class, '$classname')]");
 			foreach ($nodes as $elem){
 				$filename = $elem->textContent;
+				\OC_Log::write('user_pods', "File: " . $filename, \OC_Log::WARN);
 				$len = strlen($type);
 				$is_yaml = (substr($filename, -$len) === $type);
 				if($is_yaml == true){
@@ -123,7 +150,7 @@ class OC_Kubernetes_Util {
 				)
 			));
 		}
-	}
+	}*/
 
 	/**
 	 * Get available information on a manifest from our yaml repository.

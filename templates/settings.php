@@ -37,7 +37,7 @@ $l = OC_L10N::get('user_pods');
 		<tr>
 			<td>
 				<label for='manifestsURL'><?php p($l->t('URL of the Github repository holding your manifests'));?></label>
-				<p>(https://github.com/some_repo/)</p>
+				<p>(https://api.github.com/repos/some_repo/contents/)</p>
 			</td>
 			<td>
 				<input type='text' id='manifestsURL' title='Github manifests URL' style='width:475px' />
