@@ -41,17 +41,21 @@ li {
 	padding-top: 1%;
 }
 
-#file, #cvmfs, #setup {
+#file, #cvmfs, #setup, #peers {
 	padding-left: 1.5%;
 	padding-top: 1%;
 }
 
-#file input, #cvmfs input, #setup input {
+#file input, #cvmfs input, #setup input, #peers input {
 	width: 480px;
 }
 
 #file_text {
 	margin-right: 12px;
+}
+
+#peers_text {
+  margin-right: 12px;
 }
 
 .newpod-span {
@@ -128,7 +132,8 @@ li {
 #storage,
 #loading,
 #dialogalert,
-#file {
+#file,
+#peers {
 	display: none;
 }
 

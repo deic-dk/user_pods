@@ -56,7 +56,7 @@ function formatStatusRunning(status){
 
 function getRow(container){
 	//visible part
-	var str = "  <tr class='simple-row' pod_name='" + container['pod_name'] + "'>" +
+	var str = "  <tr class='simple-row' pod_name='" + container['pod_name'] + "' pod_ip='"+ container['pod_ip'] + "' image_name='" + container['image_name'] + "'>" +
 		getRowElementPlain('pod_name', container['pod_name']) +
 		getRowElementPlain('status', formatStatusRunning(container['status'])) +
 		getRowElementView('view', container) +
@@ -128,7 +128,7 @@ function getContainers(callback){
 	});
 }
 
-function runPod(yaml_file, ssh_key, storage_path, cvmfs_repos,  file, setup_script){
+function runPod(yaml_file, ssh_key, storage_path, cvmfs_repos,  file, setup_script, peers){
 	$.ajax({
 		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
 		data: {
@@ -138,7 +138,8 @@ function runPod(yaml_file, ssh_key, storage_path, cvmfs_repos,  file, setup_scri
 			storage_path: storage_path,
 			cvmfs_repos: cvmfs_repos,
 			file: file,
-			setup_script: setup_script
+			setup_script: setup_script,
+			peers: peers
 		},
 		method: 'post',
 		beforeSend: function(xhr){
@@ -303,9 +304,34 @@ function loadYaml(yaml_file){
 				}
 				if(jsondata.data['pod_accepts_file'] == true){
 					$('div#file').show();
+					if(jsondata.data['pod_file'] ){
+						$('div#file input#file_input').val(jsondata.data['pod_file']);
+					}
 				}
 				else{
 					$('div#file').hide();
+				}
+				if('pod_peers' in jsondata.data || 'pod_peers_image' in jsondata.data){
+					$('div#peers').show();
+					if('pod_peers' in jsondata.data && jsondata.data['pod_peers'] != "" ){
+						$('div#peers input#peers_input').val(jsondata.data['pod_peers']);
+					}
+					// If an image name is given in the yaml, find all running instances belonging to the current user
+					else if(jsondata.data['pod_peers_image'] ){
+						var peers = "";
+						$('#podstable .simple-row').each(function(el){
+								if($(this).attr('image_name') == jsondata.data['pod_peers_image']){
+									peers = peers +  (peers?',':'') + $(this).attr('pod_name')+ ':' + $(this).attr('pod_ip');
+								}
+							});
+						peers = peers + (peers?',':'') +  'batch.sciencedata.dk:';
+						if(peers != ""){
+							$('div#peers input#peers_input').val(peers);
+						}
+					}
+				}
+				else{
+					$('div#peers').hide();
 				}
 				$('div#storage').hide();
 				$('div#cvmfs').hide();
@@ -443,6 +469,7 @@ $(document).ready(function(){
 		var setup_script = $('#setup input').val() || '';
 		var storage_path = "";
 		var cvmfs_repos = $('#vcmfs input').val() || '';
+		var peers = $('#peers_input').val() || '';
 		if($('#storage input:visible').length){
 			$('#storage input').each(function(el){
 				if($(this).attr('image_name')){
@@ -453,7 +480,7 @@ $(document).ready(function(){
 						OC.dialogs.alert(t("user_pods", "Please fill in the directory to mount from your home server"), t("user_pods", "Missing storage path"));
 					}
 					else{
-						runPod(yaml_file, ssh_key, storage_path, cvmfs_repos, file, setup_script);
+						runPod(yaml_file, ssh_key, storage_path, cvmfs_repos, file, setup_script, peers);
 					}
 					return false;
 				}
@@ -464,7 +491,7 @@ $(document).ready(function(){
 				OC.dialogs.alert(t("user_pods", "Please fill in a public SSH key"), t("user_pods", "Missing SSH key"));
 			}
 			else{
-				runPod(yaml_file, ssh_key, storage_path, cvmfs_repos, file, setup_script);
+				runPod(yaml_file, ssh_key, storage_path, cvmfs_repos, file, setup_script, peers);
 			}
 			return false;
 		}

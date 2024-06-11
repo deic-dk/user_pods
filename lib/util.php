@@ -170,6 +170,8 @@ class OC_Kubernetes_Util {
 		$pod_accepts_public_key = false;
 		$pod_accepts_file = false;
 		$pod_file = "";
+		$pod_peers = null;
+		$pod_peers_image = null;
 		$pod_username = "";
 		$pod_mount_path = [];
 		$pod_mount_src = "";
@@ -208,6 +210,18 @@ class OC_Kubernetes_Util {
 								$pod_file = $env['value'];
 							}
 						}
+						// List of peers of the form host_name1:ip1,hostname2:ip2,...
+						if(!empty($env['name']) && $env['name']=="PEERS"){
+							if(!empty($env['value'])){
+								$pod_peers = $env['value'];
+							}
+						}
+						// Name of peers image - all owned pods running this image will be added to peers
+						if(!empty($env['name']) && $env['name']=="PEERS_IMAGE"){
+							if(!empty($env['value'])){
+								$pod_peers_image = $env['value'];
+							}
+						}
 					}
 				}
 				// We support both specifying local volumeMounts and volume explicitly or setting MOUNT_DEST and MOUNT_SRC - in which case volumeMounts and volume will be added to the YAML by run_pod
@@ -227,11 +241,13 @@ class OC_Kubernetes_Util {
 				];
 			}
 		}
-		return ['manifest_url'=>$github_url,
+		$ret = ['manifest_url'=>$github_url,
 						'manifest_info'=>$manifest_info,
 						'pod_accepts_public_key'=>$pod_accepts_public_key,
 						'pod_accepts_file'=>$pod_accepts_file,
 						'pod_file'=>$pod_file,
+						'pod_peers'=>$pod_peers,
+						'pod_peers_image'=>$pod_peers_image,
 						'pod_username'=>$pod_username,
 						'pod_mount_path'=>$pod_mount_path,
 						'pod_mount_src'=>$pod_mount_src,
@@ -239,10 +255,11 @@ class OC_Kubernetes_Util {
 						'cvmfs_repos'=>$cvmfs_repos,
 						'setup_script'=>$setup_script
 		];
+		return array_filter($ret, function($val){return $val!==null;});
 	}
 
 	public function createPod($uid, $yaml_url, $public_key, $storage_path,
-			$cvmfs_repos='', $file='', $setup_script=''){
+			$cvmfs_repos='', $file='', $setup_script='', $peers=''){
 		$url = 'http://'.$this->privateIP . "/run_pod.php?user_id=" . rawurlencode($uid) .
 			"&yaml_url=" . rawurlencode($yaml_url);
 		if(!empty($public_key)){
@@ -257,6 +274,9 @@ class OC_Kubernetes_Util {
 		}
 		if(!empty($file)){
 			$url = $url . "&file=" . rawurlencode($file);
+		}
+		if(!empty($peers)){
+			$url = $url . "&peers=" . $peers;
 		}
 		if(empty($setup_script)){
 			$url = $url . "&setup_script=/dev/null";

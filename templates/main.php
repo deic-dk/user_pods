@@ -69,6 +69,11 @@
 					title="<?php p($l->t("Path of file in your ScienceData Home")); ?>"
 					value="<?php echo(empty($_REQUEST['file'])?$_REQUEST['file']:''); ?>">
 				</div>
+				<div id="peers"><span id="peers_text"><?php p($l->t("Peers")); ?>:</span>
+					<input id="peers_input" type="text" placeholder="<?php p($l->t("Optional peers to pass to your pod")); ?>"
+					title="<?php p($l->t("List of the form hostname1:ip1,hostname2:ip2,...")); ?>"
+					value="<?php echo(empty($_REQUEST['peers'])?$_REQUEST['peers']:''); ?>">
+				</div>
 			</div>
 		</div> 
 	</div>
