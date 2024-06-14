@@ -324,7 +324,7 @@ function loadYaml(yaml_file){
 									peers = peers +  (peers?',':'') + $(this).attr('pod_name')+ ':' + $(this).attr('pod_ip');
 								}
 							});
-						peers = peers + (peers?',':'') +  'batch.sciencedata.dk:';
+						peers = (peers?peers:'batch.sciencedata.dk:');
 						if(peers != ""){
 							$('div#peers input#peers_input').val(peers);
 						}
