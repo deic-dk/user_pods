@@ -166,7 +166,9 @@ class OC_Kubernetes_Util {
 		$arr = yaml_parse($yaml);
 		$md_file = preg_replace('/\.yaml$/', '.md', $yaml_file);
 		$github_md_url = $this->rawManifestsURL . $md_file;
+		\OC_Log::write('user_pods', "Fetching " . $github_md_url, \OC_Log::WARN);
 		$manifest_info = file_get_contents($github_md_url);
+		\OC_Log::write('user_pods', "Got " . $manifest_info, \OC_Log::WARN);
 		$pod_accepts_public_key = false;
 		$pod_accepts_file = false;
 		$pod_file = "";
