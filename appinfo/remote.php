@@ -14,8 +14,10 @@ $groupPublicFileInfos = array_values($groupPublicInfos);
 
 $sections = array_unique(array_column($groupPublicFileInfos, 'group'));
 
+\OCP\Util::writeLog('user_pods', 'Groups: '.implode(':', $sections), \OCP\Util::WARN);
+
 $sectionsArray = array_map(function($section) use ($groupPublicFileInfos){
-	return ["header"=>dbGetGroupDescription($section), "links"=>array_map(function($row) use ($section, $groupPublicFileInfos){
+	return ["header"=>dbGetGroupDescription($section), "links"=>array_values(array_map(function($row) use ($section, $groupPublicFileInfos){
 					if($row['item_type']=='folder'){
 						// "text" will be overridden - loaded from description.txt
 						// Load cover.png via web interface, not webdav as the latter messes up session
@@ -31,16 +33,16 @@ $sectionsArray = array_map(function($section) use ($groupPublicFileInfos){
 				array_filter($groupPublicFileInfos, function($dbRow) use ($section){
 					return $dbRow['group']==$section;
 			})
-	)];
+	))];
 }, $sections);
 
 $ret = [
 	"title" => "ScienceNotebooks | Share your calculations",
 	"image" => "<img src='/static/img/science_notebooks.png' width='192px'/>",
-	"subtitle" => "Jupyter Notebooks from <a href='https://sciencedata.dk/'>ScienceData</a>",
+	"subtitle" => "Jupyter Notebooks on <a href='https://sciencedata.dk/'>ScienceData</a>",
 	"text" => "",
 	"show_input" => true, // the input field is nice to have - we'll hide it with css/js
-	"sections" => $sectionsArray
+	"sections" => array_values($sectionsArray)
 ];
 
 OCP\JSON::encodedPrint($ret);
@@ -82,12 +84,7 @@ function dbGetNotebooksAndDirsSharedWithGroup() {
 	$infoArr = array();
 	
 	while($row = $result->fetchRow()){
-		if(!array_key_exists($row['item_source'], $infoArr)){
-			$info = [];
-		}
-		else{
-			$info = $infoArr[$row['item_source']];
-		}
+		$info = [];
 		$info['group'] = $row['share_with'];
 		$info['filename'] = trim($row['file_target'], '/');
 		$info['fileid'] = $row['item_source'];
