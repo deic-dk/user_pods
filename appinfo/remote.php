@@ -1,107 +1,95 @@
 <?php
 
 OCP\JSON::checkAppEnabled('user_pods');
+OCP\JSON::checkAppEnabled('user_group_admin');
 require_once('chooser/lib/lib_chooser.php');
+require_once('user_pods/lib/notebooks.php');
 require_once('apps/chooser/appinfo/apache_note_user.php');
 
 header("Content-Type: application/json");
 
-$notebookGroup = "notebooks";
+$user = \OCP\USER::getUser();
 
-$groupFileInfos = dbGetNotebooksAndDirsSharedWithGroup();
-$groupPublicInfos = dbGetNotebooksAndDirsSharedPublic($groupFileInfos);
-$groupPublicFileInfos = array_values($groupPublicInfos);
-
-$sections = array_unique(array_column($groupPublicFileInfos, 'group'));
-
-\OCP\Util::writeLog('user_pods', 'Groups: '.implode(':', $sections), \OCP\Util::WARN);
-
-$sectionsArray = array_map(function($section) use ($groupPublicFileInfos){
-	return ["header"=>dbGetGroupDescription($section), "links"=>array_values(array_map(function($row) use ($section, $groupPublicFileInfos){
-					if($row['item_type']=='folder'){
-						// "text" will be overridden - loaded from description.txt
-						// Load cover.png via web interface, not webdav as the latter messes up session
-						$coverUrl = str_replace('/public/', '/shared/', $row['url']);
-						$coverUrl = preg_replace('|/$|', '', $coverUrl);
-						$coverUrl = $coverUrl.'?files=cover.png&download&direct';
-						return ["text"=>$row['filename'], "target"=>$row['target'], "url"=>$row['url'], "img"=>$coverUrl, "type"=>$row['item_type']];
-					}
-					else{
-						return ["text"=>$row['filename'], "target"=>$row['target'], "url"=>$row['url'], "img"=>"/img/file-jupyter-o.png", "type"=>$row['item_type']];
-					}
-				},
-				array_filter($groupPublicFileInfos, function($dbRow) use ($section){
-					return $dbRow['group']==$section;
-			})
-	))];
-}, $sections);
-
-$ret = [
-	"title" => "ScienceNotebooks | Share your calculations",
-	"image" => "<img src='/static/img/science_notebooks.png' width='192px'/>",
-	"subtitle" => "Jupyter Notebooks on <a href='https://sciencedata.dk/'>ScienceData</a>",
-	"text" => "",
-	"show_input" => true, // the input field is nice to have - we'll hide it with css/js
-	"sections" => array_values($sectionsArray)
-];
-
-OCP\JSON::encodedPrint($ret);
-
-function dbGetGroupDescription($group){
-	$groupInfo = \OC_User_Group_Admin_Util::dbGetGroupInfo($group);
-	return $groupInfo['description'];
+if(empty($user) && !empty($_SERVER['PHP_AUTH_USER']) &&
+		\OCA\FilesSharding\Lib::checkIP()){
+			$user = $_SERVER['PHP_AUTH_USER'];
 }
 
-function dbGetNotebooksAndDirsSharedPublic($infoArr) {
-	$master = \OCA\FilesSharding\Lib::getMasterURL();
-	foreach($infoArr as $fileid=>&$info){
-		$sql = "SELECT * FROM `*PREFIX*share` WHERE `share_type` = ? AND `item_source` = ?";
-		$arr = array(\OCP\Share::SHARE_TYPE_LINK, $fileid);
-		$stmt = OC_DB::prepare($sql);
-		$result = $stmt->execute($arr);
-		while($row = $result->fetchRow()){
-			if(!empty($row['token'])){
-				$info['target'] = preg_replace('|^https://|', '/urls/', $master).'public/'.$row['token'].'/?base_name='.substr($row['file_target'], 1);
-				$info['url'] = $master.'public/'.$row['token'].'/';
-				break;
+$notebookGroup = "sciencenotebooks";
+$notebookGroupOwner = OC_User_Group_Admin_Util::getGroupOwner($notebookGroup);
+
+$notebooks = new OC_Notebooks($user, $notebookGroup, $notebookGroupOwner);
+
+if(!empty($_REQUEST['action']) && $_REQUEST['action']=='delete' && !empty($_REQUEST['filename']) && !empty($_REQUEST['section'])){
+	// Delete notebook published by the logged-in user
+	if($notebooks->delete($_REQUEST['section'].'/'.$_REQUEST['filename']) &&
+			$notebooks->dbDeletePublishedRecord($_REQUEST['section'].'/'.$_REQUEST['filename'])){
+		OCP\JSON::success(array("message" => "Notebook ".$_REQUEST['filename']." deleted for user ".$user));
+	}
+	else{
+		header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error');
+		OCP\JSON::error(array("message" => "Could not delete notebook ".$_REQUEST['filename']." for user ".$user));
+	}
+}
+elseif(!empty($_REQUEST['action']) && $_REQUEST['action']=='publish' && !empty($_REQUEST['filename']) && !empty($_REQUEST['fileid'])){
+	// Publish notebook
+	if($notebooks->publish($_REQUEST['section'], $_REQUEST['filename'], $_REQUEST['fileid'], $_REQUEST['group']) && $notebooks->dbAddNotebookPublishedRecord($_REQUEST['section'].'/'.$_REQUEST['filename'])){
+		OCP\JSON::success(array("i" => $_REQUEST['i'], "message" => "Notebook ".$_REQUEST['filename']." published for user ".$user));
+	}
+	else{
+		header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error');
+		OCP\JSON::error(array("message" => "Could not publish notebook ".$_REQUEST['filename']." for user ".$user));
+	}
+}
+else{
+	if(!empty($_REQUEST['mynotebooks'])){
+		\OCP\Util::writeLog('user_pods', 'Notebooks owned by: '.$user, \OC_Log::WARN);
+		// Proxy if not on home server
+		if(!empty($user) && OCP\App::isEnabled('files_sharding') && !\OCA\FilesSharding\Lib::onServerForUser($user)){
+			$dataServer = \OCA\FilesSharding\Lib::getServerForUser($user, true,
+					\OCA\FilesSharding\Lib::$USER_SERVER_PRIORITY_PRIMARY, true);
+			$url = rtrim($dataServer, '/').'/'.ltrim($_SERVER['REQUEST_URI'], '/');
+			$curl = curl_init();
+			curl_setopt($curl, CURLOPT_HEADER, false);
+			curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC ) ;
+			curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($curl, CURLOPT_USERPWD, $user.":");
+			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($curl, CURLOPT_URL, $url);
+			$json_response = curl_exec($curl);
+			$status = curl_getinfo($curl);
+			curl_close($curl);
+			if(empty($status['http_code']) || $status['http_code']===0 || $status['http_code']>=300 ||
+					$json_response===null || $json_response===false){
+						\OCP\Util::writeLog('user_pods', 'ERROR: bad response from '.$url.' : '.
+								serialize($status).' : '.$json_response, \OC_Log::ERROR);
+						\OCP\JSON::error(array(
+								'status' => $status,
+						));
+			}
+			else{
+				echo $json_response;
 			}
 		}
-		if(empty($info['url'])){
-			unset($infoArr[$fileid]);
+		else{
+			// Get notebooks published by the requested user
+			OCP\JSON::encodedPrint($notebooks->dbGetNotebooksPublishedByUser());
 		}
 	}
-	\OCP\Util::writeLog('user_pods', 'Returning notebooks '.serialize($infoArr), \OCP\Util::WARN);
-	return $infoArr;
-}
-
-// returns list of rows like [group, owner_uid, owner_display_name, filename, url]
-function dbGetNotebooksAndDirsSharedWithGroup() {
-	global $notebookGroup;
-	$sql = "SELECT * FROM `*PREFIX*share` WHERE `share_type` = ? AND ( `share_with` = ? OR `share_with` LIKE ? )";
-	$arr = array(\OCP\Share::SHARE_TYPE_GROUP, $notebookGroup, $notebookGroup."/%");
-	$stmt = OC_DB::prepare($sql);
-	$result = $stmt->execute($arr);
-	$infoArr = array();
-	
-	while($row = $result->fetchRow()){
-		$info = [];
-		$info['group'] = $row['share_with'];
-		$info['filename'] = trim($row['file_target'], '/');
-		$info['fileid'] = $row['item_source'];
-		$info['item_type'] = $row['item_type'];
-		$info['owner_uid'] = $row['uid_owner'];
-		$info['owner_display_name'] = \OCP\User::getDisplayName($row['uid_owner']);
-		$infoArr[$row['item_source']] = $info;
-		\OCP\Util::writeLog('user_pods', 'Info '.serialize($infoArr), \OCP\Util::WARN);
+	else{
+		// Get all notebook directories, i.e. folders shared publicly and with with $notebookGroup.
+		// The group owner will keep "official" notebooks in folders shared with this group.
+		$publicNotebookFolderInfos = $notebooks->getNotebookDirs();
+		$ret = [
+				"title" => "ScienceNotebooks | Share your calculations",
+				"image" => "<img src='/static/img/science_notebooks.png' width='192px'/>",
+				"subtitle" => "Jupyter Notebooks on <a href='https://sciencedata.dk/'>ScienceData</a>",
+				"text" => "",
+				"show_input" => true, // the input field is nice to have - we'll hide it with css/js
+				"sections" => $publicNotebookFolderInfos
+		];
+		OCP\JSON::encodedPrint($ret);
+		exit;
 	}
-	\OCP\Util::writeLog('user_pods', 'Returning notebooks '.serialize($infoArr), \OCP\Util::WARN);
-	return $infoArr;
 }
-
-function getDirMimeId($user_id){
-	$storage = \OC\Files\Filesystem::getStorage('/'.$user_id.'/');
-	$cache = $storage->getCache();
-	$dirMimeId = $cache->getMimetypeId('httpd/unix-directory');
-	return $dirMimeId;
-}
-
