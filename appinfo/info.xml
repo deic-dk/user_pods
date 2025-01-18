@@ -2,10 +2,9 @@
    <info>
 	<id>user_pods</id>
 	<name>Kubernetes Management</name>
-	<description>Enable users to create and manage their pods</description>
+	<description>Enable users to create and manage pods</description>
 	<version>0.1</version>
 	<licence>AGPL </licence>
-	<author>Ioanna Psylla</author>
 	<author>Ioanna Psylla</author>
 	<author>Frederik Orellana</author>
 	<remote>

@@ -16,7 +16,10 @@ function showNbViewer(dir, file, id, owner){
 	}
 	$('iframe#nbframe').load(function(){
 		var jupyter_yaml_file = $(this).contents().find('head').find('meta[name="Jupyter_YAML_File"]').attr('content');
-		link = OC.linkTo('user_pods', 'index.php') + '?yaml_file=' + jupyter_yaml_file + '&file=' + path;
+		var link = OC.linkTo('user_pods', 'index.php') + '?yaml_file=' + jupyter_yaml_file + '&file=' + path;
+		var ref = OC.linkTo('files', 'index.php') + '?dir=' + dir + '&file=' + file;
+		var dirref = OC.linkTo('files', 'index.php') + '?dir=' + dir;
+		window.history.pushState( {service: 'files', yaml_file: jupyter_yaml_file, file: path}, '', ref);
 		$(this).contents().find('head').append('<link rel="stylesheet" id="nbstyle" type="text/css" href="'+OC.webroot+'/apps/user_pods/css/nbviewer.css" />');
 		$(this).contents().find('body').prepend('<div id="nbbar">'+(!$('#app-content-public').length&&!$('#app-content-sharingin:visible').length&&!$('.crumb a[data-id=sharing_in]:visible').length?
 				'<a id="run" href="'+link+'">'+t('user_pods', 'Run')+'</a>':'')+
@@ -31,6 +34,8 @@ function showNbViewer(dir, file, id, owner){
 				}
 			}
 			$('#app-content-public #preview').removeClass('hidden');
+			//window.history.pushState( {service: 'files',  dir: dir}, '', dirref);
+			window.history.back();
 		});
 		$(this).contents().find('#run').click(function(){
 			OC.redirect(link);
@@ -60,5 +65,16 @@ $(document).ready(function() {
 	$('#app-content-public #imgframe img.publicpreview.ipynb').click(function(){
 		showNbViewer($('#dir').val(), $('#filename').val(), $('#fileid').val(), $('#owner').val());
 	});
+	$(window).on('popstate', function() {
+		$('iframe#nbframe').remove();
+		$('#nbbar').remove();
+		if(typeof FileList!=='undefined' && FileList.getGetParam){
+			view = FileList.getGetParam('view');
+			if(view=='' || view=='files'){
+				$('#app-content-files.viewcontainer').removeClass('hidden');
+			}
+		}
+		$('#app-content-public #preview').removeClass('hidden');
+  });
 });
 
