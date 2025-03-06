@@ -60,7 +60,7 @@ function getRow(container){
 		getRowElementPlain('pod_name', container['pod_name']) +
 		getRowElementPlain('status', formatStatusRunning(container['status'])) +
 		getRowElementView('view', container) +
-		"\n<td class='td-button'><a href='#' title=" + t('user_pods', 'Expand') + " class='expand-view permanent action icon icon-down-open'></a></td>" +
+		"\n<td class='td-button'><a href='#' title=" + t('user_pods', 'Expand') + " class='expand-view permanent action icon icon-right-open'></a></td>" +
 		"\n<td class='td-button'><a href='#' title=" + t('user_pods', 'Delete pod') + " class='delete-pod permanent action icon icon-trash-empty'></a></td>" +
 		"\n</tr>";
 	//expanded information
@@ -91,7 +91,7 @@ function getContainers(callback){
 			if(jsondata.status == 'success'){
 				var expanded_views = [];
 				// make an array of the podnames whose views are expanded
-				$('#podstable #fileList tr.simple-row td a.icon-up-open').closest('tr').each(function(){
+				$('#podstable #fileList tr.simple-row td a.icon-down-open').closest('tr').each(function(){
 					expanded_views.push($(this).attr('pod_name'));
 				});
 				$('#podstable #fileList tr').remove();
@@ -228,13 +228,13 @@ function deletePod(podName){
 
 //////////// begin page interaction functions /////////////
 function toggleExpanded(expander){
-	if(expander.attr("class").search("icon-up-open") === -1){
+	if(expander.attr("class").search("icon-down-open") === -1){
 		expander.closest('tr').next().show();
-		expander.removeClass("icon-down-open").addClass("icon-up-open");
+		expander.removeClass("icon-right-open").addClass("icon-down-open");
 	}
 	else{
 		expander.closest('tr').next().hide();
-		expander.removeClass("icon-up-open").addClass("icon-down-open");
+		expander.removeClass("icon-down-open").addClass("icon-right-open");
 	}
 }
 
