@@ -78,7 +78,7 @@
 		</div> 
 	</div>
 	<h2 class="running_pods"><?php p($l->t("Running pods/containers")); ?>
-	<a id="pods_refresh" class="btn btn-default" title="<?php p($l->t("Refresh")); ?>">&#8634;</a></h2>
+	<a id="pods_refresh" class="btn btn-default" title="<?php p($l->t("Refresh")); ?>">&circlearrowright;</a></h2>
 	<div id="running_pods">
 	<table id="podstable" class="panel">
 		<thead class="panel-heading" >
