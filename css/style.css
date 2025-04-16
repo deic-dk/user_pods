@@ -269,3 +269,9 @@ fieldset#userPodsSettings table tbody tr td {
 	vertical-align: bottom;
 	
 }
+
+#podstable td div[column=view] {
+	max-width: 20vW;
+	overflow: scroll;
+}
+
