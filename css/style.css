@@ -272,6 +272,6 @@ fieldset#userPodsSettings table tbody tr td {
 
 #podstable td div[column=view] {
 	max-width: 20vW;
-	overflow: scroll;
+	overflow: auto;
 }
 
