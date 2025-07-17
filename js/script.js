@@ -470,25 +470,25 @@ $(document).ready(function(){
 		var storage_path = "";
 		var cvmfs_repos = $('#vcmfs input').val() || '';
 		var peers = $('#peers_input').val() || '';
-		if($('#storage input:visible').length){
-			$('#storage input').each(function(el){
-				if($(this).attr('image_name')){
-					storage_path = $(this).val();
-					// Although the yaml can, in principle have different containers with different mounts, or multiple mounts in one container,
-					// run_pod only supports one storage_path
-					if(!storage_path || storage_path == ""){
-						OC.dialogs.alert(t("user_pods", "Please fill in the directory to mount from your home server"), t("user_pods", "Missing storage path"));
-					}
-					else{
-						runPod(yaml_file, ssh_key, storage_path, cvmfs_repos, file, setup_script, peers);
-					}
-					return false;
-				}
-			});
+		if($('#public_key:visible').length && (!ssh_key || ssh_key == "")){
+			OC.dialogs.alert(t("user_pods", "Please fill in a public SSH key"), t("user_pods", "Missing SSH key"));
 		}
 		else{
-			if($('#public_key:visible').length && (!ssh_key || ssh_key == "")){
-				OC.dialogs.alert(t("user_pods", "Please fill in a public SSH key"), t("user_pods", "Missing SSH key"));
+			if($('#storage input:visible').length){
+				$('#storage input').each(function(el){
+					if($(this).attr('image_name')){
+						storage_path = $(this).val();
+						// Although the yaml can, in principle have different containers with different mounts, or multiple mounts in one container,
+						// run_pod only supports one storage_path
+						if(!storage_path || storage_path == ""){
+							OC.dialogs.alert(t("user_pods", "Please fill in the directory to mount from your home server"), t("user_pods", "Missing storage path"));
+						}
+						else{
+							runPod(yaml_file, ssh_key, storage_path, cvmfs_repos, file, setup_script, peers);
+						}
+						return false;
+					}
+				});
 			}
 			else{
 				runPod(yaml_file, ssh_key, storage_path, cvmfs_repos, file, setup_script, peers);
