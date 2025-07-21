@@ -2,9 +2,9 @@ function showNbViewer(dir, file, id, owner){
 	if(typeof FileList !== 'undefined'){
 		FileList.showMask();
 	}
-	nbviewerSrc = OC.webroot+'/apps/user_pods/nbviewer.php?dir='+dir+'&file='+file+'&id='+id+'&owner='+owner;
-	path = dir+'/'+file;
-	iframe = $('<iframe id="nbframe" path="'+path+'" src="'+nbviewerSrc+'" sandbox="allow-scripts allow-same-origin" />');
+	var nbviewerSrc = OC.webroot+'/apps/user_pods/nbviewer.php?dir='+dir+'&file='+file+'&id='+id+'&owner='+owner;
+	var path = dir+'/'+file;
+	var iframe = $('<iframe id="nbframe" path="'+path+'" src="'+nbviewerSrc+'" sandbox="allow-scripts allow-same-origin" />');
 	if($('#app-content').length){
 		$('#app-content').append(iframe);
 	}
@@ -17,9 +17,15 @@ function showNbViewer(dir, file, id, owner){
 	$('iframe#nbframe').load(function(){
 		var jupyter_yaml_file = $(this).contents().find('head').find('meta[name="Jupyter_YAML_File"]').attr('content');
 		var link = OC.linkTo('user_pods', 'index.php') + '?yaml_file=' + jupyter_yaml_file + '&file=' + path;
-		var ref = OC.linkTo('files', 'index.php') + '?dir=' + dir + '&file=' + file;
-		var dirref = OC.linkTo('files', 'index.php') + '?dir=' + dir;
-		window.history.pushState( {service: 'files', yaml_file: jupyter_yaml_file, file: path}, '', ref);
+		var view;
+		if(typeof FileList!=='undefined'){
+			view = FileList.getGetParam('view');
+		}
+		var ref = OC.linkTo('files', 'index.php') + '?dir=' + dir + '&file=' + file + (view&&view!=''?'&view='+view:'');
+		var dirref = OC.linkTo('files', 'index.php') + '?dir=' + dir + (view&&view!=''?'&view='+view:'');
+		if(view=='' || view=='files'|| view=='sharingin'){
+			window.history.pushState( {service: 'files', yaml_file: jupyter_yaml_file, file: path}, '', ref);
+		}
 		$(this).contents().find('head').append('<link rel="stylesheet" id="nbstyle" type="text/css" href="'+OC.webroot+'/apps/user_pods/css/nbviewer.css" />');
 		$(this).contents().find('body').prepend('<div id="nbbar">'+(!$('#app-content-public').length&&!$('#app-content-sharingin:visible').length&&!$('.crumb a[data-id=sharing_in]:visible').length?
 				'<a id="run" href="'+link+'">'+t('user_pods', 'Run')+'</a>':'')+
@@ -27,15 +33,17 @@ function showNbViewer(dir, file, id, owner){
 		$(this).contents().find('#close').click(function(){
 			$('iframe#nbframe').remove();
 			$('#nbbar').remove();
+			var view;
 			if(typeof FileList!=='undefined'){
 				view = FileList.getGetParam('view');
-				if(view=='' || view=='files'){
-					$('#app-content-files.viewcontainer').removeClass('hidden');
-				}
+			}
+			if(view=='' || view=='files'|| view=='sharingin'){
+				$('#app-content-files.viewcontainer.inuse').removeClass('hidden').removeClass('inuse');
+				$('#app-content-sharingin.viewcontainer.inuse').removeClass('hidden').removeClass('inuse');
+				window.history.pushState( {service: 'files',  dir: dir}, '', dirref);
+				//window.history.back();
 			}
 			$('#app-content-public #preview').removeClass('hidden');
-			//window.history.pushState( {service: 'files',  dir: dir}, '', dirref);
-			//window.history.back();
 		});
 		$(this).contents().find('#run').click(function(){
 			OC.redirect(link);
@@ -43,7 +51,8 @@ function showNbViewer(dir, file, id, owner){
 		if(typeof FileList !== 'undefined'){
 			FileList.hideMask();
 		}
-		$('#app-content-files.viewcontainer').addClass('hidden');
+		$('#app-content-files.viewcontainer:visible').addClass('hidden').addClass('inuse');
+		$('#app-content-sharingin.viewcontainer:visible').addClass('hidden').addClass('inuse');
 		$('#app-content-public #preview').addClass('hidden');
 	});
 }
@@ -68,12 +77,8 @@ $(document).ready(function() {
 	$(window).on('popstate', function() {
 		$('iframe#nbframe').remove();
 		$('#nbbar').remove();
-		if(typeof FileList!=='undefined' && FileList.getGetParam){
-			view = FileList.getGetParam('view');
-			if(view=='' || view=='files'){
-				$('#app-content-files.viewcontainer').removeClass('hidden');
-			}
-		}
+		$('#app-content-files.viewcontainer.inuse').removeClass('hidden').removeClass('inuse');
+		$('#app-content-sharingin.viewcontainer.inuse').removeClass('hidden').removeClass('inuse');
 		$('#app-content-public #preview').removeClass('hidden');
   });
 });
