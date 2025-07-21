@@ -40,7 +40,3 @@ body.nbviewer {
 	margin-right: 32px;
 }
 
-#app-content-public #imgframe img.publicpreview.ipynb {
-	cursor: pointer;
-}
-

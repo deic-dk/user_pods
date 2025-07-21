@@ -35,7 +35,7 @@ function showNbViewer(dir, file, id, owner){
 			}
 			$('#app-content-public #preview').removeClass('hidden');
 			//window.history.pushState( {service: 'files',  dir: dir}, '', dirref);
-			window.history.back();
+			//window.history.back();
 		});
 		$(this).contents().find('#run').click(function(){
 			OC.redirect(link);
