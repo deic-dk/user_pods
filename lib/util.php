@@ -227,7 +227,7 @@ class OC_Kubernetes_Util {
 					}
 				}
 				// We support both specifying local volumeMounts and volume explicitly or setting MOUNT_DEST and MOUNT_SRC - in which case volumeMounts and volume will be added to the YAML by run_pod
-				// sciencedata volumenMounts should always be specifyed explicitly - the nfs pv pvc and volume will be added by run_pod using the form input
+				// sciencedata volumenMounts should always be specified explicitly - the nfs pv pvc and volume will be added by run_pod using the form input
 				if(!empty($container['volumeMounts'])){
 					$pod_mount_path[$container['volumeMounts'][0]['name']]= $container['volumeMounts'][0]['mountPath'];
 					foreach($container['volumeMounts'] as $volumeMount){
@@ -260,7 +260,7 @@ class OC_Kubernetes_Util {
 		return array_filter($ret, function($val){return $val!==null;});
 	}
 
-	public function createPod($uid, $yaml_url, $public_key, $storage_path,
+	public function createPod($uid, $yaml_url, $public_key, $mount_root, $mount_path,
 			$cvmfs_repos='', $file='', $setup_script='', $peers=''){
 		$url = 'http://'.$this->privateIP . "/run_pod.php?user_id=" . rawurlencode($uid) .
 			"&yaml_url=" . rawurlencode($yaml_url);
@@ -268,8 +268,11 @@ class OC_Kubernetes_Util {
 			$encoded_key = rawurlencode($public_key);
 			$url = $url . "&public_key=" . $encoded_key;
 		}
-		if(!empty($storage_path)){
-			$url = $url . "&storage_path=" . $storage_path;
+		if(!empty($mount_root)){
+			$url = $url . "&mount_root=" . $mount_root;
+		}
+		if(!empty($mount_path)){
+			$url = $url . "&mount_path=" . $mount_path;
 		}
 		if(!empty($cvmfs_repos)){
 			$url = $url . "&cvmfs_repos=" . $cvmfs_repos;

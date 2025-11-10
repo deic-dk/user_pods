@@ -128,14 +128,15 @@ function getContainers(callback){
 	});
 }
 
-function runPod(yaml_file, ssh_key, storage_path, cvmfs_repos,  file, setup_script, peers){
+function runPod(yaml_file, ssh_key, mount_root, mount_path, cvmfs_repos,  file, setup_script, peers){
 	$.ajax({
 		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
 		data: {
 			action: 'create_pod',
 			yaml_file: yaml_file,
 			public_key: ssh_key,
-			storage_path: storage_path,
+			mount_root: mount_root,
+			mount_path: mount_path,
 			cvmfs_repos: cvmfs_repos,
 			file: file,
 			setup_script: setup_script,
@@ -339,7 +340,7 @@ function loadYaml(yaml_file){
 				$('div#setup').hide();
 				if(jsondata.data['pod_mount_path'] && jsondata.data['pod_mount_path']['sciencedata'] ||
 						jsondata.data['pod_mount_src'] || jsondata.data['cvmfs_repos'] || jsondata.data['setup_script']){
-					var storage_input = "";
+					var mount_input = "";
 					for (var containerIndex in jsondata.data['container_infos']){
 						var container = jsondata.data['container_infos'][containerIndex];
 						for (var name in container['mount_paths']){
@@ -348,23 +349,30 @@ function loadYaml(yaml_file){
 								var mountPath = container['mount_paths'][name];
 								var mountName = new String(mountPath).substring(mountPath.lastIndexOf('/') + 1);
 								if(mountPath && mountName){
-									storage_input = storage_input +
-										'<input image_name="' + container['image_name'] + '" type="text" placeholder="' +
-										t('user_pods', 'Storage path') + '" image="' + container['image_name'] + '" mountPath="' + mountPath + '" title="' +
+									mount_input = mount_input +
+									'<span>Mount source: </span><select id="mount_root"><option value="storage">/storage/</option><option value="files">/files/</option></select>';
+									mount_input = mount_input +
+										'<input id="mount_input" image_name="' + container['image_name'] + '" type="text" placeholder="' +
+										t('user_pods', 'Path') + '" image="' + container['image_name'] + '" mountRoot="storage" mountPath="' + mountPath + '" title="' +
 										t('user_pods', 'Directory under') + ' ' +
 										'<a href=\'https://' + encodeURIComponent($('head').attr('data-user')) + '@' +
 										location.hostname + '/storage/\' target=\'_blank\'>/storage/</a> ' + t('user_pods', 'to mount on') +
-										' <b>' + mountPath + '</b> ' + t('user_pods', 'inside') + ' ' + container['image_name'] + ', ' + t('user_pods', 'and serve via https.') +
+										' <b>' + mountPath + '</b> ' + t('user_pods', 'inside the container') /*+ ' ' + container['image_name'] */+
 										'"></input>' +
 										"\n";
 									// Although they yaml can, in principle have different containers with different mounts, or multiple mounts in one container,
-									// run_pod only supports one nfs_storage_path
+									// run_pod only supports one nfs_storage_path or nfs_files_path and only one or the other.
 								}
 							}
 							$('#storage').show();
 							$('#storage').empty();
-							$('#storage').append(storage_input);
+							$('#storage').append(mount_input);
 							$('#storage input').tipsy({
+								html: true,
+								hoverable: true
+							});
+							$('#mount_root').on('change', function(ev){var current_title = $('#mount_input').attr('original-title'); var new_title = current_title.replaceAll('storage', 'files').replaceAll('files', this.value);$('#mount_input').attr('title', new_title); $('#mount_input').attr('mountRoot',  this.value);});
+							$('#mount_root').tipsy({
 								html: true,
 								hoverable: true
 							});
@@ -467,7 +475,8 @@ $(document).ready(function(){
 		var ssh_key = $('#public_key').val();
 		var file = $('#file_input').val();
 		var setup_script = $('#setup input').val() || '';
-		var storage_path = "";
+		var mount_root = $('#mount_input').attr('mountRoot');
+		var mount_path = "";
 		var cvmfs_repos = $('#vcmfs input').val() || '';
 		var peers = $('#peers_input').val() || '';
 		if($('#public_key:visible').length && (!ssh_key || ssh_key == "")){
@@ -477,21 +486,21 @@ $(document).ready(function(){
 			if($('#storage input:visible').length){
 				$('#storage input').each(function(el){
 					if($(this).attr('image_name')){
-						storage_path = $(this).val();
+						mount_path = $(this).val();
 						// Although the yaml can, in principle have different containers with different mounts, or multiple mounts in one container,
-						// run_pod only supports one storage_path
-						if(!storage_path || storage_path == ""){
+						// run_pod only supports one mount_path
+						if(!mount_path || mount_path == ""){
 							OC.dialogs.alert(t("user_pods", "Please fill in the directory to mount from your home server"), t("user_pods", "Missing storage path"));
 						}
 						else{
-							runPod(yaml_file, ssh_key, storage_path, cvmfs_repos, file, setup_script, peers);
+							runPod(yaml_file, ssh_key, mount_root, mount_path, cvmfs_repos, file, setup_script, peers);
 						}
 						return false;
 					}
 				});
 			}
 			else{
-				runPod(yaml_file, ssh_key, storage_path, cvmfs_repos, file, setup_script, peers);
+				runPod(yaml_file, ssh_key, mount_root, mount_path, cvmfs_repos, file, setup_script, peers);
 			}
 			return false;
 		}
