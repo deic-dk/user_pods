@@ -350,7 +350,7 @@ function loadYaml(yaml_file){
 								var mountName = new String(mountPath).substring(mountPath.lastIndexOf('/') + 1);
 								if(mountPath && mountName){
 									mount_input = mount_input +
-									'<span>Mount source: </span><select id="mount_root"><option value="storage">/storage/</option><option value="files">/files/</option></select>';
+									'<span>Mount source: </span><select id="mount_root"><option value="storage">/storage/</option>'+(jsondata.data['nfs_rw']&&jsondata.data['nfs_rw']=='yes'?'':'<option value="files">/files/</option>')+'</select>';
 									mount_input = mount_input +
 										'<input id="mount_input" image_name="' + container['image_name'] + '" type="text" placeholder="' +
 										t('user_pods', 'Path') + '" image="' + container['image_name'] + '" mountRoot="storage" mountPath="' + mountPath + '" title="' +

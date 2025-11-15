@@ -171,6 +171,7 @@ class OC_Kubernetes_Util {
 		\OC_Log::write('user_pods', "Got " . $manifest_info, \OC_Log::WARN);
 		$pod_accepts_public_key = false;
 		$pod_accepts_file = false;
+		$nfs_rw = false;
 		$pod_file = "";
 		$pod_peers = null;
 		$pod_peers_image = null;
@@ -205,6 +206,9 @@ class OC_Kubernetes_Util {
 						}
 						if(!empty($env['name']) && $env['name']=="SETUP_SCRIPT" && !empty($env['value'])){
 							$setup_script = $env['value'];
+						}
+						if(!empty($env['name']) && $env['name']=="NFS_RW" && !empty($env['value'])){
+							$nfs_rw = $env['value'];
 						}
 						if(!empty($env['name']) && $env['name']=="FILE"){
 							$pod_accepts_file = true;
@@ -255,7 +259,8 @@ class OC_Kubernetes_Util {
 						'pod_mount_src'=>$pod_mount_src,
 						'container_infos'=>$containerInfos,
 						'cvmfs_repos'=>$cvmfs_repos,
-						'setup_script'=>$setup_script
+						'setup_script'=>$setup_script,
+						'nfs_rw'=>$nfs_rw
 		];
 		return array_filter($ret, function($val){return $val!==null;});
 	}
