@@ -25,6 +25,14 @@ function getSshRows(container){
 	return str
 }
 
+function getExtraPortsRows(container){
+	var str = ""
+		if(container['extra_ports'].length){
+		str +=  "\n <tr><td class='expanded-column-name'>extra ports:</td> <td class='expanded-column-value'><span class='expanded-row'>"+ container['extra_ports'] + "</span></td></tr>"
+	}
+	return str
+}
+
 function getExpandedTable(container){
 	var str = "\n <tr hidden class='expanded-row' pod_name='" + container['pod_name'] + "'> <td colspan='5'>" +
 		"\n<table id='expanded-" + container['pod_name'] + "' class='panel expanded-table'>" +
@@ -35,6 +43,7 @@ function getExpandedTable(container){
 		"\n <tr><td class='expanded-column-name'>owner:</td> <td class='expanded-column-value'><span>" + container['owner'] + "</span></td></tr>" +
 		"\n <tr><td class='expanded-column-name'>age:</td> <td class='expanded-column-value'><span>" + container['age'] + "</span></td></tr>" +
 		getSshRows(container) +
+		getExtraPortsRows(container) +
 		"\n</table>" +
 		"\n </td> </tr>";
 	return str;
