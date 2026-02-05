@@ -164,6 +164,26 @@ class OC_Kubernetes_Util {
 		$github_url = $this->rawManifestsURL . $yaml_file;
 		$yaml = self::getContent($github_url);
 		$arr = yaml_parse($yaml);
+		// If domain and (optionally) user is set in the yaml metadata.labels,
+		// check if they match the current user
+		$yaml_domain = empty($arr['metadata']['labels']['domain'])?'':$arr['metadata']['labels']['domain'];
+		$yaml_user = empty($arr['metadata']['labels']['user'])?'':$arr['metadata']['labels']['user'];
+		$shortUser = OCP\USER::getUser();
+		$domain = '';
+		$atIndex = strpos($shortUser, '@');
+		if(!empty($atIndex) && !empty($shortUser)){
+			$domain = substr($shortUser, $atIndex+1);
+			$userArr = explode('@', $shortUser);
+			$shortUser = end($userArr);
+		}
+		if(!empty($yaml_domain) && $yaml_domain!=$domain){
+			\OCP\Util::writeLog('user_pods', "Not allowed: $yaml_domain!=$domain", \OC_Log::ERROR);
+			return [];
+		}
+		if(!empty($yaml_user) && $yaml_user!=$shortUser){
+			\OCP\Util::writeLog('user_pods', "Not allowed: $yaml_user!=$shortUser", \OC_Log::ERROR);
+			return [];
+		}
 		$md_file = preg_replace('/\.yaml$/', '.md', $yaml_file);
 		$github_md_url = $this->rawManifestsURL . $md_file;
 		\OC_Log::write('user_pods', "Fetching " . $github_md_url, \OC_Log::WARN);

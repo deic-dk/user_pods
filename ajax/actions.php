@@ -39,7 +39,12 @@ elseif($_REQUEST['action']=='delete_pod') {
 }
 elseif($_REQUEST['action']=='check_manifest'){
 	$data = $util->checkManifest($_REQUEST['yaml_file']);
-	OCP\JSON::success(array('data' => $data));
+	if(!empty($data)){
+		OCP\JSON::success(array('data' => $data));
+	}
+	else{
+		OCP\JSON::error(array('message'=>'Not allowed'));
+	}
 }
 elseif($_REQUEST['action']=='get_containers') {
 	$data = $util->getContainers(OCP\User::getUser(),
