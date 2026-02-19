@@ -172,9 +172,9 @@ class OC_Kubernetes_Util {
 		$domain = '';
 		$atIndex = strpos($shortUser, '@');
 		if(!empty($atIndex) && !empty($shortUser)){
-			$domain = substr($shortUser, $atIndex+1);
 			$userArr = explode('@', $shortUser);
-			$shortUser = end($userArr);
+			$domain = end($userArr);//substr($shortUser, $atIndex+1);
+			$shortUser = reset($userArr);
 		}
 		if(!empty($yaml_domain) && $yaml_domain!=$domain){
 			\OCP\Util::writeLog('user_pods', "Not allowed: $yaml_domain!=$domain", \OC_Log::ERROR);
@@ -286,7 +286,7 @@ class OC_Kubernetes_Util {
 	}
 
 	public function createPod($uid, $yaml_url, $public_key, $mount_root, $mount_path,
-			$cvmfs_repos='', $file='', $setup_script='', $peers=''){
+			$cvmfs_repos='', $file='', $setup_script='', $peers='', $allowed_ip=''){
 		$url = 'http://'.$this->privateIP . "/run_pod.php?user_id=" . rawurlencode($uid) .
 			"&yaml_url=" . rawurlencode($yaml_url);
 		if(!empty($public_key)){
@@ -307,6 +307,9 @@ class OC_Kubernetes_Util {
 		}
 		if(!empty($peers)){
 			$url = $url . "&peers=" . $peers;
+		}
+		if(!empty($allowed_ip)){
+			$url = $url . "&allowed_ip=" . $allowed_ip;
 		}
 		if(empty($setup_script)){
 			$url = $url . "&setup_script=/dev/null";

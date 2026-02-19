@@ -11,10 +11,15 @@ if($_REQUEST['action']=='create_pod'){
 		OCP\JSON::error(array('data' => array('message'=>'No YAML file specified')));
 		exit;
 	}
+	// Notice: $user_ip is currently passed on but eventually not used by run_pod.
+	// Passing source IP to a pod does not work in this version of Kubernetes,
+	// so changing /etc/hosts.allow inside the pod will not work,
+	// since all incoming requests will have the source IP of the gateway.
+	$user_ip = $_SERVER['REMOTE_ADDR'];
 	$yaml_url = $util->rawManifestsURL.trim($_POST['yaml_file']);
 	$json = $util->createPod(OCP\User::getUser(), $yaml_url, trim($_POST['public_key']),
 			trim($_POST['mount_root']), trim($_POST['mount_path']), trim($_POST['cvmfs_repos']),
-			trim($_POST['file']), trim($_POST['setup_script']), trim($_POST['peers']));
+			trim($_POST['file']), trim($_POST['setup_script']), trim($_POST['peers']), $user_ip);
 	$status = $json['status'];
 	$message = $json['data']['message'];
 	$name = $json['data']['name'];

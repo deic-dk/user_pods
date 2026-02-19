@@ -299,6 +299,8 @@ function loadYaml(yaml_file){
 		},
 		success: function(jsondata){
 			if(jsondata.status == 'success'){
+				$('#ok').show();
+				$('#cancel').show();
 				var yaml_url = jsondata.data['manifest_url'].replace(/^https:\/\/raw\.githubusercontent\.com\/deic-dk\/pod_manifests\/main\//,
 					'https://github.com/deic-dk/pod_manifests/blob/main/');
 				var link = '<span><a href=\'' + yaml_url + '\'target="_blank">YAML source</a></span>';
@@ -423,6 +425,15 @@ function loadYaml(yaml_file){
 			else if(jsondata.status == 'error'){
 				if(jsondata.data && jsondata.data.error && jsondata.data.error == 'authentication_error'){
 					OC.redirect('/');
+				}
+				else{
+					$('#description').text('This is a private image.').show();
+					$('#ok').hide();
+					$('#cancel').hide();
+					$('#ssh').hide();
+					$('#peers').hide();
+					$('#cvmfs').hide();
+					$('#setup').hide();
 				}
 			}
 		},
