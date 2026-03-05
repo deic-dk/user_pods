@@ -275,3 +275,17 @@ fieldset#userPodsSettings table tbody tr td {
 	overflow: auto;
 }
 
+.allowed_ip {
+	font-size: 12px;
+  border-style: solid;
+  border-width: 2px;
+  height: 8px;
+}
+
+.button.add_current_ip {
+  height: 24px;
+  font-size: 10px;
+  padding-top: 5px;
+  margin-left: 3px;
+}
+

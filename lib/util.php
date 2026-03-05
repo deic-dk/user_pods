@@ -30,7 +30,7 @@ class OC_Kubernetes_Util {
 
 	public function getContainers($uid, $podNames=null){
 		$containers = array();
-		// pod_name|container_name|image_name|pod_ip|node_ip|owner|age(s)|status|ssh_port|https_port|uri
+		// pod_name|container_name|image_name|pod_ip|node_ip|owner|age(s)|status|ssh_port|https_port|uri|extra_ports|allowed_ips
 		$url = 'http://'.$this->privateIP."/get_containers.php?fields=include&user_id=".$uid;
 		\OCP\Util::writeLog('user_pods', 'GETting: '.$url, \OC_Log::WARN);
 		$response = file_get_contents($url);
@@ -168,6 +168,7 @@ class OC_Kubernetes_Util {
 		// check if they match the current user
 		$yaml_domain = empty($arr['metadata']['labels']['domain'])?'':$arr['metadata']['labels']['domain'];
 		$yaml_user = empty($arr['metadata']['labels']['user'])?'':$arr['metadata']['labels']['user'];
+		$pod_types = empty($arr['metadata']['labels']['types'])?'':explode('-', $arr['metadata']['labels']['types']);
 		$shortUser = OCP\USER::getUser();
 		$domain = '';
 		$atIndex = strpos($shortUser, '@');
@@ -280,7 +281,8 @@ class OC_Kubernetes_Util {
 						'container_infos'=>$containerInfos,
 						'cvmfs_repos'=>$cvmfs_repos,
 						'setup_script'=>$setup_script,
-						'nfs_rw'=>$nfs_rw
+						'nfs_rw'=>$nfs_rw,
+						'pod_types'=>$pod_types
 		];
 		return array_filter($ret, function($val){return $val!==null;});
 	}
@@ -332,6 +334,15 @@ class OC_Kubernetes_Util {
 			return null;
 		}
 		return $fs->getLocalFile('/');
+	}
+
+	public function setAllowedIps($pod_name, $ips, $uid){
+		$complete_uri = 'http://'.$this->privateIP . "/set_allowed_ips.php?user_id=" . rawurlencode($uid) . "&pod=" .
+				rawurlencode($pod_name). "&ips=" . $ips;
+		\OC_Log::write('user_pods', "Setting allowed IPs for pod, " . $complete_uri, \OC_Log::WARN);
+		$json = file_get_contents($complete_uri);
+		$response = json_decode($json, true);
+		return $response;
 	}
 
 	public function deletePod($pod_name, $uid){

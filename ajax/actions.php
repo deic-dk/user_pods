@@ -15,11 +15,11 @@ if($_REQUEST['action']=='create_pod'){
 	// Passing source IP to a pod does not work in this version of Kubernetes,
 	// so changing /etc/hosts.allow inside the pod will not work,
 	// since all incoming requests will have the source IP of the gateway.
-	$user_ip = $_SERVER['REMOTE_ADDR'];
+	$allowed_ip = trim($_POST['allowed_ip']);
 	$yaml_url = $util->rawManifestsURL.trim($_POST['yaml_file']);
 	$json = $util->createPod(OCP\User::getUser(), $yaml_url, trim($_POST['public_key']),
 			trim($_POST['mount_root']), trim($_POST['mount_path']), trim($_POST['cvmfs_repos']),
-			trim($_POST['file']), trim($_POST['setup_script']), trim($_POST['peers']), $user_ip);
+			trim($_POST['file']), trim($_POST['setup_script']), trim($_POST['peers']), $allowed_ip);
 	$status = $json['status'];
 	$message = $json['data']['message'];
 	$name = $json['data']['name'];
@@ -39,6 +39,18 @@ elseif($_REQUEST['action']=='delete_pod') {
 	}
 	else{
 		\OC_Log::write('user_pods', "Failed deleting pod. " . serialize($json), \OC_Log::ERROR);
+		OCP\JSON::error(array('message' => $message, 'pod' => $_REQUEST['pod_name']));
+	}
+}
+elseif($_REQUEST['action']=='set_allowed_ips') {
+	$json = $util->setAllowedIps($_REQUEST['pod_name'], $_REQUEST['ips'], OCP\User::getUser());
+	$status = $json['status'];
+	$message = $json['data']['message'];
+	if($status=='success'){
+		OCP\JSON::success(array('message'=>$message, 'pod'=>$_REQUEST['pod_name']));
+	}
+	else{
+		\OC_Log::write('user_pods', "Failed updating pod. " . serialize($json), \OC_Log::ERROR);
 		OCP\JSON::error(array('message' => $message, 'pod' => $_REQUEST['pod_name']));
 	}
 }

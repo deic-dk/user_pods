@@ -17,10 +17,12 @@ function getRowElementView(name, container){
 }
 
 function getSshRows(container){
-	var str = ""
-		if(container['ssh_url'].length){
+	var str = "";
+	var allowed_ips = container['allowed_ips'];
+	if(container['ssh_url'].length){
 		str +=  "\n <tr><td class='expanded-column-name'>ssh access:</td> <td class='expanded-column-value'><span class='expanded-row-ssh-url'><a href='" +
-		container['ssh_url'] + "'>"+ container['ssh_url'] + "</a></span></td></tr>"
+		container['ssh_url'] + "'>"+ container['ssh_url'] + "</a></span><span class='expanded-row-ssh-ip'><input class='allowed_ip' type='text'  title='" +
+		t('user_pods', 'Allowed client IP addresses')+"' value='"+allowed_ips+"' /><label class='button add_current_ip' title='Add your current IP'>+My IP</label></span></td></tr>";
 	}
 	return str
 }
@@ -108,6 +110,24 @@ function getContainers(callback){
 				$('body > div.tipsy').remove();
 				jsondata.data.forEach(function(value, index, array){
 					$('tbody#fileList').append(getRow(value));
+					$('tbody#fileList tr[pod_name='+value['pod_name']+'] .expanded-row-ssh-ip input').on('keypress', function(e) {
+						if(e.which == 13 && setAllowedIPsSemaphore) {
+							var podName = value['pod_name'];
+							var ips = $(this).val();
+							setAllowedIPs(podName, ips);
+						}
+					});
+					$('tbody#fileList tr[pod_name='+value['pod_name']+'] .expanded-row-ssh-ip .add_current_ip').on('click', function(){
+						var ip = $('#app-content-kubernetes').attr('client_ip');
+						var currentIPs = $(this).parent().find('input').val().replace(' ', '');
+						var regex = new RegExp('(^|,)'+ip+'/*[0-9]*(,|$)', 'g' );
+						console.log('Got IP '+ip+':'+currentIPs);
+						if(!currentIPs.match(regex)){
+							currentIPs = currentIPs+(currentIPs!=''?',':'')+ip;
+							console.log('Setting IP '+ip+':'+currentIPs);
+							$(this).parent().find('input').val(currentIPs)
+						}
+					});
 				});
 				updateContainerCount();
 				$('table#podstable #fileList tr.simple-row').each(function(){
@@ -137,7 +157,8 @@ function getContainers(callback){
 	});
 }
 
-function runPod(yaml_file, ssh_key, mount_root, mount_path, cvmfs_repos,  file, setup_script, peers){
+function runPod(yaml_file, ssh_key, mount_root, mount_path, cvmfs_repos,  file, setup_script, peers, type){
+	var client_ip = $('#app-content-kubernetes').attr('client_ip');
 	$.ajax({
 		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
 		data: {
@@ -149,7 +170,9 @@ function runPod(yaml_file, ssh_key, mount_root, mount_path, cvmfs_repos,  file, 
 			cvmfs_repos: cvmfs_repos,
 			file: file,
 			setup_script: setup_script,
-			peers: peers
+			peers: peers,
+			type: type,
+			allowed_ip: client_ip
 		},
 		method: 'post',
 		beforeSend: function(xhr){
@@ -192,6 +215,44 @@ function runPod(yaml_file, ssh_key, mount_root, mount_path, cvmfs_repos,  file, 
 		},
 		complete: function(xhr){
 			ajaxCompleted(xhr);
+		}
+	});
+}
+
+setAllowedIPsSemaphore = true;
+
+function setAllowedIPs(podName, ips){
+	setAllowedIPsSemaphore = false;
+	$.ajax({
+		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
+		data: {
+			action: "set_allowed_ips",
+			pod_name: podName,
+			ips: ips
+		},
+		method: 'post',
+		beforeSend: function(xhr){
+			ajaxBefore(xhr, "Setting firewall rules...");
+		},
+		complete: function(xhr){
+			setAllowedIPsSemaphore = true;
+			ajaxCompleted(xhr);
+		},
+		success: function(data){
+			if(data.status == 'success'){
+			}
+			else if(data.status == 'error'){
+				if(data.data && data.data.error && data.data.error == 'authentication_error'){
+					OC.redirect('/');
+				}
+				else{
+					OC.dialogs.alert(t("user_pods", "set_allowed_ips: Something went wrong..."), t("user_pods", "Error"));
+					$('#podstable tr[pod_name="' + podName + '"] td div[column=status] span').text('Setting allowed IPs failed');
+				}
+			}
+		},
+		error:  function(jsondata){
+			OC.dialogs.alert(t("user_pods", "set_allowed_ips: Something went wrong. "+jsondata), t("user_pods", "Error"));
 		}
 	});
 }
@@ -276,6 +337,7 @@ function loadYaml(yaml_file){
 	if(!select_value){
 		$('div#storage').hide();
 		$('div#cvmfs').hide();
+		$('div#pod_type').hide();
 		$('div#setup input').empty();
 		$('div#setup').hide();
 		$('div#ssh').hide();
@@ -347,6 +409,7 @@ function loadYaml(yaml_file){
 				}
 				$('div#storage').hide();
 				$('div#cvmfs').hide();
+				$('div#pod_type').hide();
 				$('div#setup input').empty();
 				$('div#setup').hide();
 				if(jsondata.data['pod_mount_path'] && jsondata.data['pod_mount_path']['sciencedata'] ||
@@ -384,6 +447,21 @@ function loadYaml(yaml_file){
 							});
 							$('#mount_root').on('change', function(ev){var current_title = $('#mount_input').attr('original-title'); var new_title = current_title.replaceAll('storage', 'files').replaceAll('files', this.value);$('#mount_input').attr('title', new_title); $('#mount_input').attr('mountRoot',  this.value);});
 							$('#mount_root').tipsy({
+								html: true,
+								hoverable: true
+							});
+						}
+						if(jsondata.data['pod_types']){
+							var pod_types = jsondata.data['pod_types'];
+							var pod_type_select = 	'<select title="'+t('user_pods', 'Pod type')+'">';
+							for(i=0; i<pod_types.length; ++i){
+								pod_type_select = pod_type_select + pod_types[i];
+							}
+							pod_type_select = pod_type_select +'</select>'+"\n";
+							$('#pod_type').show();
+							$('#pod_type').empty();
+							$('#pod_type').append(pod_type_select);
+							$('#pod_type').tipsy({
 								html: true,
 								hoverable: true
 							});
@@ -499,6 +577,7 @@ $(document).ready(function(){
 		var mount_path = "";
 		var cvmfs_repos = $('#vcmfs input').val() || '';
 		var peers = $('#peers_input').val() || '';
+		var type= $('#pod_type').val() || '';
 		if($('#public_key:visible').length && (!ssh_key || ssh_key == "")){
 			OC.dialogs.alert(t("user_pods", "Please fill in a public SSH key"), t("user_pods", "Missing SSH key"));
 		}
@@ -513,14 +592,14 @@ $(document).ready(function(){
 							OC.dialogs.alert(t("user_pods", "Please fill in the directory to mount from your home server"), t("user_pods", "Missing storage path"));
 						}
 						else{
-							runPod(yaml_file, ssh_key, mount_root, mount_path, cvmfs_repos, file, setup_script, peers);
+							runPod(yaml_file, ssh_key, mount_root, mount_path, cvmfs_repos, file, setup_script, peers, type);
 						}
 						return false;
 					}
 				});
 			}
 			else{
-				runPod(yaml_file, ssh_key, mount_root, mount_path, cvmfs_repos, file, setup_script, peers);
+				runPod(yaml_file, ssh_key, mount_root, mount_path, cvmfs_repos, file, setup_script, peers, type);
 			}
 			return false;
 		}

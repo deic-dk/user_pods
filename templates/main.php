@@ -1,5 +1,5 @@
 <div id="app-content">
-	<div id="app-content-kubernetes" class="viewcontainer">
+	<div id="app-content-kubernetes" class="viewcontainer" client_ip="<?php p($_SERVER['REMOTE_ADDR']); ?>">
 	<div class="info hidden">
 	Notice: Currently, Pods are in beta testing. Use at your own risk - pods may be deleted, terminated or restarted.
 	We appreciate <a href="mailto:<?php echo(\OCP\Config::getSystemValue('fromemail', ''));?>">feedback.</a></div>
@@ -57,6 +57,8 @@
 							<br />
 							<a id="clear_ssh_public_key" class="btn btn-default btn-flat btn-sg" href="#" title="<?php p($l->t("Clear stored SSH key from browser storage")); ?>"><?php p($l->t("Clear")); ?></a>
 					</div>
+				</div>
+				<div id="pod_type">
 				</div>
 				<div id="storage">
 				</div>
