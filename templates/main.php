@@ -59,6 +59,7 @@
 					</div>
 				</div>
 				<div id="pod_type">
+				<label>Instance type:</label>
 				</div>
 				<div id="storage">
 				</div>

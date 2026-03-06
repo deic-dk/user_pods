@@ -289,3 +289,20 @@ fieldset#userPodsSettings table tbody tr td {
   margin-left: 3px;
 }
 
+#pod_type {
+	display: block;
+  position: relative;
+  left: 712px;
+  bottom: 80px;
+}
+
+#controls #pod_type select {
+  height: 31px;
+  padding-top: 4px;
+}
+
+#controls12#pod_type select option {
+  height: 26px;
+}
+
+

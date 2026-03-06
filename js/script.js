@@ -337,7 +337,8 @@ function loadYaml(yaml_file){
 	if(!select_value){
 		$('div#storage').hide();
 		$('div#cvmfs').hide();
-		$('div#pod_type').hide();
+		$('div#pod_type select').remove();
+		$('#pod_type').hide();
 		$('div#setup input').empty();
 		$('div#setup').hide();
 		$('div#ssh').hide();
@@ -370,13 +371,13 @@ function loadYaml(yaml_file){
 				$('#links').append(link);
 				$('#description').empty();
 				$('#description').append(marked(jsondata.data['manifest_info']));
-				if(jsondata.data['pod_accepts_public_key'] == true){
+				if(jsondata.data['pod_accepts_public_key']==true){
 					$('div#ssh').show();
 				}
 				else{
 					$('div#ssh').hide();
 				}
-				if(jsondata.data['pod_accepts_file'] == true){
+				if(jsondata.data['pod_accepts_file']==true){
 					$('div#file').show();
 					if(jsondata.data['pod_file'] ){
 						$('div#file input#file_input').val(jsondata.data['pod_file']);
@@ -409,9 +410,26 @@ function loadYaml(yaml_file){
 				}
 				$('div#storage').hide();
 				$('div#cvmfs').hide();
-				$('div#pod_type').hide();
+				$('#pod_type').hide();
 				$('div#setup input').empty();
 				$('div#setup').hide();
+				if(jsondata.data['pod_types']){
+					$('#pod_type').show();
+					var pod_types = jsondata.data['pod_types'];
+					var pod_type_select = 	'<select title="'+t('user_pods', 'Pod type')+'">'+"\n" +
+						'<option value=""></option>';
+					for(i=0; i<pod_types.length; ++i){
+						pod_type_select = pod_type_select +"\n" + '<option value="'+pod_types[i]+'">' + pod_types[i]+'</option>';
+					}
+					pod_type_select = pod_type_select +'</select>'+"\n";
+					$('#pod_type').show();
+					$('#pod_type select').remove();
+					$('#pod_type').append(pod_type_select);
+					$('#pod_type').tipsy({
+						html: true,
+						hoverable: true
+					});
+				}
 				if(jsondata.data['pod_mount_path'] && jsondata.data['pod_mount_path']['sciencedata'] ||
 						jsondata.data['pod_mount_src'] || jsondata.data['cvmfs_repos'] || jsondata.data['setup_script']){
 					var mount_input = "";
@@ -447,21 +465,6 @@ function loadYaml(yaml_file){
 							});
 							$('#mount_root').on('change', function(ev){var current_title = $('#mount_input').attr('original-title'); var new_title = current_title.replaceAll('storage', 'files').replaceAll('files', this.value);$('#mount_input').attr('title', new_title); $('#mount_input').attr('mountRoot',  this.value);});
 							$('#mount_root').tipsy({
-								html: true,
-								hoverable: true
-							});
-						}
-						if(jsondata.data['pod_types']){
-							var pod_types = jsondata.data['pod_types'];
-							var pod_type_select = 	'<select title="'+t('user_pods', 'Pod type')+'">';
-							for(i=0; i<pod_types.length; ++i){
-								pod_type_select = pod_type_select + pod_types[i];
-							}
-							pod_type_select = pod_type_select +'</select>'+"\n";
-							$('#pod_type').show();
-							$('#pod_type').empty();
-							$('#pod_type').append(pod_type_select);
-							$('#pod_type').tipsy({
 								html: true,
 								hoverable: true
 							});
@@ -527,6 +530,7 @@ function toggleNewpod(){
 	$('#pod-create').toggleClass('btn-default');
 	$('#newpod #ok a').toggleClass('btn-default');
 	$('#newpod #ok a').toggleClass('btn-primary');
+	$('#pod_type').toggle();
 }
 
 // Before each ajax call, display the loading gif, and add the ajax request to the array $.xhrPool,
@@ -555,11 +559,11 @@ $(document).ready(function(){
 	$.xhrPool = [];
 
 	$('a#pod-create').click(function(){
-		toggleNewpod()
+		toggleNewpod();
 	});
 
 	$('#newpod #cancel').click(function(){
-		toggleNewpod()
+		toggleNewpod();
 	});
 
 	$("#yaml_file").prop("selectedIndex", -1);
@@ -577,7 +581,7 @@ $(document).ready(function(){
 		var mount_path = "";
 		var cvmfs_repos = $('#vcmfs input').val() || '';
 		var peers = $('#peers_input').val() || '';
-		var type= $('#pod_type').val() || '';
+		var type= $('#pod_type select').val() || '';
 		if($('#public_key:visible').length && (!ssh_key || ssh_key == "")){
 			OC.dialogs.alert(t("user_pods", "Please fill in a public SSH key"), t("user_pods", "Missing SSH key"));
 		}

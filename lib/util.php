@@ -288,7 +288,7 @@ class OC_Kubernetes_Util {
 	}
 
 	public function createPod($uid, $yaml_url, $public_key, $mount_root, $mount_path,
-			$cvmfs_repos='', $file='', $setup_script='', $peers='', $allowed_ip=''){
+			$cvmfs_repos='', $file='', $setup_script='', $peers='', $allowed_ip='', $pod_type=''){
 		$url = 'http://'.$this->privateIP . "/run_pod.php?user_id=" . rawurlencode($uid) .
 			"&yaml_url=" . rawurlencode($yaml_url);
 		if(!empty($public_key)){
@@ -312,6 +312,9 @@ class OC_Kubernetes_Util {
 		}
 		if(!empty($allowed_ip)){
 			$url = $url . "&allowed_ip=" . $allowed_ip;
+		}
+		if(!empty($pod_type)){
+			$url = $url . "&pod_type=" . $pod_type;
 		}
 		if(empty($setup_script)){
 			$url = $url . "&setup_script=/dev/null";

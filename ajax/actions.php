@@ -16,10 +16,11 @@ if($_REQUEST['action']=='create_pod'){
 	// so changing /etc/hosts.allow inside the pod will not work,
 	// since all incoming requests will have the source IP of the gateway.
 	$allowed_ip = trim($_POST['allowed_ip']);
+	$pod_type = empty($_POST['type'])?'':trim($_POST['type']);
 	$yaml_url = $util->rawManifestsURL.trim($_POST['yaml_file']);
 	$json = $util->createPod(OCP\User::getUser(), $yaml_url, trim($_POST['public_key']),
 			trim($_POST['mount_root']), trim($_POST['mount_path']), trim($_POST['cvmfs_repos']),
-			trim($_POST['file']), trim($_POST['setup_script']), trim($_POST['peers']), $allowed_ip);
+			trim($_POST['file']), trim($_POST['setup_script']), trim($_POST['peers']), $allowed_ip, $pod_type);
 	$status = $json['status'];
 	$message = $json['data']['message'];
 	$name = $json['data']['name'];
