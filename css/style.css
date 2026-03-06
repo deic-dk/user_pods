@@ -290,10 +290,10 @@ fieldset#userPodsSettings table tbody tr td {
 }
 
 #pod_type {
-	display: block;
-  position: relative;
-  left: 712px;
-  bottom: 80px;
+  position: absolute;
+  bottom: 29px;
+  right: 12px;
+  width: fit-content;
 }
 
 #controls #pod_type select {
