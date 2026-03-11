@@ -55,6 +55,19 @@ elseif($_REQUEST['action']=='set_allowed_ips') {
 		OCP\JSON::error(array('message' => $message, 'pod' => $_REQUEST['pod_name']));
 	}
 }
+elseif($_REQUEST['action']=='set_port_numbers') {
+	$json = $util->setPortNumbers($_REQUEST['pod_name'], $_REQUEST['https_port'], $_REQUEST['ssh_port'], $_REQUEST['extra_ports'], OCP\User::getUser());
+	$status = $json['status'];
+	$message = $json['data']['message'];
+	if($status=='success'){
+		OCP\JSON::success(array('message'=>$message, 'pod'=>$_REQUEST['pod_name']));
+	}
+	else{
+		$error = $json['data']['error'];
+		\OC_Log::write('user_pods', "Failed updating pod. " . serialize($json), \OC_Log::ERROR);
+		OCP\JSON::error(array('message' => $error, 'pod' => $_REQUEST['pod_name']));
+	}
+}
 elseif($_REQUEST['action']=='check_manifest'){
 	$data = $util->checkManifest($_REQUEST['yaml_file']);
 	if(!empty($data)){

@@ -341,13 +341,23 @@ class OC_Kubernetes_Util {
 
 	public function setAllowedIps($pod_name, $ips, $uid){
 		$complete_uri = 'http://'.$this->privateIP . "/set_allowed_ips.php?user_id=" . rawurlencode($uid) . "&pod=" .
-				rawurlencode($pod_name). "&ips=" . $ips;
+			rawurlencode($pod_name). "&ips=" . $ips;
 		\OC_Log::write('user_pods', "Setting allowed IPs for pod, " . $complete_uri, \OC_Log::WARN);
 		$json = file_get_contents($complete_uri);
 		$response = json_decode($json, true);
 		return $response;
 	}
 
+	public function setPortNumbers($pod_name, $https_port, $ssh_port, $extra_ports, $uid){
+		$complete_uri = 'http://'.$this->privateIP . "/set_port_numbers.php?user_id=" . rawurlencode($uid) . "&pod=" .
+			rawurlencode($pod_name). "&https_port=" . $https_port. "&ssh_port=" . $ssh_port. "&extra_ports=" . $extra_ports;
+		// Apparently file_get_contents return nothing when the return code is 401 or the like...
+		$json = file_get_contents($complete_uri);
+		\OC_Log::write('user_pods', "Setting ports for pod, " . $complete_uri." --> ".serialize($json), \OC_Log::WARN);
+		$response = json_decode($json, true);
+		return $response;
+	}
+	
 	public function deletePod($pod_name, $uid){
 		$complete_uri = 'http://'.$this->privateIP . "/delete_pod.php?user_id=" . rawurlencode($uid) . "&pod=" .
 			rawurlencode($pod_name);

@@ -36,7 +36,20 @@ function getExtraPortsRows(container){
 }
 
 function getExpandedTable(container){
-	var str = "\n <tr hidden class='expanded-row' pod_name='" + container['pod_name'] + "'> <td colspan='5'>" +
+	var https_port = '';
+	if(container['url']){
+		https_port = container['url'].replace(/^https:\/\/.+:(\d+).*$/, '$1');
+	}
+	var ssh_port = '';
+	if(container['ssh_url']){
+		ssh_port = container['ssh_url'].replace(/^ssh:\/\/.+:([0-9]+)$/, '$1');
+	}
+	var extra_ports = '';
+	if(container['extra_ports']){
+		extra_ports = container['extra_ports'];
+	}
+	var str = "\n <tr hidden class='expanded-row' pod_name='" + container['pod_name'] +
+	"' https_port='"+https_port+"' ssh_port='"+ssh_port+"' extra_ports='"+extra_ports+ "'> <td colspan='5'>" +
 		"\n<table id='expanded-" + container['pod_name'] + "' class='panel expanded-table'>" +
 		"\n <tr><td class='expanded-column-name'>container name:</td> <td class='expanded-column-value'><span>" + container['container_name'] + "</span></td></tr>" +
 		"\n <tr><td class='expanded-column-name'>image name:</td> <td class='expanded-column-value'><span>" + container['image_name'] + "</span></td></tr>" +
@@ -46,6 +59,7 @@ function getExpandedTable(container){
 		"\n <tr><td class='expanded-column-name'>age:</td> <td class='expanded-column-value'><span>" + container['age'] + "</span></td></tr>" +
 		getSshRows(container) +
 		getExtraPortsRows(container) +
+		"\n <tr><td class='expanded-column-name'>persistent ports:</td> <td class='expanded-column-value'> <span> <input  type='checkbox'  class='keep_ports' "+(container['keep_ports']=='1'?"checked='checked'":"")+" /> </span> </td></tr>" +
 		"\n</table>" +
 		"\n </td> </tr>";
 	return str;
@@ -67,7 +81,20 @@ function formatStatusRunning(status){
 
 function getRow(container){
 	//visible part
-	var str = "  <tr class='simple-row' pod_name='" + container['pod_name'] + "' pod_ip='"+ container['pod_ip'] + "' image_name='" + container['image_name'] + "'>" +
+	var https_port = '';
+	if(container['url']){
+		https_port = container['url'].replace(/^https:\/\/.+:(\d+).*$/, '$1');
+	}
+	var ssh_port = '';
+	if(container['ssh_url']){
+		ssh_port = container['ssh_url'].replace(/^ssh:\/\/.+:([0-9]+)$/, '$1');
+	}
+	var extra_ports = '';
+	if(container['extra_ports']){
+		extra_ports = container['extra_ports'];
+	}
+	var str = "  <tr class='simple-row' pod_name='" + container['pod_name'] + "' pod_ip='"+ container['pod_ip'] + "' image_name='" + container['image_name'] +
+			"' https_port='"+https_port+"' ssh_port='"+ssh_port+"' extra_ports='"+extra_ports+"''>" +
 		getRowElementPlain('pod_name', container['pod_name']) +
 		getRowElementPlain('status', formatStatusRunning(container['status'])) +
 		getRowElementView('view', container) +
@@ -127,6 +154,12 @@ function getContainers(callback){
 							console.log('Setting IP '+ip+':'+currentIPs);
 							$(this).parent().find('input').val(currentIPs)
 						}
+					});
+					$('tbody#fileList tr[pod_name='+value['pod_name']+'] .expanded-column-value input.keep_ports').change(function() {
+						var podName = value['pod_name'];
+						var https_port = !this.checked?'':$(this).closest('tr.expanded-row').attr('https_port');
+						var ssh_port =  !this.checked?'':$(this).closest('tr.expanded-row').attr('ssh_port');
+						setPortNumbers(podName, https_port, ssh_port);
 					});
 				});
 				updateContainerCount();
@@ -256,6 +289,40 @@ function setAllowedIPs(podName, ips){
 		}
 	});
 }
+
+function setPortNumbers(podName, https_port, ssh_port){
+	$.ajax({
+		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
+		data: {
+			action: "set_port_numbers",
+			pod_name: podName,
+			https_port: https_port,
+			ssh_port: ssh_port
+		},
+		method: 'post',
+		beforeSend: function(xhr){
+			ajaxBefore(xhr, "Setting port numbers...");
+		},
+		complete: function(xhr){
+			ajaxCompleted(xhr);
+		},
+		success: function(data){
+			if(data.status == 'success'){
+			}
+			else if(data.status == 'error'){
+				if(data.data && data.data.error && data.data.error == 'authentication_error'){
+					OC.redirect('/');
+				}
+				else{
+					OC.dialogs.alert(t("user_pods", "set_port_numbers: Something went wrong..."+(typeof data.message!=='undefined'?data.message:'')), t("user_pods", "Error"));
+					$('#podstable tr[pod_name="' + podName + '"] td div[column=status] span').text('Setting port numbers failed');
+				}
+			}
+		},
+		error:  function(jsondata){
+			OC.dialogs.alert(t("user_pods", "set_port_numbers: Something went wrong. "+jsondata), t("user_pods", "Error"));
+		}
+	});}
 
 function deletePod(podName){
 	$.ajax({

@@ -305,4 +305,8 @@ fieldset#userPodsSettings table tbody tr td {
   height: 26px;
 }
 
+input.keep_ports[type="checkbox"] {
+  margin-bottom: 4px;
+}
+
 
