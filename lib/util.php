@@ -1,5 +1,7 @@
 <?php
 
+require_once('apps/user_group_admin/lib/util.php');
+
 class OC_Kubernetes_Util {
 
 	private $publicIP;
@@ -7,7 +9,7 @@ class OC_Kubernetes_Util {
 	private $storageDir;
 	private $manifestsURL;
 	public $rawManifestsURL;
-	
+		
 	function __construct(){
 		$this->publicIP  = OC_Appconfig::getValue('user_pods', 'publicIP');
 		$this->privateIP = OC_Appconfig::getValue('user_pods', 'privateIP');
@@ -30,7 +32,7 @@ class OC_Kubernetes_Util {
 
 	public function getContainers($uid, $podNames=null){
 		$containers = array();
-		// pod_name|container_name|image_name|pod_ip|node_ip|owner|age(s)|status|ssh_port|https_port|uri|extra_ports|allowed_ips
+		// pod_name|container_name|image_name|pod_ip|node_ip|owner|age(s)|status|ssh_port|https_port|uri|extra_ports|allowed_ips|keep_ports
 		$url = 'http://'.$this->privateIP."/get_containers.php?fields=include&user_id=".$uid;
 		\OCP\Util::writeLog('user_pods', 'GETting: '.$url, \OC_Log::WARN);
 		$response = file_get_contents($url);
@@ -152,6 +154,10 @@ class OC_Kubernetes_Util {
 		}
 	}*/
 
+	public function checkGroupMembership(){
+		
+	}
+
 	/**
 	 * Get available information on a manifest from our yaml repository.
 	 * @param $yaml_file
@@ -166,23 +172,48 @@ class OC_Kubernetes_Util {
 		$arr = yaml_parse($yaml);
 		// If domain and (optionally) user is set in the yaml metadata.labels,
 		// check if they match the current user
+		$yaml_group = empty($arr['metadata']['labels']['group'])?'':$arr['metadata']['labels']['group'];
 		$yaml_domain = empty($arr['metadata']['labels']['domain'])?'':$arr['metadata']['labels']['domain'];
 		$yaml_user = empty($arr['metadata']['labels']['user'])?'':$arr['metadata']['labels']['user'];
 		$pod_types = empty($arr['metadata']['labels']['types'])?'':explode('-', $arr['metadata']['labels']['types']);
-		$shortUser = OCP\USER::getUser();
+		$user = OCP\USER::getUser();
 		$domain = '';
-		$atIndex = strpos($shortUser, '@');
-		if(!empty($atIndex) && !empty($shortUser)){
-			$userArr = explode('@', $shortUser);
-			$domain = end($userArr);//substr($shortUser, $atIndex+1);
+		$atIndex = strpos($user, '@');
+		if(!empty($atIndex) && !empty($user)){
+			$userArr = explode('@', $user);
+			$domain = end($userArr);
 			$shortUser = reset($userArr);
 		}
-		if(!empty($yaml_domain) && $yaml_domain!=$domain){
-			\OCP\Util::writeLog('user_pods', "Not allowed: $yaml_domain!=$domain", \OC_Log::ERROR);
-			return [];
+		$allowed = false;
+		// No requirements
+		if(empty($yaml_domain) && empty($yaml_user) && empty($yaml_group)){
+			$allowed = true;
+			\OCP\Util::writeLog('user_pods', "Allowed", \OC_Log::WARN);
 		}
-		if(!empty($yaml_user) && $yaml_user!=$shortUser){
-			\OCP\Util::writeLog('user_pods', "Not allowed: $yaml_user!=$shortUser", \OC_Log::ERROR);
+		else{
+			// System users
+			if(empty($yaml_domain) && !empty($yaml_user) && $yaml_user==$shortUser){
+				$allowed = true;
+				\OCP\Util::writeLog('user_pods', "Allowed: $shortUser==$yaml_user", \OC_Log::WARN);
+			}
+			// Full domains
+			if(empty($yaml_user) && !empty($yaml_domain) && $yaml_domain==$domain){
+				$allowed = true;
+				\OCP\Util::writeLog('user_pods', "Allowed: $yaml_domain==$domain", \OC_Log::WARN);
+			}
+			// Regular users
+			if(!empty($yaml_user) && !empty($yaml_domain) && $yaml_user==$shortUser && $yaml_domain==$domain){
+				\OCP\Util::writeLog('user_pods', "Allowed: $yaml_user==$shortUser, $yaml_domain==$domain", \OC_Log::WARN);
+				return [];
+			}
+			// Groups
+			if(!empty($yaml_group) && \OCP\App::isEnabled('user_group_admin') && \OC_User_Group_Admin_Util::inGroup($user, $yaml_group)){
+				$allowed = true;
+				\OCP\Util::writeLog('user_pods', "Allowed, member: $user, $yaml_group", \OC_Log::WARN);
+			}
+		}
+		if(!$allowed){
+			\OCP\Util::writeLog('user_pods', "Not allowed: $user, $domain, $yaml_user, $yaml_domain, $yaml_group", \OC_Log::WARN);
 			return [];
 		}
 		$md_file = preg_replace('/\.yaml$/', '.md', $yaml_file);
