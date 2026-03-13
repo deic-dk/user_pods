@@ -94,7 +94,7 @@ function getRow(container){
 		extra_ports = container['extra_ports'];
 	}
 	var str = "  <tr class='simple-row' pod_name='" + container['pod_name'] + "' pod_ip='"+ container['pod_ip'] + "' image_name='" + container['image_name'] +
-			"' https_port='"+https_port+"' ssh_port='"+ssh_port+"' extra_ports='"+extra_ports+"''>" +
+			"' https_port='"+https_port+"' ssh_port='"+ssh_port+"' extra_ports='"+extra_ports+"'>" +
 		getRowElementPlain('pod_name', container['pod_name']) +
 		getRowElementPlain('status', formatStatusRunning(container['status'])) +
 		getRowElementView('view', container) +
@@ -159,7 +159,8 @@ function getContainers(callback){
 						var podName = value['pod_name'];
 						var https_port = !this.checked?'':$(this).closest('tr.expanded-row').attr('https_port');
 						var ssh_port =  !this.checked?'':$(this).closest('tr.expanded-row').attr('ssh_port');
-						setPortNumbers(podName, https_port, ssh_port);
+						var extra_ports =  !this.checked?'':$(this).closest('tr.expanded-row').attr('extra_ports').replace(/^\d+:/, '').replace(/,\d+:/, ',');
+						setPortNumbers(podName, https_port, ssh_port, extra_ports);
 					});
 				});
 				updateContainerCount();
@@ -290,14 +291,15 @@ function setAllowedIPs(podName, ips){
 	});
 }
 
-function setPortNumbers(podName, https_port, ssh_port){
+function setPortNumbers(podName, https_port, ssh_port, extra_ports){
 	$.ajax({
 		url: OC.filePath('user_pods', 'ajax', 'actions.php'),
 		data: {
 			action: "set_port_numbers",
 			pod_name: podName,
 			https_port: https_port,
-			ssh_port: ssh_port
+			ssh_port: ssh_port,
+			extra_ports: extra_ports
 		},
 		method: 'post',
 		beforeSend: function(xhr){
