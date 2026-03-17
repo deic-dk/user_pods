@@ -408,7 +408,7 @@ function loadYaml(yaml_file){
 		$('div#cvmfs').hide();
 		$('div#pod_type select').remove();
 		$('#pod_type').hide();
-		$('div#setup input').empty();
+		$('div#setup input').val('');
 		$('div#setup').hide();
 		$('div#ssh').hide();
 		$('#webdav').empty();
@@ -480,7 +480,7 @@ function loadYaml(yaml_file){
 				$('div#storage').hide();
 				$('div#cvmfs').hide();
 				$('#pod_type').hide();
-				$('div#setup input').empty();
+				$('div#setup input').val('');
 				$('div#setup').hide();
 				if(jsondata.data['pod_types']){
 					$('#pod_type').show();
