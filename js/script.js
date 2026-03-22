@@ -401,6 +401,11 @@ function clearSshPublicKey(){
 }
 
 function loadYaml(yaml_file){
+	if(typeof getGetParam !== 'undefined' && getGetParam('yaml_file')){
+		// loadYaml is called by  getContainers, so to avoid problems, zap any yaml_file= in the GET params.
+		var newUrl = window.location.href.replace(/[\?&]?yaml_file=.+[$&]?/, '')
+		window.history.pushState( {service: 'files'}, '', newUrl);
+	}
 	$('#public_key').val('');
 	var select_value = yaml_file || $('#yaml_file').val();
 	if(!select_value){
@@ -725,15 +730,20 @@ $(document).ready(function(){
 	});
 
 	getContainers(function(){
-		if(typeof getGetParam !== 'undefined' && getGetParam('file') && getGetParam('yaml_file')){
+		if(typeof getGetParam !== 'undefined' && getGetParam('yaml_file')){
 			var yaml_file = decodeURIComponent(getGetParam('yaml_file'));
-			var file = decodeURIComponent(getGetParam('file'));
+			var file = false;
+			if(getGetParam('file')){
+				file = decodeURIComponent(getGetParam('file'));
+			}
 			$('#newpod').show();
 			$('#pod-create').removeClass('btn-primary');
 			$('#pod-create').addClass('btn-default');
 			$.when(loadYaml(yaml_file)).then(function(){
 				$('#yaml_file').val(yaml_file);
-				$('#file_input').val(file);
+				if(file){
+					$('#file_input').val(file);
+				}
 				$('#newpod #ok a').removeClass('btn-default');
 				$('#newpod #ok a').addClass('btn-primary');
 			});
