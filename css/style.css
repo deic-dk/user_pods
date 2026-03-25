@@ -309,4 +309,8 @@ input.keep_ports[type="checkbox"] {
   margin-bottom: 4px;
 }
 
+#content hr {
+	border-top: 1px solid #d3d3d3;
+}
+
 
