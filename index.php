@@ -16,9 +16,9 @@ OC_Util::addScript( 'core', 'singleselect' );
 OC_Util::addScript('core', 'jquery.inview');
 OC_Util::addScript('files_markdown','marked');
 
+$util->createStorageDir(OCP\User::getUser());
+
 $tmpl = new OCP\Template('user_pods', 'main', 'user');
 $util = new OC_Kubernetes_Util();
 $tmpl->assign('manifests', $util->getManifests());
 $tmpl->printPage();
-
-$util->createStorageDir(OCP\User::getUser());
