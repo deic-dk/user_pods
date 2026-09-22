@@ -94,7 +94,7 @@ $l = OC_L10N::get('user_pods');
 		</tr>
 		<tr>
 			<td>
-				<label for='trustedUser'><?php p($l->t('User allowed to login from her pods with any username set in auth header honored.'));?></label>
+				<label for='trustedUser'><?php p($l->t('User allowed to access files from her pods with any username set in auth header honored.'));?></label>
 			</td>
 			<td>
 				<input type='text' id='trustedUser' title='trustedUser' IP' style='width:475px' />
