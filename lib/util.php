@@ -21,12 +21,24 @@ class OC_Kubernetes_Util {
 	/**
 	 * @brief Get all user's pods
 	 * @param  string $uid Name of the user
+	 * @param  string $path Optional path below storageDir
 	 * @return array  with pod names of a user
 	 */
-	public function createStorageDir($uid){
+	public function createStorageDir($uid, $path=''){
 		$folder_path = $this->storageDir . $uid;
 		if(!is_dir($folder_path)){
 			mkdir($folder_path, 0755, true);
+		}
+		if(!empty($path)){
+			if(strpos($path, '..')===false){
+				$fullPath = str_replace('//', '/', $folder_path.'/'.$path);
+				if(!is_dir($fullPath)){
+					mkdir($fullPath, 0755, true);
+				}
+			}
+			else{
+				\OCP\Util::writeLog('user_pods', "ATTENTION: $uid is trying to access files outside /storage : $path", \OC_Log::ERROR);
+			}
 		}
 	}
 
@@ -322,6 +334,12 @@ class OC_Kubernetes_Util {
 			$cvmfs_repos='', $file='', $setup_script='', $peers='', $allowed_ip='', $pod_type=''){
 		$url = 'http://'.$this->privateIP . "/run_pod.php?user_id=" . rawurlencode($uid) .
 			"&yaml_url=" . rawurlencode($yaml_url);
+		
+		// Create missing dir to mount from /storage
+		if($mount_root==="storage"){
+			self::createStorageDir($uid, $mount_path);
+		}
+		
 		if(!empty($public_key)){
 			$encoded_key = rawurlencode($public_key);
 			$url = $url . "&public_key=" . $encoded_key;
